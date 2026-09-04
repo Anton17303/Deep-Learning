@@ -13,7 +13,7 @@ Equipo:
 | Archivo | Descripción |
 |---|---|
 | `proyecto1_najera_anton.ipynb` | Notebook ejecutado con los modelos A, B y C, las dos pruebas de falsificación y el análisis económico |
-| `informe.pdf` | Informe para el Comité de Riesgos |
+| `docs/informe.pdf` | Informe para el Comité de Riesgos |
 | `artefactos/` | Modelos, parámetros de preparación y resultados de la ejecución final |
 | `figs/` | Figuras generadas por el notebook y utilizadas en el informe |
 | `requirements.txt` | Versiones usadas para reproducir la ejecución |
