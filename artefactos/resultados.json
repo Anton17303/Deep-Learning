@@ -1,0 +1,81 @@
+{
+  "seed": 20260905,
+  "transactions": 102087,
+  "samples": 97187,
+  "fraud_rate": 0.011441221703057195,
+  "split_counts": {
+    "train": 58313,
+    "val": 19437,
+    "test": 19437
+  },
+  "auc_pr": {
+    "A_validation": 0.9477166792471163,
+    "B_validation": 0.957106070460863,
+    "A_test": 0.9696177048183634,
+    "B_test": 0.9768082247366168,
+    "C_test": 0.9846654019172589
+  },
+  "bet": {
+    "hybrid_mean": 0.9747517249409976,
+    "control_mean": 0.9611674480150935,
+    "margin_mean": 0.01358427692590416,
+    "success": true
+  },
+  "threshold_metrics": {
+    "A": {
+      "modelo": "A - agregado",
+      "umbral": 0.04,
+      "precision": 0.84,
+      "exhaustividad": 0.9545454545454546,
+      "F1": 0.8936170212765957,
+      "FN": 11,
+      "FP": 44,
+      "costo": 54120.0
+    },
+    "B": {
+      "modelo": "B - secuencial",
+      "umbral": 0.6,
+      "precision": 0.6102564102564103,
+      "exhaustividad": 0.9834710743801653,
+      "F1": 0.7531645569620253,
+      "FN": 4,
+      "FP": 152,
+      "costo": 44160.0
+    }
+  },
+  "permutation": {
+    "ordered_auc": 0.9768082247366168,
+    "permuted_mean_auc": 0.946757253766615,
+    "permuted_std_auc": 0.005479616476126943,
+    "absolute_drop": 0.030050970970001756
+  },
+  "mechanisms": [
+    {
+      "fraud_type": "escalada",
+      "n_pos": 23,
+      "AUC_PR_A": 0.9673109585163988,
+      "AUC_PR_B": 0.717282629414759,
+      "ventaja_B": -0.25002832910163986
+    },
+    {
+      "fraud_type": "rafaga",
+      "n_pos": 207,
+      "AUC_PR_A": 0.9619049910620838,
+      "AUC_PR_B": 0.977033776134523,
+      "ventaja_B": 0.0151287850724392
+    },
+    {
+      "fraud_type": "canal_raro",
+      "n_pos": 12,
+      "AUC_PR_A": 0.9880952380952381,
+      "AUC_PR_B": 0.47570669462116827,
+      "ventaja_B": -0.5123885434740698
+    }
+  ],
+  "economics": {
+    "no_model_test_cost": 1016400.0,
+    "B_vs_A_test_savings": 9960.0,
+    "test_days": 22.477777777777778,
+    "B_vs_A_monthly_savings_at_simulated_scale": 13293.129016312409
+  }
+}
