@@ -1,0 +1,11 @@
+*.ipynb text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+*.txt text eol=lf
+*.csv text eol=lf
+*.json text eol=lf
+*.pdf binary
+*.png binary
+*.joblib binary
+*.pt binary
+*.pkl binary
