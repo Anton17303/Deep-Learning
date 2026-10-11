@@ -1,14 +1,26 @@
-# Proyecto 2 - 
+# Proyecto 2 — Diseño generativo de personajes (Deep Learning 2026)
 
-Universidad del Valle de Guatemala  
-Deep Learning 2026
+**Universo:** (completar: 3–5 líneas)
+**Datos:** (origen, licencia/permiso, tamaño, preparación)
 
-Equipo:
+## Ejecutar (Google Colab / Kaggle con GPU)
+```bash
+pip install -r requirements.txt
+python prepare_data.py --raw data/raw --out data/processed --size 64
+python train.py --data data/processed --name base --epochs 100
+./run_experiments.sh data/processed 100
+python analysis.py curves runs/base
+python analysis.py evolution runs/base --epochs 0 5 25 50 100
+python generate_gallery.py --ckpt runs/base/ckpt/G_final.pt --n 200
+python generate_gallery.py --ckpt runs/base/ckpt/G_final.pt --n 200 --select <10 semillas> --criterio "<criterio>"
+python nn_test.py --data data/processed --galeria galeria
+```
+La galería se regenera con `generate_gallery.py` a partir de `G_final.pt` y las semillas de `galeria/seleccion.json`.
+Pesos del modelo final: (enlace si no caben en Canvas).
 
-- Nina Najera - 231088
-- José Antón - 221041
+## Versiones y semillas
+- Python / torch / torchvision: (completar con `pip freeze | grep -i torch`)
+- Semilla de entrenamiento 42; semilla del ruido de evaluación 1234; cada personaje = una semilla (ver `galeria/seleccion.json`).
 
-Repositorio:
-
-https://github.com/Anton17303/Deep-Learning.git
-
+## Uso de asistentes de IA
+(completar con honestidad. Ejemplo: se usó un asistente de IA para estructurar el código base de entrenamiento y los scripts de análisis; el equipo revisó, ejecutó y entiende el código, y todas las imágenes de la galería provienen del generador entrenado por el equipo.)
