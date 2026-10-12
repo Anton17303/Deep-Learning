@@ -33,7 +33,8 @@ class TrainingRecovery(unittest.TestCase):
             common = [sys.executable, str(project / "train.py"), "--data", str(data),
                       "--out", str(root / "runs"), "--bs", "4", "--nz", "8", "--ngf", "4",
                       "--ndf", "4", "--threads", "1", "--ckpt_every", "1",
-                      "--g_arch", "resize", "--moment_weight", "10", "--conditional", "--reconstruction_weight", "10"]
+                      "--g_arch", "resize", "--moment_weight", "10", "--conditional", "--reconstruction_weight", "10",
+                      "--eye_weight", "15"]
             subprocess.run([*common, "--name", "full", "--epochs", "2"], check=True, capture_output=True)
             subprocess.run([*common, "--name", "split", "--epochs", "1"], check=True, capture_output=True)
             split = root / "runs/split"

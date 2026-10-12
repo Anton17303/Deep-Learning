@@ -2,6 +2,7 @@
 import argparse
 import csv
 import json
+import hashlib
 import platform
 import random
 import time
@@ -29,6 +30,8 @@ def arguments():
     p.add_argument("--moment_weight", type=float, default=argparse.SUPPRESS)
     p.add_argument("--conditional", action="store_true", default=argparse.SUPPRESS)
     p.add_argument("--reconstruction_weight", type=float, default=argparse.SUPPRESS)
+    p.add_argument("--eye_weight", type=float, default=argparse.SUPPRESS)
+    p.add_argument("--initialize_from", default=argparse.SUPPRESS)
     for name, default in {"epochs": 60, "bs": 64, "nz": 64, "ngf": 16, "ndf": 16,
                           "n_critic": 1, "n_eval": 16, "sample_every": 5, "ckpt_every": 20,
                           "workers": 0, "threads": 4, "seed": 42, "eval_seed": 1234}.items():
@@ -69,12 +72,19 @@ def main():
     config.update(dataset_sha256=ds.fingerprint(), image_count=len(ds), resolution=64)
     if conditional:
         config.update(condition_dim=DIM, condition_manifest_sha256=ds.condition_manifest_sha256)
+    initial = None
+    if hasattr(a, "initialize_from"):
+        source = Path(a.initialize_from)
+        config["initialize_from_sha256"] = hashlib.sha256(source.read_bytes()).hexdigest()
+        initial = torch.load(source, map_location="cpu", weights_only=True)
+        if initial["config"]["dataset_sha256"] != config["dataset_sha256"]:
+            raise ValueError("Los pesos iniciales pertenecen a otro conjunto.")
     last = run / "ckpt" / "last.pt"
     if a.resume:
         if not last.exists():
             raise FileNotFoundError("No existe un checkpoint para reanudar.")
         original = json.loads((run / "config.json").read_text(encoding="utf-8"))
-        ignored = {"resume", "out", "data", "workers", "threads"}
+        ignored = {"resume", "out", "data", "workers", "threads", "initialize_from"}
         changed = [key for key in config if key not in ignored and config[key] != original.get(key)]
         if changed:
             raise ValueError(f"La reanudación cambia la configuración: {changed}")
@@ -84,6 +94,9 @@ def main():
         save_json(config, run / "config.json")
     G = Generator(model_noise_size(config), a.ngf, architecture=getattr(a, "g_arch", "dcgan")).to(dev)
     D = Discriminator(a.ndf, nc=3 + (DIM if conditional else 0), norm=a.d_norm, spectral=a.spectral, dropout=a.d_dropout).to(dev)
+    if initial and not a.resume:
+        G.load_state_dict(initial["G"])
+        D.load_state_dict(initial["D"])
     oG = torch.optim.Adam(G.parameters(), a.lr_g, betas=(a.beta1, a.beta2))
     oD = torch.optim.Adam(D.parameters(), a.lr_d, betas=(a.beta1, a.beta2))
     fixed = make_fixed_noise(a.n_eval, a.nz, a.eval_seed).to(dev)
@@ -144,11 +157,14 @@ def main():
     mode = "a" if a.resume else "w"
     moment_weight = getattr(a, "moment_weight", 0)
     reconstruction_weight = getattr(a, "reconstruction_weight", 0)
+    eye_weight = getattr(a, "eye_weight", 0)
     if reconstruction_weight < 0 or (reconstruction_weight and not conditional):
         raise ValueError("La reconstrucción requiere condiciones y un peso no negativo.")
+    if eye_weight < 0 or (eye_weight and not conditional):
+        raise ValueError("El ajuste de ojos requiere condiciones y un peso no negativo.")
     if moment_weight < 0:
         raise ValueError("El peso de regularización debe ser no negativo.")
-    has_regularization = moment_weight or reconstruction_weight
+    has_regularization = moment_weight or reconstruction_weight or eye_weight
     with (run / "losses.csv").open(mode, newline="", encoding="utf-8") as fi, \
          (run / "metrics.csv").open(mode, newline="", encoding="utf-8") as fm, \
          ((run / "regularization.csv").open(mode, newline="", encoding="utf-8")
@@ -157,7 +173,8 @@ def main():
         wr = csv.writer(fr) if fr else None
         if wr and not a.resume:
             wr.writerow(["iter", "epoch", "g_adversarial", "moment_loss", "g_total"]
-                        + (["reconstruction_loss"] if reconstruction_weight else []))
+                        + (["reconstruction_loss"] if reconstruction_weight else [])
+                        + (["eye_loss"] if eye_weight else []))
         if not a.resume:
             wi.writerow(["iter", "epoch", "loss_d", "loss_g", "d_real", "d_fake"])
             wm.writerow(["epoch", "loss_d", "loss_g", "d_real", "d_fake", "diversity", "seconds"])
@@ -194,9 +211,11 @@ def main():
                         adversarial = lg
                         penalty = moment_loss(real, fake) if moment_weight else torch.zeros((), device=dev)
                         reconstruction = (fake - real).abs().mean() if reconstruction_weight else torch.zeros((), device=dev)
-                        lg = adversarial + moment_weight * penalty + reconstruction_weight * reconstruction
+                        eye = (fake[:, :, 22:36, 20:44] - real[:, :, 22:36, 20:44]).square().mean() if eye_weight else torch.zeros((), device=dev)
+                        lg = adversarial + moment_weight * penalty + reconstruction_weight * reconstruction + eye_weight * eye
                         wr.writerow([iteration, ep, adversarial.item(), penalty.item(), lg.item()]
-                                    + ([reconstruction.item()] if reconstruction_weight else []))
+                                    + ([reconstruction.item()] if reconstruction_weight else [])
+                                    + ([eye.item()] if eye_weight else []))
                     oG.zero_grad(set_to_none=True)
                     lg.backward()
                     oG.step()

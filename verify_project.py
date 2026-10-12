@@ -59,6 +59,10 @@ def main():
     if config.get("conditional", False):
         require(hashlib.sha256((root / "data/raw/manifest.json").read_bytes()).hexdigest()
                 == config["condition_manifest_sha256"], "El manifiesto de atributos cambió.")
+    if config.get("initialize_from"):
+        initial_path = root / config["initialize_from"].replace("\\", "/")
+        require(hashlib.sha256(initial_path.read_bytes()).hexdigest() == config["initialize_from_sha256"],
+                "Los pesos utilizados para iniciar el ajuste cambiaron.")
     png_hashes = []
     for item in selection["personajes"]:
         path = root / "galeria" / item["archivo"]

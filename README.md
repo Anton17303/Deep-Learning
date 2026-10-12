@@ -69,7 +69,13 @@ Estos entrenamientos se analizan aparte de las comparaciones obligatorias. La se
 
 La hoja de 200 candidatos del modelo con estadísticas mostró predominio de un ojo central. Se agregó una tercera variante condicional de 80 épocas, descrita en `condicional.md`. La entrada combina 64 componentes de ruido y 16 indicadores de atributos. Se utiliza una pérdida L1 auxiliar con peso 10 y estadísticas con peso 2. Los atributos se comprueban contra las huellas del manifiesto original.
 
-La tasa de selección incluye los 200 candidatos anteriores y los 200 del modelo final. La galería conserva únicamente imágenes de un mismo checkpoint. El manifiesto registra ambas cantidades para distinguir el conjunto final de candidatos del total generado durante la selección.
+Se agregó una fase de ajuste de 40 épocas desde los pesos condicionales de 80 épocas, descrita en `rasgos.md`. Se utiliza un error cuadrático con peso 15 en la región de los ojos. Se conservan los pesos iniciales de G y D en `runs/conditional/ckpt/GD_final.pt`. El ajuste reinicia los optimizadores y depende del encuadre fijo del conjunto.
+
+```bash
+python refine_attributes.py
+```
+
+La tasa de selección incluye 200 candidatos del modelo con estadísticas, 200 de la variante condicional inicial y 200 del modelo final ajustado: 600 en total. La galería conserva únicamente imágenes de un mismo checkpoint. El manifiesto distingue el conjunto final de candidatos del total generado durante la selección.
 
 ## Semillas y evidencia
 

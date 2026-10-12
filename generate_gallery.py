@@ -123,7 +123,7 @@ def main():
     fig.tight_layout()
     fig.savefig(out / "galeria.png", dpi=160)
     plt.close(fig)
-    print(f"{len(seeds)} de {a.n} -> {out}")
+    print(f"{len(seeds)} de {total} -> {out}")
 
 
 if __name__ == "__main__":

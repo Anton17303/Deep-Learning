@@ -21,7 +21,7 @@ def main():
     for pattern in ["*.py", "*.md", "requirements.txt", "requirements-lock.txt", "colab_runner.ipynb", "run_experiments.sh"]:
         files.update(root.glob(pattern))
     files.discard(root / "PLAN.md")
-    for folder in ["gan", "tests", "evidencias", "galeria", "nn_resultados", "runs/base", "runs/exp_loss_hinge", "runs/exp_stab_sn", "runs/refined", "runs/moment_refined", "runs/conditional", "data/processed"]:
+    for folder in ["gan", "tests", "evidencias", "galeria", "nn_resultados", "runs/base", "runs/exp_loss_hinge", "runs/exp_stab_sn", "runs/refined", "runs/moment_refined", "runs/conditional", "runs/conditional_refined", "data/processed"]:
         files.update(path for path in (root / folder).rglob("*") if path.is_file()
                      and "__pycache__" not in path.parts and path.name not in ["last.pt", "last.tmp"]
                      and not path.name.startswith("G_ep"))

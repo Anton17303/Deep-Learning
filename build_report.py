@@ -21,7 +21,7 @@ def main():
         refined_rows = list(csv.DictReader(stream))
     final = refined_rows[-1]
     auxiliary_table = "| Variante adicional | Épocas | D final | G final | Diversidad final | Tiempo |\n|---|---:|---:|---:|---:|---:|\n"
-    for name in ["refined", "moment_refined", "conditional"]:
+    for name in ["refined", "moment_refined", "conditional", "conditional_refined"]:
         with (Path("runs") / name / "metrics.csv").open(newline="", encoding="utf-8") as stream:
             auxiliary = list(csv.DictReader(stream))[-1]
         auxiliary_table += (f"| {name} | {auxiliary['epoch']} | {float(auxiliary['loss_d']):.4f} | "
@@ -72,6 +72,11 @@ El experimento hinge cambia únicamente la pérdida. El experimento espectral ca
         refinement += (f" También se agregó L1 con peso {selected_config['reconstruction_weight']:g} frente a una imagen real "
                        "de la misma condición. El ruido no identifica una imagen real; el término favorece un prototipo por "
                        "atributos y puede reducir la variación dentro de cada condición. Ese término también se registra por separado.")
+    if selected_config.get("eye_weight", 0):
+        refinement += (f" Se agregó un error cuadrático con peso {selected_config['eye_weight']:g} en la región de los ojos. "
+                       "El modelo parte de 80 épocas condicionales y se ajusta durante 40 más, para un total de 120. "
+                       "La etapa cero de su rejilla corresponde a los pesos de la fase anterior; no es una inicialización aleatoria. "
+                       "Los optimizadores se reinician y la ventana depende del encuadre fijo del conjunto.")
     regularization_figure = (f"![Componentes de la pérdida de G]({selected_run.as_posix()}/regularizacion.png)"
                              if selected_config.get("moment_weight", 0) else "")
     nn_interpretation = (f"Se buscó el vecino exacto en píxeles entre las {neighbors['training_count']:,} imágenes de entrenamiento para cada personaje. "
@@ -92,7 +97,7 @@ El experimento hinge cambia únicamente la pérdida. El experimento espectral ca
 
 ## Ejecución real
 
-Se prepararon {data['kept']:,} dibujos originales. Se ejecutaron tres corridas controladas y tres variantes adicionales. Los valores de este informe se obtienen de los registros CSV y de la prueba de vecinos. Se conserva la separación entre hipótesis previa, medición posterior e inspección visual.
+Se prepararon {data['kept']:,} dibujos originales. Se ejecutaron tres corridas controladas, tres variantes adicionales y una fase de ajuste de rasgos. Los valores de este informe se obtienen de los registros CSV y de la prueba de vecinos. Se conserva la separación entre hipótesis previa, medición posterior e inspección visual.
 
 ## Arquitectura
 
@@ -136,13 +141,15 @@ La relación de diversidad media frente a la base fue {experiments[2]['diversity
 
 {visual['moments']}
 
+{visual['conditional']}
+
 {refinement}
 
 ## Galería y tasa de selección
 
-Se seleccionaron {selection['tasa_seleccion']} candidatos en total. El modelo final produjo {selection['candidatos_generados']} candidatos, con semillas de 0 a {selection['candidatos_generados'] - 1}. También se generaron {selection.get('candidatos_previos', 0)} candidatos de una variante anterior, que se descartaron para la galería. Criterio: {selection['criterio']}.
+Se seleccionaron {selection['tasa_seleccion']} candidatos en total. El modelo final produjo {selection['candidatos_generados']} candidatos, con semillas de 0 a {selection['candidatos_generados'] - 1}. También se generaron {selection.get('candidatos_previos', 0)} candidatos de variantes anteriores, que se descartaron para la galería. Criterio: {selection['criterio']}.
 
-La selección final corresponde a un solo checkpoint. Las rejillas de seguimiento se utilizaron para revisar el entrenamiento; la tasa declarada incluye las dos hojas de candidatos y no oculta la selección de la configuración anterior.
+La selección final corresponde a un solo checkpoint. Las rejillas de seguimiento se utilizaron para revisar el entrenamiento; la tasa declarada incluye todas las hojas de candidatos y no oculta la selección de configuraciones anteriores.
 
 {gallery_table}
 
@@ -292,7 +299,7 @@ La pérdida de D cercana a cero durante muchas épocas se interpreta como una se
 
 Se seleccionaron **{selection['tasa_seleccion']}** candidatos. Criterio: {selection['criterio']}.
 
-La cantidad incluye {selection.get('candidatos_previos', 0)} candidatos de una variante anterior y {selection['candidatos_generados']} del checkpoint final. No se mezclan modelos dentro de la galería.
+La cantidad incluye {selection.get('candidatos_previos', 0)} candidatos de variantes anteriores y {selection['candidatos_generados']} del checkpoint final. No se mezclan modelos dentro de la galería.
 
 ![Diez personajes generados por la GAN](galeria/galeria.png)
 

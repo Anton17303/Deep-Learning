@@ -66,6 +66,8 @@ def regularization(run):
                   (f"Estadísticas × {weight:g}", "moment_loss", weight)]
     if config.get("reconstruction_weight", 0):
         components.append((f"L1 × {config['reconstruction_weight']:g}", "reconstruction_loss", config["reconstruction_weight"]))
+    if config.get("eye_weight", 0):
+        components.append((f"Ojos × {config['eye_weight']:g}", "eye_loss", config["eye_weight"]))
     components.append(("Total G", "g_total", 1))
     for label, key, scale in components:
         values = smooth([float(row[key]) * scale for row in rows])
