@@ -45,6 +45,11 @@ def main():
     save_json({"runs": summaries, "visual_review_required": True,
                "note": "Las condiciones cuantitativas no sustituyen el criterio visual registrado en la hipótesis."},
               out / "resumen_experimentos.json")
+    for name in ["refined", "moment_refined"]:
+        refined = Path("runs") / name
+        if (refined / "ckpt/G_final.pt").exists():
+            curves(refined)
+            evolution(refined, [0, 5, 20, 60, 120])
     print(summaries)
 
 

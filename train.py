@@ -5,6 +5,7 @@ import json
 import platform
 import random
 import time
+from contextlib import nullcontext
 from pathlib import Path
 
 import numpy as np
@@ -12,7 +13,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from gan.images import ImageDataset, save_grid
-from gan.losses import KINDS, d_loss_fn, g_loss_fn
+from gan.losses import KINDS, d_loss_fn, g_loss_fn, moment_loss
 from gan.models import Discriminator, Generator
 from gan.utils import diversity_score, make_fixed_noise, save_json, set_seed
 
@@ -24,6 +25,7 @@ def arguments():
     p.add_argument("--out", default="runs")
     p.add_argument("--loss", default="bce", choices=KINDS)
     p.add_argument("--g_arch", choices=["dcgan", "resize"], default=argparse.SUPPRESS)
+    p.add_argument("--moment_weight", type=float, default=argparse.SUPPRESS)
     for name, default in {"epochs": 60, "bs": 64, "nz": 64, "ngf": 16, "ndf": 16,
                           "n_critic": 1, "n_eval": 16, "sample_every": 5, "ckpt_every": 20,
                           "workers": 0, "threads": 4, "seed": 42, "eval_seed": 1234}.items():
@@ -95,7 +97,10 @@ def main():
         noise_rng.set_state(ck["noise_rng"])
         if dev.type == "cuda":
             torch.cuda.set_rng_state_all(ck["cuda_rng"])
-        for filename in ["losses.csv", "metrics.csv"]:
+        log_files = ["losses.csv", "metrics.csv"]
+        if (run / "regularization.csv").exists():
+            log_files.append("regularization.csv")
+        for filename in log_files:
             path = run / filename
             with path.open(newline="", encoding="utf-8") as stream:
                 reader = csv.DictReader(stream)
@@ -121,10 +126,24 @@ def main():
         save_grid(images, run / "grids" / f"epoch_{epoch:03d}.png")
         return diversity_score(images.cpu())
 
+    if start > a.epochs:
+        if not (run / "ckpt" / "G_final.pt").exists():
+            torch.save({"G": G.state_dict(), "config": config}, run / "ckpt" / "G_final.pt")
+        print(f"Corrida completa: {run}")
+        return
+
     mode = "a" if a.resume else "w"
+    moment_weight = getattr(a, "moment_weight", 0)
+    if moment_weight < 0:
+        raise ValueError("El peso de regularización debe ser no negativo.")
     with (run / "losses.csv").open(mode, newline="", encoding="utf-8") as fi, \
-         (run / "metrics.csv").open(mode, newline="", encoding="utf-8") as fm:
+         (run / "metrics.csv").open(mode, newline="", encoding="utf-8") as fm, \
+         ((run / "regularization.csv").open(mode, newline="", encoding="utf-8")
+          if moment_weight else nullcontext(None)) as fr:
         wi, wm = csv.writer(fi), csv.writer(fm)
+        wr = csv.writer(fr) if fr else None
+        if wr and not a.resume:
+            wr.writerow(["iter", "epoch", "g_adversarial", "moment_loss", "g_total"])
         if not a.resume:
             wi.writerow(["iter", "epoch", "loss_d", "loss_g", "d_real", "d_fake"])
             wm.writerow(["epoch", "loss_d", "loss_g", "d_real", "d_fake", "diversity", "seconds"])
@@ -150,6 +169,11 @@ def main():
                     for parameter in D.parameters():
                         parameter.requires_grad_(False)
                     lg = g_loss_fn(a.loss, D, fake)
+                    if moment_weight:
+                        adversarial = lg
+                        penalty = moment_loss(real, fake)
+                        lg = adversarial + moment_weight * penalty
+                        wr.writerow([iteration, ep, adversarial.item(), penalty.item(), lg.item()])
                     oG.zero_grad(set_to_none=True)
                     lg.backward()
                     oG.step()
@@ -170,6 +194,8 @@ def main():
             wm.writerow([ep, *averages, div, seconds])
             fi.flush()
             fm.flush()
+            if fr:
+                fr.flush()
             checkpoint = {"G": G.state_dict(), "D": D.state_dict(), "oG": oG.state_dict(),
                           "oD": oD.state_dict(), "epoch": ep, "iteration": iteration, "elapsed": seconds,
                           "config": config, "torch_rng": torch.get_rng_state(),

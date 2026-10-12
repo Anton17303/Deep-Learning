@@ -55,6 +55,7 @@ def main():
     require(hashlib.sha256(checkpoint.read_bytes()).hexdigest() == selection["checkpoint_sha256"],
             "El checkpoint de la galería cambió.")
     config = torch.load(checkpoint, map_location="cpu", weights_only=True)["config"]
+    require(config["dataset_sha256"] == dataset.fingerprint(), "El modelo de la galería utilizó otro conjunto.")
     png_hashes = []
     for item in selection["personajes"]:
         path = root / "galeria" / item["archivo"]

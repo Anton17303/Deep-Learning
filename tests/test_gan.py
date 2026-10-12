@@ -5,7 +5,7 @@ import unittest
 import torch
 
 from build_dataset import draw_creature
-from gan.losses import d_loss_fn, g_loss_fn
+from gan.losses import d_loss_fn, g_loss_fn, moment_loss
 from gan.models import Discriminator, Generator
 from gan.utils import make_fixed_noise, set_seed
 
@@ -58,6 +58,16 @@ class GANChecks(unittest.TestCase):
         self.assertEqual(tuple(output.shape), (2, 3, 64, 64))
         output.square().mean().backward()
         self.assertGreater(sum(parameter.grad.abs().sum().item() for parameter in generator.parameters()), 0)
+
+    def test_moment_regularization_has_finite_gradient(self):
+        real = torch.randn(4, 3, 64, 64)
+        self.assertEqual(moment_loss(real, real).item(), 0)
+        fake = (real * 0.4 + 0.5).requires_grad_(True)
+        penalty = moment_loss(real, fake)
+        self.assertGreater(penalty.item(), 0)
+        penalty.backward()
+        self.assertTrue(torch.isfinite(fake.grad).all())
+        self.assertGreater(fake.grad.abs().sum().item(), 0)
 
 
 if __name__ == "__main__":

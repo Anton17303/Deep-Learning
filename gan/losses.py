@@ -44,3 +44,13 @@ def g_loss_fn(kind, D, fake):
     if kind in ("hinge", "wgan_gp"):
         return -out.mean()
     raise ValueError(kind)
+
+
+def moment_loss(real, fake):
+    """Compara medias y variación espacial de lotes a baja resolución."""
+    real_low = F.adaptive_avg_pool2d(real, (8, 8))
+    fake_low = F.adaptive_avg_pool2d(fake, (8, 8))
+    mean_error = (real_low.mean(0) - fake_low.mean(0)).abs().mean()
+    real_std = (real_low.var(0, unbiased=False) + 1e-6).sqrt()
+    fake_std = (fake_low.var(0, unbiased=False) + 1e-6).sqrt()
+    return mean_error + (real_std - fake_std).abs().mean()

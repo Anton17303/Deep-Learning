@@ -23,7 +23,7 @@ Se entren? una GAN para generar criaturas de un universo propio a partir de un c
 
 ## Entorno
 
-Se utiliz? Python 3.13. Las versiones medidas se conservan en `requirements-lock.txt` y en `runs/<corrida>/environment.json`. La ejecuci?n local se realiz? en CPU con cuatro hilos. El c?digo utiliza CUDA cuando est? disponible. No se requiere torchvision.
+Se utiliz? Python 3.13. Las versiones medidas se conservan en `requirements-lock.txt` y en `runs/<corrida>/environment.json`. La ejecuci?n local se realiz? en CPU con cuatro hilos en las comparaciones y dos hilos en las variantes adicionales. El c?digo utiliza CUDA cuando est? disponible. No se requiere torchvision.
 
 ```bash
 python -m pip install -r requirements.txt
@@ -58,6 +58,12 @@ python train.py --data data/processed --name base --epochs 60 --resume
 ```
 
 El archivo `last.pt` no forma parte de la entrega, por su tama?o y porque se utiliza para reanudar, no para regenerar la galer?a. Los pesos finales s? se incluyen.
+
+## Variantes adicionales
+
+La base mostr? poca variedad y las corridas controladas conservaron ruido visible. Se probaron dos variantes de 120 ?pocas con generador bilineal, hinge, normalizaci?n espectral y menor tasa para D. La segunda agrega una regularizaci?n que compara medias y desviaciones de lotes a 8 ? 8. El motivo, las hip?tesis y los comandos se conservan en `refinamiento.md` y `estadisticas.md`.
+
+Estos entrenamientos se analizan aparte de las comparaciones obligatorias. La segunda variante agrega una penalizaci?n a la p?rdida de G y registra ese t?rmino por separado. `resultados.md` identifica el checkpoint utilizado en la galer?a.
 
 ## Semillas y evidencia
 
