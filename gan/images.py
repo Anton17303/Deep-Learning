@@ -16,6 +16,7 @@ def image_tensor(path, size=64):
 
 class ImageDataset(Dataset):
     def __init__(self, root, size=64, flip=False):
+        self.root = Path(root)
         extensions = {".png", ".jpg", ".jpeg", ".webp", ".bmp"}
         self.files = sorted(p for p in Path(root).rglob("*") if p.suffix.lower() in extensions)
         if not self.files:
@@ -35,7 +36,7 @@ class ImageDataset(Dataset):
     def fingerprint(self):
         digest = hashlib.sha256()
         for path in self.files:
-            digest.update(path.relative_to(Path(self.files[0]).parents[1]).as_posix().encode())
+            digest.update(path.relative_to(self.root).as_posix().encode())
             digest.update(path.read_bytes())
         return digest.hexdigest()
 
