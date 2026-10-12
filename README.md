@@ -21,6 +21,3 @@ Pesos del modelo final: (enlace si no caben en Canvas).
 ## Versiones y semillas
 - Python / torch / torchvision: (completar con `pip freeze | grep -i torch`)
 - Semilla de entrenamiento 42; semilla del ruido de evaluación 1234; cada personaje = una semilla (ver `galeria/seleccion.json`).
-
-## Uso de asistentes de IA
-(completar con honestidad. Ejemplo: se usó un asistente de IA para estructurar el código base de entrenamiento y los scripts de análisis; el equipo revisó, ejecutó y entiende el código, y todas las imágenes de la galería provienen del generador entrenado por el equipo.)
