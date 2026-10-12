@@ -1,69 +1,101 @@
-"""Prueba de vecinos más cercanos (evidencia 3) con rasgos de ResNet18 y píxeles.
-  python nn_test.py --data data/processed --galeria galeria
-Incluye una CALIBRACIÓN: qué tan parecida es una imagen real a su vecina más cercana
-dentro del propio entrenamiento. Sirve para interpretar los números con honestidad.
-"""
-import argparse, csv
+"""Vecinos exactos en píxeles con calibración y comparación de primer plano."""
+import argparse
+import csv
 from pathlib import Path
-import numpy as np, torch
-import torch.nn.functional as F
-import matplotlib; matplotlib.use("Agg")
+
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from PIL import Image
-from torchvision import datasets, models, transforms
+import numpy as np
+import torch
 
-p = argparse.ArgumentParser()
-p.add_argument("--data", required=True)
-p.add_argument("--galeria", default="galeria")
-p.add_argument("--out", default="nn_resultados")
-p.add_argument("--no_pretrained", action="store_true", help="solo para pruebas sin internet")
-a = p.parse_args()
-dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-Path(a.out).mkdir(exist_ok=True)
+from gan.images import ImageDataset, image_tensor
+from gan.utils import save_json
 
-ds = datasets.ImageFolder(a.data, transform=transforms.Compose([transforms.Resize(64), transforms.CenterCrop(64), transforms.ToTensor()]))
-train = torch.stack([ds[i][0] for i in range(len(ds))])                      # [N,3,64,64] en [0,1]
-files = sorted(Path(a.galeria).glob("personaje_*_seed*.png"))
-gen = torch.stack([transforms.ToTensor()(Image.open(f).convert("RGB").resize((64, 64))) for f in files])
 
-net = models.resnet18(weights=None if a.no_pretrained else models.ResNet18_Weights.DEFAULT)
-net.fc = torch.nn.Identity(); net = net.to(dev).eval()
-mean = torch.tensor([0.485, 0.456, 0.406], device=dev).view(1, 3, 1, 1)
-std = torch.tensor([0.229, 0.224, 0.225], device=dev).view(1, 3, 1, 1)
+def distances(query, reference, batch_size=32):
+    q, r = query.flatten(1), reference.flatten(1)
+    return torch.cat([torch.cdist(q[i:i + batch_size], r) / q.shape[1] ** 0.5
+                      for i in range(0, len(q), batch_size)])
 
-@torch.no_grad()
-def feats(x, bs=256):
-    out = []
-    for i in range(0, len(x), bs):
-        b = F.interpolate(x[i:i + bs].to(dev), size=224, mode="bilinear", align_corners=False)
-        out.append(F.normalize(net((b - mean) / std), dim=1).cpu())
-    return torch.cat(out)
 
-Ft, Fg = feats(train), feats(gen)
-sim = Fg @ Ft.T
-best_sim, best_idx = sim.max(1)
-pix = torch.cdist(gen.flatten(1), train.flatten(1)) / (3 * 64 * 64) ** 0.5   # RMS por píxel
-pix_best = pix[torch.arange(len(gen)), best_idx]
+def foreground_rms(a, b):
+    background = torch.tensor([13, 20, 35]).view(3, 1, 1) / 255
+    mask = ((a - background).abs().mean(0) > 0.12) | ((b - background).abs().mean(0) > 0.12)
+    if not mask.any():
+        return 0.0
+    return ((a - b)[:, mask].square().mean().sqrt()).item()
 
-# Calibración: vecino más cercano de imágenes reales dentro del entrenamiento (sin sí misma)
-rng = np.random.default_rng(0); sub = rng.choice(len(train), size=min(500, len(train)), replace=False)
-S = Ft[sub] @ Ft.T
-S[torch.arange(len(sub)), torch.tensor(sub)] = -1
-real_nn = S.max(1).values
-print(f"Calibración (real vs. su vecino en train): mediana {real_nn.median():.3f}, p90 {real_nn.quantile(0.9):.3f}, p99 {real_nn.quantile(0.99):.3f}")
-print(f"Generadas vs. train: mín {best_sim.min():.3f}, mediana {best_sim.median():.3f}, máx {best_sim.max():.3f}")
 
-n = len(gen); cols = 5; rows = (n + cols - 1) // cols
-fig, ax = plt.subplots(rows, cols * 2, figsize=(cols * 2.6, rows * 1.5))
-ax = np.atleast_2d(ax)
-for a_ in ax.flat: a_.axis("off")
-with open(Path(a.out) / "vecinos.csv", "w", newline="") as f:
-    w = csv.writer(f); w.writerow(["archivo", "vecino_idx", "coseno_cnn", "rms_pixel"])
-    for i in range(n):
-        r, c = divmod(i, cols)
-        ax[r, 2 * c].imshow(gen[i].permute(1, 2, 0)); ax[r, 2 * c].set_title("generada", fontsize=6, pad=1)
-        ax[r, 2 * c + 1].imshow(train[best_idx[i]].permute(1, 2, 0))
-        ax[r, 2 * c + 1].set_title(f"cos {best_sim[i]:.2f}", fontsize=6, pad=1)
-        w.writerow([files[i].name, int(best_idx[i]), f"{best_sim[i]:.4f}", f"{pix_best[i]:.4f}"])
-plt.tight_layout(); plt.savefig(Path(a.out) / "vecinos.png", dpi=170)
-print("->", Path(a.out) / "vecinos.png", "y vecinos.csv")
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("--data", required=True)
+    p.add_argument("--galeria", default="galeria")
+    p.add_argument("--out", default="nn_resultados")
+    a = p.parse_args()
+    torch.set_num_threads(4)
+    out = Path(a.out)
+    out.mkdir(parents=True, exist_ok=True)
+    ds = ImageDataset(a.data)
+    if len(ds) < 2:
+        raise ValueError("La calibración requiere al menos dos imágenes reales.")
+    train = ds.images
+    files = sorted(Path(a.galeria).glob("personaje_*_seed*.png"))
+    if len(files) < 10:
+        raise ValueError("Se requieren al menos 10 personajes finales.")
+    generated = torch.stack([image_tensor(path) for path in files])
+    matrix = distances(generated, train)
+    best, indices = matrix.min(1)
+    sub = torch.randperm(len(train), generator=torch.Generator().manual_seed(0))[:256]
+    real_distances = distances(train[sub], train)
+    real_distances[torch.arange(len(sub)), sub] = float("inf")
+    real_nn = real_distances.min(1).values
+    pairwise = distances(generated, generated)
+    pairwise.fill_diagonal_(float("inf"))
+    pair_min, pair_indices = pairwise.min(1)
+    records = []
+    fig, axes = plt.subplots(len(files), 2, figsize=(6.5, 2.05 * len(files)), squeeze=False)
+    for i, (path, nearest) in enumerate(zip(files, indices)):
+        neighbor_path = ds.files[int(nearest)]
+        row = {"archivo": path.name, "vecino_archivo": neighbor_path.as_posix(),
+               "rms_pixel": float(best[i]), "rms_primer_plano": foreground_rms(generated[i], train[nearest]),
+               "personaje_mas_parecido": files[int(pair_indices[i])].name,
+               "rms_entre_personajes": float(pair_min[i])}
+        records.append(row)
+        for image, ax in zip([generated[i], train[nearest]], axes[i]):
+            ax.imshow(image.permute(1, 2, 0))
+            ax.axis("off")
+        axes[i, 0].set_title(f"Personaje {i + 1:02d}", fontsize=10)
+        axes[i, 1].set_title(f"Vecino {neighbor_path.stem}\nRMS {best[i]:.4f}", fontsize=9)
+    fig.tight_layout()
+    fig.savefig(out / "vecinos.png", dpi=140)
+    plt.close(fig)
+    with (out / "vecinos.csv").open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.DictWriter(stream, fieldnames=list(records[0]))
+        writer.writeheader()
+        writer.writerows(records)
+    summary = {"metric": "Distancia RMS RGB en [0,1]; menor significa mayor parecido.",
+               "training_count": len(train), "gallery_count": len(files), "calibration_count": len(sub),
+               "real_nn_p10": float(real_nn.quantile(0.1)), "real_nn_median": float(real_nn.median()),
+               "real_nn_p90": float(real_nn.quantile(0.9)),
+               "generated_nn_min": float(best.min()), "generated_nn_median": float(best.median()),
+               "generated_nn_max": float(best.max()), "gallery_pair_min": float(pair_min.min()),
+               "exact_training_copies": sum(torch.equal(generated[i], train[indices[i]]) for i in range(len(files))),
+               "limitation": "Píxeles y fondo uniforme no representan parecido semántico; una distancia alta puede deberse a defectos.",
+               "characters": records}
+    save_json(summary, out / "resumen.json")
+    fig, ax = plt.subplots(figsize=(8, 3.7))
+    ax.hist(real_nn.numpy(), bins=25, alpha=0.7, label="Reales frente a otra real")
+    for i, value in enumerate(best):
+        ax.axvline(float(value), color="#b43b55", alpha=0.6, label="Personajes generados" if i == 0 else None)
+    ax.set_xlabel("Distancia RMS al vecino de entrenamiento")
+    ax.set_ylabel("Cantidad de imágenes reales")
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(out / "calibracion.png", dpi=160)
+    plt.close(fig)
+    print({key: value for key, value in summary.items() if key != "characters"})
+
+
+if __name__ == "__main__":
+    main()

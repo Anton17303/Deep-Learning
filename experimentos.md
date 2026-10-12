@@ -1,21 +1,37 @@
-# Experimentos (escribir ANTES de entrenar)
+# Experimentos controlados
 
-Condiciones fijas en todos: mismos datos, `--seed 42`, `--epochs 100`, `--eval_seed 1234`.
-Configuración base: DCGAN, pérdida BCE no saturante, Adam lr 2e-4 beta1 0.5, BatchNorm en D.
+## Protocolo registrado antes del entrenamiento
 
-## Experimento de pérdida (cambia solo `--loss`)
-Corrida: `python train.py --data data/processed --name exp_loss_hinge --epochs 100 --loss hinge`
-> Creemos que mejorará ___ porque ___. Lo consideraremos útil si ___.
+Se fijan 1,536 dibujos del mismo conjunto, 60 épocas, lote de 64, semilla 42, ruido de evaluación con semilla 1234 y 16 vectores fijos. El generador y el discriminador usan 16 canales iniciales. El vector latente tiene 64 componentes. Se utiliza Adam con tasa 0.0002 para ambas redes, beta1 0.5 y beta2 0.999. No se aplica aumento de datos.
 
-**Qué pasó:** (completar con curvas, rejilla fija, diversidad)
+Cada experimento se compara contra la base. El cambio de pérdida y la normalización espectral no se combinan. El orden de los lotes y el ruido de entrenamiento tienen generadores aleatorios independientes, por lo que la variante espectral no cambia esas secuencias. También se conserva la misma inicialización de los pesos originales antes de aplicar normalización espectral.
 
-## Experimento de estabilización (cambia solo una cosa)
-Opciones de una línea: `--spectral`, `--label_real 0.9`, `--d_dropout 0.3`, `--lr_d 1e-4`
-Corrida sugerida: `python train.py --data data/processed --name exp_stab_sn --epochs 100 --spectral`
-> Creemos que mejorará ___ porque ___. Lo consideraremos útil si ___.
+## Base: BCE no saturante
 
-**Qué pasó:** (completar)
+Se utiliza BCE sobre logits. El discriminador distingue imágenes reales y generadas. El generador intenta que las imágenes falsas reciban la etiqueta real. Se conserva esta configuración como referencia, sin afirmar que una pérdida baja demuestre buena calidad.
 
-## Extras opcionales (si sobra tiempo)
-- `--loss bce_sat` (minimax original) para mostrar el problema del gradiente saturado.
-- WGAN-GP: `--loss wgan_gp --d_norm ln --n_critic 5 --beta1 0 --beta2 0.9` (cambia varias cosas a la vez: documentarlo como variante completa, no como experimento controlado).
+## Experimento de pérdida: hinge
+
+**Hipótesis previa:** Creemos que la pérdida hinge mejorará la diversidad de los personajes porque utiliza un margen para el discriminador y una señal lineal para el generador. Lo consideraremos útil si la diversidad RMS media de las últimas tres rejillas no cae más de 10 % frente a la base y la inspección del mismo ruido fijo muestra cuerpos y rasgos al menos igual de reconocibles, sin repetición dominante de una sola forma.
+
+Único cambio: `--loss hinge`. El discriminador minimiza `mean(relu(1-D(real))) + mean(relu(1+D(fake)))`. El generador minimiza `-mean(D(fake))`. Las pérdidas hinge y BCE tienen escalas distintas; no se comparan sus valores absolutos como una medida de calidad.
+
+## Experimento de estabilización: normalización espectral
+
+**Hipótesis previa:** Creemos que la normalización espectral mejorará la estabilidad porque limita la amplificación de las convoluciones del discriminador. Lo consideraremos útil si la desviación de la pérdida de D durante las últimas 20 épocas es menor que en la base, la diversidad media de las últimas tres rejillas no cae más de 10 % y la inspección visual no muestra una pérdida clara de rasgos reconocibles.
+
+Único cambio: `--spectral`. Se conservan BCE, BatchNorm y el resto de la configuración. La técnica controla los pesos de las convoluciones, pero no impone una cota global a toda la red con BatchNorm.
+
+## Medición e interpretación
+
+La diversidad RMS se calcula entre las 16 imágenes de ruido fijo. Es una señal de diferencias en píxeles, no una medida directa de variedad de personajes. Puede subir por ruido o defectos. Por eso se evalúa junto con las rejillas y la galería.
+
+La desviación de la pérdida se usa como un indicador limitado de oscilación. Una curva suave también puede corresponder a un modelo que aprende poco. Las decisiones finales requieren revisar las figuras.
+
+Los resultados se registran en `resultados.md` una vez finalizadas las corridas. La hipótesis queda separada de las observaciones posteriores.
+
+## Fuentes
+
+- Goodfellow et al. (2014), [Generative Adversarial Nets](https://arxiv.org/abs/1406.2661).
+- Radford et al. (2015), [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](https://arxiv.org/abs/1511.06434).
+- Miyato et al. (2018), [Spectral Normalization for Generative Adversarial Networks](https://arxiv.org/abs/1802.05957).

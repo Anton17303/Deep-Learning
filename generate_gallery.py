@@ -1,54 +1,107 @@
-"""Genera candidatos y arma la galería final reproducible (semilla -> z -> imagen).
-
-1) Candidatos (hoja de contacto numerada por semilla):
-   python generate_gallery.py --ckpt runs/base/ckpt/G_final.pt --n 200
-2) Elegir 10 mirando candidatos.png y fijar criterio/tasa de selección:
-   python generate_gallery.py --ckpt ... --n 200 --select 3 17 22 41 58 77 90 120 133 188 \
-        --criterio "nítidos, distintos entre sí y sin parecido alto en la prueba NN"
-"""
-import argparse, json
+"""Genera candidatos y una galería reproducible desde un checkpoint y semillas."""
+import argparse
+import hashlib
+import json
 from pathlib import Path
-import torch
-import matplotlib; matplotlib.use("Agg")
+
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from torchvision import utils as vutils
+import torch
+
+from gan.images import save_image
 from gan.models import Generator
-from gan.utils import z_from_seed
+from gan.utils import save_json, z_from_seed
 
-p = argparse.ArgumentParser()
-p.add_argument("--ckpt", required=True)
-p.add_argument("--n", type=int, default=200)
-p.add_argument("--select", type=int, nargs="*")
-p.add_argument("--criterio", default="(describir criterio de selección)")
-p.add_argument("--galeria", default="galeria")
-a = p.parse_args()
 
-ck = torch.load(a.ckpt, map_location="cpu")
-nz = ck["config"]["nz"]
-G = Generator(nz); G.load_state_dict(ck["G"]); G.eval()
-
-def gen(seed):
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("--ckpt")
+    p.add_argument("--n", type=int, default=200)
+    p.add_argument("--select", type=int, nargs="+")
+    p.add_argument("--criterio")
+    p.add_argument("--galeria", default="galeria")
+    p.add_argument("--candidates", default="evidencias/candidatos.png")
+    p.add_argument("--from_selection", help="Regenera la galería usando seleccion.json")
+    a = p.parse_args()
+    recorded = None
+    if a.from_selection:
+        recorded = json.loads(Path(a.from_selection).read_text(encoding="utf-8"))
+        a.ckpt = a.ckpt or recorded["checkpoint"]
+        a.n = recorded["candidatos_generados"]
+        a.select = [item["seed"] for item in recorded["personajes"]]
+        a.criterio = recorded["criterio"]
+    if not a.ckpt or a.n < 1:
+        p.error("Se requiere un checkpoint y una cantidad positiva de candidatos.")
+    if a.select and (len(a.select) < 10 or len(set(a.select)) != len(a.select)
+                     or any(seed < 0 or seed >= a.n for seed in a.select) or not a.criterio):
+        p.error("Se requieren al menos 10 semillas distintas dentro del conjunto de candidatos y un criterio.")
+    torch.set_num_threads(4)
+    ck = torch.load(a.ckpt, map_location="cpu", weights_only=True)
+    config = ck["config"]
+    nz = config["nz"]
+    G = Generator(nz, config.get("ngf", 64))
+    G.load_state_dict(ck["G"])
+    G.eval()
+    digest = hashlib.sha256(Path(a.ckpt).read_bytes()).hexdigest()
+    if recorded and digest != recorded["checkpoint_sha256"]:
+        raise ValueError("El checkpoint no coincide con el de la selección.")
+    seeds = a.select if a.select else list(range(a.n))
     with torch.no_grad():
-        return G(z_from_seed(seed, nz))[0]
-
-if not a.select:
-    cols = 20; rows = (a.n + cols - 1) // cols
-    fig, ax = plt.subplots(rows, cols, figsize=(cols * 1.1, rows * 1.2))
-    for i, a_ in enumerate(ax.flat):
-        a_.axis("off")
-        if i < a.n:
-            a_.imshow(((gen(i) + 1) / 2).clamp(0, 1).permute(1, 2, 0).numpy())
-            a_.set_title(str(i), fontsize=6, pad=1)
-    plt.tight_layout(); plt.savefig("candidatos.png", dpi=170); print("candidatos.png")
-else:
-    out = Path(a.galeria); out.mkdir(exist_ok=True)
+        batches = [G(torch.cat([z_from_seed(seed, nz) for seed in seeds[i:i + 32]]))
+                   for i in range(0, len(seeds), 32)]
+        images = torch.cat(batches)
+    if not a.select:
+        cols, rows = 10, (a.n + 9) // 10
+        fig, axes = plt.subplots(rows, cols, figsize=(15, rows * 1.5), squeeze=False)
+        for i, ax in enumerate(axes.flat):
+            ax.axis("off")
+            if i < a.n:
+                ax.imshow(((images[i] + 1) / 2).clamp(0, 1).permute(1, 2, 0).numpy())
+                ax.set_title(f"semilla {i}", fontsize=8)
+        out = Path(a.candidates)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        fig.tight_layout()
+        fig.savefig(out, dpi=110)
+        plt.close(fig)
+        save_json({"checkpoint": a.ckpt, "checkpoint_sha256": digest,
+                   "candidatos_generados": a.n, "seeds": seeds}, out.with_suffix(".json"))
+        print(out)
+        return
+    out = Path(a.galeria)
+    out.mkdir(parents=True, exist_ok=True)
+    expected = {f"personaje_{i:02d}_seed{seed}.png" for i, seed in enumerate(seeds, 1)}
+    if any(path.name not in expected for path in out.glob("personaje_*_seed*.png")):
+        raise FileExistsError("La carpeta contiene una selección distinta.")
     info = []
-    for k, s in enumerate(a.select, 1):
-        img = gen(s)
-        fn = f"personaje_{k:02d}_seed{s}.png"
-        vutils.save_image(img, out / fn, normalize=True, value_range=(-1, 1))
-        torch.save(z_from_seed(s, nz), out / f"personaje_{k:02d}_z.pt")
-        info.append(dict(personaje=k, seed=s, archivo=fn))
-    meta = dict(tasa_seleccion=f"{len(a.select)} de {a.n}", criterio=a.criterio, checkpoint=a.ckpt, personajes=info)
-    json.dump(meta, open(out / "seleccion.json", "w"), indent=2, ensure_ascii=False)
-    print(meta["tasa_seleccion"], "->", out)
+    for index, (seed, image) in enumerate(zip(seeds, images), 1):
+        filename = f"personaje_{index:02d}_seed{seed}.png"
+        save_image(image, out / filename)
+        vector = z_from_seed(seed, nz)
+        torch.save(vector, out / f"personaje_{index:02d}_z.pt")
+        info.append({"personaje": index, "seed": seed, "archivo": filename,
+                     "sha256_png": hashlib.sha256((out / filename).read_bytes()).hexdigest(),
+                     "z": vector.flatten().tolist()})
+    if recorded:
+        for item, original in zip(info, recorded["personajes"]):
+            if item["sha256_png"] != original["sha256_png"]:
+                raise ValueError("La regeneración produjo píxeles distintos.")
+            for key in ["nombre", "rol", "rasgos"]:
+                if key in original:
+                    item[key] = original[key]
+    save_json({"tasa_seleccion": f"{len(seeds)} de {a.n}", "candidatos_generados": a.n,
+               "criterio": a.criterio, "checkpoint": a.ckpt, "checkpoint_sha256": digest,
+               "personajes": info}, out / "seleccion.json")
+    fig, axes = plt.subplots(2, 5, figsize=(12, 5.4), squeeze=False)
+    for item, image, ax in zip(info, images, axes.flat):
+        ax.imshow(((image + 1) / 2).clamp(0, 1).permute(1, 2, 0).numpy())
+        ax.set_title(f"{item['personaje']:02d} · semilla {item['seed']}")
+        ax.axis("off")
+    fig.tight_layout()
+    fig.savefig(out / "galeria.png", dpi=160)
+    plt.close(fig)
+    print(f"{len(seeds)} de {a.n} -> {out}")
+
+
+if __name__ == "__main__":
+    main()

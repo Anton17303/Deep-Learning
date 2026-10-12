@@ -24,7 +24,7 @@ def smooth(x, k=50):
 
 def curves(run):
     r = read(Path(run) / "losses.csv")
-    ld = [float(x["loss_d"]) for x in r]; lg = [float(x["loss_g"]) for x in r]
+    ld = [float(x["loss_d"]) for x in r]; lg = [float(x["loss_g"]) if x["loss_g"] else np.nan for x in r]
     dr = [float(x["d_real"]) for x in r]; df = [float(x["d_fake"]) for x in r]
     fig, ax = plt.subplots(1, 2, figsize=(11, 3.8))
     ax[0].plot(smooth(ld), label="pérdida D"); ax[0].plot(smooth(lg), label="pérdida G")
@@ -52,7 +52,7 @@ def compare(runs):
         e2 = [int(x["epoch"]) for x in m if x["loss_d"] != ""]
         ax[1].plot(e2, [float(x["loss_d"]) for x in m if x["loss_d"] != ""], label=Path(run).name)
     ax[0].set_title("Diversidad (ruido fijo; baja = posible colapso)"); ax[0].set_xlabel("época"); ax[0].legend()
-    ax[1].set_title("Pérdida de D por época"); ax[1].set_xlabel("época"); ax[1].legend()
+    ax[1].set_title("Pérdida de D: escalas distintas según la función"); ax[1].set_xlabel("época"); ax[1].legend()
     plt.tight_layout(); plt.savefig("comparacion.png", dpi=150); print("comparacion.png")
 
 
