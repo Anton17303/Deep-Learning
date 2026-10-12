@@ -77,6 +77,12 @@ El experimento hinge cambia únicamente la pérdida. El experimento espectral ca
                        "El modelo parte de 80 épocas condicionales y se ajusta durante 40 más, para un total de 120. "
                        "La etapa cero de su rejilla corresponde a los pesos de la fase anterior; no es una inicialización aleatoria. "
                        "Los optimizadores se reinician y la ventana depende del encuadre fijo del conjunto.")
+        source_path = Path(selected_config["initialize_from"].replace("\\", "/"))
+        with (source_path.parents[1] / "metrics.csv").open(newline="", encoding="utf-8") as stream:
+            previous_seconds = float(list(csv.DictReader(stream))[-1]["seconds"])
+        refinement += (f" El tiempo de {float(final['seconds']) / 60:.1f} minutos corresponde solo al ajuste; "
+                       f"la fase inicial registró {previous_seconds / 60:.1f} minutos, "
+                       f"para un total de {(previous_seconds + float(final['seconds'])) / 60:.1f} minutos en estas dos fases.")
     regularization_figure = (f"![Componentes de la pérdida de G]({selected_run.as_posix()}/regularizacion.png)"
                              if selected_config.get("moment_weight", 0) else "")
     nn_interpretation = (f"Se buscó el vecino exacto en píxeles entre las {neighbors['training_count']:,} imágenes de entrenamiento para cada personaje. "
