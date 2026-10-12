@@ -6,7 +6,7 @@ Las tres corridas controladas de 60 épocas terminaron. La base y hinge mantiene
 
 ## Hipótesis previa
 
-Se espera que comparar la media y la variación de los lotes mejorará el fondo, el color y la diversidad porque obliga al generador a aproximar estadísticas del conjunto real, además de responder al discriminador. Lo consideraremos útil si el fondo oscuro se recupera, aparecen cuerpos y rasgos reconocibles y se pueden seleccionar diez muestras con diferencias visibles entre 200 candidatos.
+Se espera que comparar la media y la variación de los lotes mejorará el fondo, el color y la diversidad porque obliga al generador a aproximar estadísticas del conjunto real, además de responder al discriminador. Se considerará útil si el fondo oscuro se recupera, aparecen cuerpos y rasgos reconocibles y se pueden seleccionar diez muestras con diferencias visibles entre 200 candidatos.
 
 ## Método
 

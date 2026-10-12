@@ -6,7 +6,7 @@ La base DCGAN de 60 épocas produjo textura con mucho ruido y poca variedad. El 
 
 ## Hipótesis registrada antes de ejecutar la variante
 
-Se espera que un generador con ampliación bilineal seguida de convoluciones, junto con un discriminador espectral sin BatchNorm y una tasa menor para D, mejorará la calidad porque reduce los patrones de tablero y limita la ventaja del discriminador. Lo consideraremos útil si, entre 200 candidatos, se pueden seleccionar al menos 10 cuerpos reconocibles con diferencias visibles de forma o color, y las rejillas de ruido fijo muestran variedad sostenida.
+Se espera que un generador con ampliación bilineal seguida de convoluciones, junto con un discriminador espectral sin BatchNorm y una tasa menor para D, mejorará la calidad porque reduce los patrones de tablero y limita la ventaja del discriminador. Se considerará útil si, entre 200 candidatos, se pueden seleccionar al menos 10 cuerpos reconocibles con diferencias visibles de forma o color, y las rejillas de ruido fijo muestran variedad sostenida.
 
 ## Configuración
 

@@ -1,45 +1,45 @@
 # Proyecto 2: Luminarios del arrecife astral
 
-Se entren? una GAN para generar criaturas de un universo propio a partir de un conjunto de dibujos param?tricos originales. La resoluci?n es de 64 ? 64 p?xeles. El origen de los datos y las reglas del universo se describen en [dataset.md](dataset.md).
+Se entrenó una GAN para generar criaturas de un universo propio a partir de un conjunto de dibujos paramétricos originales. La resolución es de 64 × 64 píxeles. El origen de los datos y las reglas del universo se describen en [dataset.md](dataset.md).
 
 ## Archivos principales
 
 | Archivo o carpeta | Contenido |
 |---|---|
-| `build_dataset.py` | Construcci?n reproducible de los dibujos originales |
-| `prepare_data.py` | Conversi?n, recorte, reducci?n y eliminaci?n de duplicados |
+| `build_dataset.py` | Construcción reproducible de los dibujos originales |
+| `prepare_data.py` | Conversión, recorte, reducción y eliminación de duplicados |
 | `gan/models.py` | Generador y discriminador |
 | `gan/losses.py` | BCE no saturante, minimax, hinge y WGAN-GP |
 | `train.py` | Entrenamiento, registros, ruido fijo y checkpoints |
 | `run_experiments.py` | Base y dos experimentos controlados |
-| `experimentos.md` | Hip?tesis y criterios previos |
-| `resultados.md` | Resultados e interpretaci?n posterior |
-| `generate_gallery.py` | Candidatos, selecci?n y regeneraci?n de la galer?a |
-| `nn_test.py` | Vecinos de entrenamiento y calibraci?n en p?xeles |
-| `verify_project.py` | Comprobaci?n de experimentos y reproducci?n exacta |
+| `experimentos.md` | Hipótesis y criterios previos |
+| `resultados.md` | Resultados e interpretación posterior |
+| `generate_gallery.py` | Candidatos, selección y regeneración de la galería |
+| `nn_test.py` | Vecinos de entrenamiento y calibración en píxeles |
+| `verify_project.py` | Comprobación de experimentos y reproducción exacta |
 | `presentacion.md` | Informe organizado en 12 diapositivas |
-| `colab_runner.ipynb` | Ejecuci?n en Google Colab |
-| `package_project.py` | Archivo ZIP con c?digo, datos y evidencias |
+| `colab_runner.ipynb` | Ejecución en Google Colab |
+| `package_project.py` | Archivo ZIP con código, datos y evidencias |
 
 ## Entorno
 
-Se utiliz? Python 3.13. Las versiones medidas se conservan en `requirements-lock.txt` y en `runs/<corrida>/environment.json`. La ejecuci?n local se realiz? en CPU con cuatro hilos en las comparaciones y dos hilos en las variantes adicionales. El c?digo utiliza CUDA cuando est? disponible. No se requiere torchvision.
+Se utilizó Python 3.13. Las versiones medidas se conservan en `requirements-lock.txt` y en `runs/<corrida>/environment.json`. La ejecución local se realizó en CPU con cuatro hilos en las comparaciones y dos hilos en las variantes adicionales. El código utiliza CUDA cuando está disponible. No se requiere torchvision.
 
 ```bash
 python -m pip install -r requirements.txt
 python -m unittest discover -s tests -v
 ```
 
-`requirements.txt` permite instalar las dependencias disponibles. `requirements-lock.txt` registra las versiones exactas del entorno empleado; la disponibilidad de esas versiones depende del sistema y del ?ndice de paquetes.
+`requirements.txt` permite instalar las dependencias disponibles. `requirements-lock.txt` registra las versiones exactas del entorno empleado; la disponibilidad de esas versiones depende del sistema y del Índice de paquetes.
 
-## Preparaci?n desde un repositorio sin datos
+## Preparación desde un repositorio sin datos
 
 ```bash
 python build_dataset.py --n 1536 --seed 20261011
 python prepare_data.py --raw data/raw/luminarios --out data/processed --size 64
 ```
 
-Los programas conservan los conjuntos existentes y rechazan sobrescribir carpetas que ya contienen im?genes. El ZIP de entrega incluye las im?genes procesadas y su reporte; en ese caso la preparaci?n ya est? completa.
+Los programas conservan los conjuntos existentes y rechazan sobrescribir carpetas que ya contienen imágenes. El ZIP de entrega incluye las imágenes procesadas y su reporte; en ese caso la preparación ya está completa.
 
 ## Entrenamiento controlado
 
@@ -49,38 +49,38 @@ python collect_results.py
 python analysis.py compare runs/base runs/exp_loss_hinge runs/exp_stab_sn
 ```
 
-La configuraci?n com?n utiliza lote de 64, vector latente de 64 componentes, 16 canales iniciales en ambas redes y Adam con tasa 0.0002 y betas (0.5, 0.999). La p?rdida base es BCE no saturante. El experimento de p?rdida cambia ?nicamente a hinge. El experimento de estabilizaci?n activa ?nicamente la normalizaci?n espectral en el discriminador.
+La configuración común utiliza lote de 64, vector latente de 64 componentes, 16 canales iniciales en ambas redes y Adam con tasa 0.0002 y betas (0.5, 0.999). La pérdida base es BCE no saturante. El experimento de pérdida cambia Únicamente a hinge. El experimento de estabilización activa Únicamente la normalización espectral en el discriminador.
 
-Una corrida existente se reanuda desde `last.pt`; el programa rechaza cambios en las condiciones experimentales. Los estados aleatorios y de los optimizadores tambi?n se conservan. Al recuperar una interrupci?n se eliminan del registro las filas posteriores al ?ltimo checkpoint confirmado.
+Una corrida existente se reanuda desde `last.pt`; el programa rechaza cambios en las condiciones experimentales. Los estados aleatorios y de los optimizadores también se conservan. Al recuperar una interrupción se eliminan del registro las filas posteriores al Último checkpoint confirmado.
 
 ```bash
 python train.py --data data/processed --name base --epochs 60 --resume
 ```
 
-El archivo `last.pt` no forma parte de la entrega, por su tama?o y porque se utiliza para reanudar, no para regenerar la galer?a. Los pesos finales s? se incluyen.
+El archivo `last.pt` no forma parte de la entrega, por su tamaño y porque se utiliza para reanudar, no para regenerar la galería. Los pesos finales sí se incluyen.
 
 ## Variantes adicionales
 
-La base mostr? poca variedad y las corridas controladas conservaron ruido visible. Se probaron dos variantes de 120 ?pocas con generador bilineal, hinge, normalizaci?n espectral y menor tasa para D. La segunda agrega una regularizaci?n que compara medias y desviaciones de lotes a 8 ? 8. El motivo, las hip?tesis y los comandos se conservan en `refinamiento.md` y `estadisticas.md`.
+La base mostró poca variedad y las corridas controladas conservaron ruido visible. Se probaron dos variantes de 120 Épocas con generador bilineal, hinge, normalización espectral y menor tasa para D. La segunda agrega una regularización que compara medias y desviaciones de lotes a 8 × 8. El motivo, las hipótesis y los comandos se conservan en `refinamiento.md` y `estadisticas.md`.
 
-Estos entrenamientos se analizan aparte de las comparaciones obligatorias. La segunda variante agrega una penalizaci?n a la p?rdida de G y registra ese t?rmino por separado. `resultados.md` identifica el checkpoint utilizado en la galer?a.
+Estos entrenamientos se analizan aparte de las comparaciones obligatorias. La segunda variante agrega una penalización a la pérdida de G y registra ese término por separado. `resultados.md` identifica el checkpoint utilizado en la galería.
 
 ## Semillas y evidencia
 
 - Datos originales: 20261011.
-- Inicializaci?n de entrenamiento: 42.
+- Inicialización de entrenamiento: 42.
 - Orden de lotes: 1042.
 - Ruido de entrenamiento: 2042.
-- Ruido fijo de evaluaci?n: 1234.
-- Vectores auxiliares de normalizaci?n espectral: 314159, sin modificar el estado aleatorio del experimento.
-- Calibraci?n de vecinos: 0.
+- Ruido fijo de evaluación: 1234.
+- Vectores auxiliares de normalización espectral: 314159, sin modificar el estado aleatorio del experimento.
+- Calibración de vecinos: 0.
 - Personajes finales: semillas y vectores completos en `galeria/seleccion.json`.
 
-Las rejillas conservan los mismos 16 vectores en todas las corridas. `fixed_noise.pt` guarda los vectores utilizados. La huella SHA-256 del conjunto permite detectar un cambio en las im?genes de entrenamiento.
+Las rejillas conservan los mismos 16 vectores en todas las corridas. `fixed_noise.pt` guarda los vectores utilizados. La huella SHA-256 del conjunto permite detectar un cambio en las imágenes de entrenamiento.
 
-## Galer?a y vecinos
+## Galería y vecinos
 
-La selecci?n documentada se regenera desde los pesos y las semillas, sin utilizar el programa de dibujo de los datos.
+La selección documentada se regenera desde los pesos y las semillas, sin utilizar el programa de dibujo de los datos.
 
 ```bash
 python generate_gallery.py --from_selection galeria/seleccion.json
@@ -88,9 +88,9 @@ python nn_test.py --data data/processed --galeria galeria
 python verify_project.py
 ```
 
-La verificaci?n compara las huellas de los PNG originales y regenerados. Tambi?n comprueba las condiciones fijas, las iteraciones, las ?pocas y el ruido de evaluaci?n. La tasa de selecci?n y el criterio se conservan en el manifiesto de la galer?a.
+La verificación compara las huellas de los PNG originales y regenerados. También comprueba las condiciones fijas, las iteraciones, las Épocas y el ruido de evaluación. La tasa de selección y el criterio se conservan en el manifiesto de la galería.
 
-La prueba de vecinos utiliza distancia RMS en p?xeles RGB. Se informa el archivo real m?s cercano para cada personaje, la distancia sobre el primer plano y la semejanza entre personajes de la propia galer?a. No se interpreta una distancia alta como una prueba absoluta de novedad.
+La prueba de vecinos utiliza distancia RMS en píxeles RGB. Se informa el archivo real más cercano para cada personaje, la distancia sobre el primer plano y la semejanza entre personajes de la propia galería. No se interpreta una distancia alta como una prueba absoluta de novedad.
 
 ## Entrega
 
@@ -98,9 +98,9 @@ La prueba de vecinos utiliza distancia RMS en p?xeles RGB. Se informa el archivo
 python package_project.py
 ```
 
-Se genera `entrega/proyecto_2_luminarios.zip` con datos procesados, c?digo, notebook, pesos finales, galer?a y evidencias. Se excluyen el conjunto de transacciones de otro proyecto, archivos temporales, cach?s y checkpoints de reanudaci?n.
+Se genera `entrega/proyecto_2_luminarios.zip` con datos procesados, código, notebook, pesos finales, galería y evidencias. Se excluyen el conjunto de transacciones de otro proyecto, archivos temporales, cachés y checkpoints de reanudación.
 
-La presentaci?n se conserva como Markdown en `presentacion.md`. El documento contiene el texto, las especificaciones, las figuras y la matriz necesarios para organizar el PDF solicitado por el curso.
+La presentación se conserva como Markdown en `presentacion.md`. El documento contiene el texto, las especificaciones, las figuras y la matriz necesarios para organizar el PDF solicitado por el curso.
 
 ## Referencias
 

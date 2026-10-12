@@ -20,6 +20,13 @@ def main():
     with (selected_run / "metrics.csv").open(newline="", encoding="utf-8") as stream:
         refined_rows = list(csv.DictReader(stream))
     final = refined_rows[-1]
+    auxiliary_table = "| Variante adicional | Épocas | D final | G final | Diversidad final | Tiempo |\n|---|---:|---:|---:|---:|---:|\n"
+    for name in ["refined", "moment_refined"]:
+        with (Path("runs") / name / "metrics.csv").open(newline="", encoding="utf-8") as stream:
+            auxiliary = list(csv.DictReader(stream))[-1]
+        auxiliary_table += (f"| {name} | {auxiliary['epoch']} | {float(auxiliary['loss_d']):.4f} | "
+                            f"{float(auxiliary['loss_g']):.4f} | {float(auxiliary['diversity']):.4f} | "
+                            f"{float(auxiliary['seconds']) / 60:.1f} min |\n")
     table = "| Corrida | D final | G final | Diversidad final | Diversidad últimas 3 rejillas | Desviación D últimas 20 épocas | Tiempo |\n|---|---:|---:|---:|---:|---:|---:|\n"
     for row in experiments:
         table += (f"| {row['run']} | {row['final_loss_d']:.4f} | {row['final_loss_g']:.4f} | "
@@ -33,11 +40,11 @@ def main():
         neighbor_table += (f"| {index:02d} | {Path(row['vecino_archivo']).name} | "
                            f"{row['rms_pixel']:.4f} | {row['rms_primer_plano']:.4f} |\n")
     hypothesis_hinge = ("Se espera que la pérdida hinge mejorará la diversidad de los personajes porque utiliza un margen para el discriminador "
-                        "y una señal lineal para el generador. Lo consideraremos útil si la diversidad RMS media de las últimas tres rejillas "
+                        "y una señal lineal para el generador. Se considerará útil si la diversidad RMS media de las últimas tres rejillas "
                         "no cae más de 10 % frente a la base y la inspección del mismo ruido fijo muestra cuerpos y rasgos al menos igual "
                         "de reconocibles, sin repetición dominante de una sola forma.")
     hypothesis_spectral = ("Se espera que la normalización espectral mejorará la estabilidad porque limita la amplificación de las convoluciones "
-                           "del discriminador. Lo consideraremos útil si la desviación de la pérdida de D durante las últimas 20 épocas es menor "
+                           "del discriminador. Se considerará útil si la desviación de la pérdida de D durante las últimas 20 épocas es menor "
                            "que en la base, la diversidad media de las últimas tres rejillas no cae más de 10 % y la inspección visual no muestra "
                            "una pérdida clara de rasgos reconocibles.")
     architecture = f"""Se utiliza un vector gaussiano de 64 componentes y una salida RGB de 64 × 64. La base usa convoluciones transpuestas con tamaños 4, 8, 16, 32 y 64. Los canales de G son 128, 64, 32, 16 y 3; los de D son 16, 32, 64, 128 y 1. G utiliza BatchNorm y ReLU, con Tanh en la salida. D utiliza LeakyReLU, BatchNorm y logits sin sigmoide.
@@ -111,6 +118,10 @@ Resultado: {visual['spectral']}
 La relación de diversidad media frente a la base fue {experiments[2]['diversity_ratio_vs_base']:.2f}. El criterio completo incluye la oscilación de D y la inspección visual.
 
 ## Variante final
+
+{auxiliary_table}
+
+{visual['refined']}
 
 {refinement}
 

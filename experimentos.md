@@ -12,13 +12,13 @@ Se utiliza BCE sobre logits. El discriminador distingue imágenes reales y gener
 
 ## Experimento de pérdida: hinge
 
-**Hipótesis previa:** Se espera que la pérdida hinge mejorará la diversidad de los personajes porque utiliza un margen para el discriminador y una señal lineal para el generador. Lo consideraremos útil si la diversidad RMS media de las últimas tres rejillas no cae más de 10 % frente a la base y la inspección del mismo ruido fijo muestra cuerpos y rasgos al menos igual de reconocibles, sin repetición dominante de una sola forma.
+**Hipótesis previa:** Se espera que la pérdida hinge mejorará la diversidad de los personajes porque utiliza un margen para el discriminador y una señal lineal para el generador. Se considerará útil si la diversidad RMS media de las últimas tres rejillas no cae más de 10 % frente a la base y la inspección del mismo ruido fijo muestra cuerpos y rasgos al menos igual de reconocibles, sin repetición dominante de una sola forma.
 
 Único cambio: `--loss hinge`. El discriminador minimiza `mean(relu(1-D(real))) + mean(relu(1+D(fake)))`. El generador minimiza `-mean(D(fake))`. Las pérdidas hinge y BCE tienen escalas distintas; no se comparan sus valores absolutos como una medida de calidad.
 
 ## Experimento de estabilización: normalización espectral
 
-**Hipótesis previa:** Se espera que la normalización espectral mejorará la estabilidad porque limita la amplificación de las convoluciones del discriminador. Lo consideraremos útil si la desviación de la pérdida de D durante las últimas 20 épocas es menor que en la base, la diversidad media de las últimas tres rejillas no cae más de 10 % y la inspección visual no muestra una pérdida clara de rasgos reconocibles.
+**Hipótesis previa:** Se espera que la normalización espectral mejorará la estabilidad porque limita la amplificación de las convoluciones del discriminador. Se considerará útil si la desviación de la pérdida de D durante las últimas 20 épocas es menor que en la base, la diversidad media de las últimas tres rejillas no cae más de 10 % y la inspección visual no muestra una pérdida clara de rasgos reconocibles.
 
 Único cambio: `--spectral`. Se conservan BCE, BatchNorm y el resto de la configuración. La técnica controla los pesos de las convoluciones, pero no impone una cota global a toda la red con BatchNorm.
 
