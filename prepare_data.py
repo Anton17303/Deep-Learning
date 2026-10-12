@@ -16,6 +16,10 @@ a = p.parse_args()
 exts = {".png", ".jpg", ".jpeg", ".webp", ".bmp"}
 files = sorted(f for f in Path(a.raw).rglob("*") if f.suffix.lower() in exts)
 out = Path(a.out) / "all"; out.mkdir(parents=True, exist_ok=True)
+if any(out.glob("*.png")):
+    raise FileExistsError("La carpeta de salida ya contiene imágenes.")
+if not files:
+    raise ValueError("No se encontraron imágenes de entrada.")
 seen, kept, small, dup, bad = set(), 0, 0, 0, 0
 for f in files:
     try:
@@ -39,5 +43,6 @@ for f in files:
     seen.add(h_)
     im.save(out / f"{kept:05d}.png"); kept += 1
 rep = dict(raw_files=len(files), kept=kept, too_small=small, duplicates=dup, unreadable=bad, size=a.size)
-json.dump(rep, open(Path(a.out) / "data_report.json", "w"), indent=2)
+with open(Path(a.out) / "data_report.json", "w", encoding="utf-8") as stream:
+    json.dump(rep, stream, indent=2)
 print(rep)

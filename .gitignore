@@ -2,3 +2,9 @@ data/
 .ipynb_checkpoints/
 __pycache__/
 tmp/
+runs/*/ckpt/last.pt
+runs/*/ckpt/last.tmp
+runs/*/ckpt/G_ep*.pt
+runs/pilot/
+.deps/
+entrega/

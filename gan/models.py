@@ -53,7 +53,7 @@ def _norm(kind, c):
 class Discriminator(nn.Module):
     def __init__(self, ndf=64, nc=3, norm="bn", spectral=False, dropout=0.0):
         super().__init__()
-        wrap = spectral_norm if spectral else (lambda m: m)
+        wrap = lambda m: m
         layers = [wrap(nn.Conv2d(nc, ndf, 4, 2, 1, bias=False)), nn.LeakyReLU(0.2, True)]  # 32
         c = ndf
         for mult in (2, 4, 8):                                                              # 16, 8, 4
@@ -65,6 +65,13 @@ class Discriminator(nn.Module):
         layers.append(wrap(nn.Conv2d(c, 1, 4, 1, 0, bias=False)))                           # logit
         self.net = nn.Sequential(*layers)
         self.apply(init_weights)
+
+        if spectral:
+            with torch.random.fork_rng():
+                torch.manual_seed(314159)
+                for module in self.net:
+                    if isinstance(module, nn.Conv2d):
+                        spectral_norm(module)
 
     def forward(self, x):
         return self.net(x).view(-1)  # logits (sin sigmoide)

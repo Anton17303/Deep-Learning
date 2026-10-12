@@ -1,120 +1,189 @@
-"""Entrenamiento GAN con rejilla de ruido fijo, curvas, diversidad y checkpoints.
-
-Ejemplos:
-  python train.py --data data/processed --name base
-  python train.py --data data/processed --name exp_loss_hinge --loss hinge
-  python train.py --data data/processed --name exp_stab_sn --spectral
-Cambie UNA sola cosa por experimento; seed, epochs y eval_seed se mantienen.
-"""
-import argparse, csv, time
+"""Entrenamiento reproducible con checkpoints, ruido fijo y registro de pérdidas."""
+import argparse
+import csv
+import json
+import platform
+import random
+import time
 from pathlib import Path
+
+import numpy as np
 import torch
 from torch.utils.data import DataLoader
-from torchvision import datasets, transforms, utils as vutils
 
-from gan.models import Generator, Discriminator
-from gan.losses import d_loss_fn, g_loss_fn, KINDS
-from gan.utils import set_seed, make_fixed_noise, diversity_score, save_json
+from gan.images import ImageDataset, save_grid
+from gan.losses import KINDS, d_loss_fn, g_loss_fn
+from gan.models import Discriminator, Generator
+from gan.utils import diversity_score, make_fixed_noise, save_json, set_seed
 
-p = argparse.ArgumentParser()
-p.add_argument("--data", required=True, help="carpeta con subcarpeta(s) de imágenes (ImageFolder)")
-p.add_argument("--name", required=True)
-p.add_argument("--out", default="runs")
-p.add_argument("--loss", default="bce", choices=KINDS)
-p.add_argument("--epochs", type=int, default=100)
-p.add_argument("--bs", type=int, default=64)
-p.add_argument("--nz", type=int, default=100)
-p.add_argument("--lr_g", type=float, default=2e-4)
-p.add_argument("--lr_d", type=float, default=2e-4)
-p.add_argument("--beta1", type=float, default=0.5)
-p.add_argument("--beta2", type=float, default=0.999)
-p.add_argument("--n_critic", type=int, default=1)
-p.add_argument("--label_real", type=float, default=1.0, help="0.9 = suavizado de etiquetas")
-p.add_argument("--gp_lambda", type=float, default=10.0)
-p.add_argument("--d_norm", default="bn", choices=["bn", "ln", "none"])
-p.add_argument("--spectral", action="store_true", help="normalización espectral en D")
-p.add_argument("--d_dropout", type=float, default=0.0)
-p.add_argument("--flip", action="store_true", help="aumento: volteo horizontal")
-p.add_argument("--seed", type=int, default=42)
-p.add_argument("--eval_seed", type=int, default=1234)
-p.add_argument("--n_eval", type=int, default=16)
-p.add_argument("--sample_every", type=int, default=5)
-p.add_argument("--ckpt_every", type=int, default=25)
-p.add_argument("--workers", type=int, default=2)
-p.add_argument("--resume", action="store_true")
-a = p.parse_args()
 
-set_seed(a.seed)
-dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-run = Path(a.out) / a.name
-(run / "grids").mkdir(parents=True, exist_ok=True)
-(run / "ckpt").mkdir(exist_ok=True)
-save_json(vars(a), run / "config.json")
+def arguments():
+    p = argparse.ArgumentParser()
+    p.add_argument("--data", required=True)
+    p.add_argument("--name", required=True)
+    p.add_argument("--out", default="runs")
+    p.add_argument("--loss", default="bce", choices=KINDS)
+    for name, default in {"epochs": 60, "bs": 64, "nz": 64, "ngf": 16, "ndf": 16,
+                          "n_critic": 1, "n_eval": 16, "sample_every": 5, "ckpt_every": 20,
+                          "workers": 0, "threads": 4, "seed": 42, "eval_seed": 1234}.items():
+        p.add_argument(f"--{name}", type=int, default=default)
+    for name, default in {"lr_g": 2e-4, "lr_d": 2e-4, "beta1": 0.5, "beta2": 0.999,
+                          "label_real": 1.0, "gp_lambda": 10.0, "d_dropout": 0.0}.items():
+        p.add_argument(f"--{name}", type=float, default=default)
+    p.add_argument("--d_norm", default="bn", choices=["bn", "ln", "none"])
+    for flag in ["spectral", "flip", "resume"]:
+        p.add_argument(f"--{flag}", action="store_true")
+    a = p.parse_args()
+    for key in ["epochs", "bs", "nz", "ngf", "ndf", "n_critic", "sample_every", "ckpt_every", "threads"]:
+        if getattr(a, key) < 1:
+            p.error(f"{key} debe ser positivo.")
+    if a.n_eval < 2 or not 0 <= a.d_dropout < 1 or not 0 < a.label_real <= 1:
+        p.error("Configuración inválida de evaluación, dropout o etiquetas.")
+    return a
 
-tf = [transforms.Resize(64), transforms.CenterCrop(64)]
-if a.flip:
-    tf.append(transforms.RandomHorizontalFlip())
-tf += [transforms.ToTensor(), transforms.Normalize([0.5] * 3, [0.5] * 3)]
-ds = datasets.ImageFolder(a.data, transform=transforms.Compose(tf))
-dl = DataLoader(ds, batch_size=a.bs, shuffle=True, drop_last=True,
-                num_workers=a.workers, pin_memory=dev.type == "cuda")
-print(f"[{a.name}] {len(ds)} imágenes, dispositivo {dev}")
 
-G = Generator(a.nz).to(dev)
-D = Discriminator(norm=a.d_norm, spectral=a.spectral, dropout=a.d_dropout).to(dev)
-oG = torch.optim.Adam(G.parameters(), a.lr_g, betas=(a.beta1, a.beta2))
-oD = torch.optim.Adam(D.parameters(), a.lr_d, betas=(a.beta1, a.beta2))
-fixed = make_fixed_noise(a.n_eval, a.nz, a.eval_seed).to(dev)
-start = 1
+def main():
+    a = arguments()
+    torch.set_num_threads(a.threads)
+    set_seed(a.seed)
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+    dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    run = Path(a.out) / a.name
+    if (run / "config.json").exists() and not a.resume:
+        raise FileExistsError("La corrida ya existe. Se requiere --resume o un nombre distinto.")
+    ds = ImageDataset(a.data, flip=a.flip)
+    if len(ds) < a.bs:
+        raise ValueError("El conjunto debe contener al menos un lote completo.")
+    data_rng = torch.Generator().manual_seed(a.seed + 1000)
+    dl = DataLoader(ds, batch_size=a.bs, shuffle=True, drop_last=True,
+                    num_workers=a.workers, generator=data_rng)
+    config = vars(a).copy()
+    config.update(dataset_sha256=ds.fingerprint(), image_count=len(ds), resolution=64)
+    last = run / "ckpt" / "last.pt"
+    if a.resume:
+        if not last.exists():
+            raise FileNotFoundError("No existe un checkpoint para reanudar.")
+        original = json.loads((run / "config.json").read_text(encoding="utf-8"))
+        ignored = {"resume", "out", "data", "workers", "threads"}
+        changed = [key for key in config if key not in ignored and config[key] != original.get(key)]
+        if changed:
+            raise ValueError(f"La reanudación cambia la configuración: {changed}")
+    else:
+        (run / "grids").mkdir(parents=True)
+        (run / "ckpt").mkdir()
+        save_json(config, run / "config.json")
+    G = Generator(a.nz, a.ngf).to(dev)
+    D = Discriminator(a.ndf, norm=a.d_norm, spectral=a.spectral, dropout=a.d_dropout).to(dev)
+    oG = torch.optim.Adam(G.parameters(), a.lr_g, betas=(a.beta1, a.beta2))
+    oD = torch.optim.Adam(D.parameters(), a.lr_d, betas=(a.beta1, a.beta2))
+    fixed = make_fixed_noise(a.n_eval, a.nz, a.eval_seed).to(dev)
+    noise_rng = torch.Generator(device=dev).manual_seed(a.seed + 2000)
+    start, iteration, elapsed = 1, 0, 0.0
+    if a.resume:
+        ck = torch.load(last, map_location="cpu", weights_only=False)
+        G.load_state_dict(ck["G"])
+        D.load_state_dict(ck["D"])
+        oG.load_state_dict(ck["oG"])
+        oD.load_state_dict(ck["oD"])
+        start, iteration, elapsed = ck["epoch"] + 1, ck["iteration"], ck["elapsed"]
+        torch.set_rng_state(ck["torch_rng"])
+        random.setstate(ck["python_rng"])
+        np.random.set_state(ck["numpy_rng"])
+        data_rng.set_state(ck["data_rng"])
+        noise_rng.set_state(ck["noise_rng"])
+        if dev.type == "cuda":
+            torch.cuda.set_rng_state_all(ck["cuda_rng"])
+        for filename in ["losses.csv", "metrics.csv"]:
+            path = run / filename
+            with path.open(newline="", encoding="utf-8") as stream:
+                reader = csv.DictReader(stream)
+                fields = reader.fieldnames
+                rows = [row for row in reader if int(row["epoch"]) <= ck["epoch"]]
+            with path.open("w", newline="", encoding="utf-8") as stream:
+                writer = csv.DictWriter(stream, fieldnames=fields)
+                writer.writeheader()
+                writer.writerows(rows)
+    else:
+        save_json({"python": platform.python_version(), "torch": torch.__version__,
+                   "numpy": np.__version__, "device": str(dev), "threads": a.threads,
+                   "parameters_g": sum(p.numel() for p in G.parameters()),
+                   "parameters_d": sum(p.numel() for p in D.parameters())}, run / "environment.json")
+        torch.save(fixed.cpu(), run / "fixed_noise.pt")
+        torch.save({"G": G.state_dict(), "config": config}, run / "ckpt" / "G_ep000.pt")
 
-if a.resume and (run / "ckpt" / "last.pt").exists():
-    ck = torch.load(run / "ckpt" / "last.pt", map_location=dev)
-    G.load_state_dict(ck["G"]); D.load_state_dict(ck["D"])
-    oG.load_state_dict(ck["oG"]); oD.load_state_dict(ck["oD"]); start = ck["epoch"] + 1
-    print("reanudando desde época", start)
+    def snapshot(epoch):
+        G.eval()
+        with torch.no_grad():
+            images = G(fixed)
+        G.train()
+        save_grid(images, run / "grids" / f"epoch_{epoch:03d}.png")
+        return diversity_score(images.cpu())
 
-def save_grid(ep):
-    G.eval()
-    with torch.no_grad():
-        x = G(fixed)
-    G.train()
-    vutils.save_image(x, run / "grids" / f"epoch_{ep:03d}.png", nrow=4, normalize=True, value_range=(-1, 1), padding=2)
-    return diversity_score(x.cpu())
+    mode = "a" if a.resume else "w"
+    with (run / "losses.csv").open(mode, newline="", encoding="utf-8") as fi, \
+         (run / "metrics.csv").open(mode, newline="", encoding="utf-8") as fm:
+        wi, wm = csv.writer(fi), csv.writer(fm)
+        if not a.resume:
+            wi.writerow(["iter", "epoch", "loss_d", "loss_g", "d_real", "d_fake"])
+            wm.writerow(["epoch", "loss_d", "loss_g", "d_real", "d_fake", "diversity", "seconds"])
+            wm.writerow([0, "", "", "", "", snapshot(0), 0])
+        print(f"[{a.name}] {len(ds)} imágenes, dispositivo {dev}", flush=True)
+        t0 = time.perf_counter()
+        for ep in range(start, a.epochs + 1):
+            sums = np.zeros(4)
+            count, g_updates, g_sum = 0, 0, 0.0
+            for real in dl:
+                real = real.to(dev)
+                z = torch.randn(len(real), a.nz, device=dev, generator=noise_rng)
+                fake = G(z)
+                for parameter in D.parameters():
+                    parameter.requires_grad_(True)
+                ld, r, f = d_loss_fn(a.loss, D, real, fake, a.label_real, a.gp_lambda)
+                oD.zero_grad(set_to_none=True)
+                ld.backward()
+                oD.step()
+                iteration += 1
+                lg = None
+                if iteration % a.n_critic == 0:
+                    for parameter in D.parameters():
+                        parameter.requires_grad_(False)
+                    lg = g_loss_fn(a.loss, D, fake)
+                    oG.zero_grad(set_to_none=True)
+                    lg.backward()
+                    oG.step()
+                    g_updates += 1
+                    g_sum += lg.item()
+                dr, df = ((r.sigmoid().mean(), f.sigmoid().mean()) if a.loss in ("bce", "bce_sat")
+                          else (r.mean(), f.mean()))
+                values = [ld.item(), 0 if lg is None else lg.item(), dr.item(), df.item()]
+                if not np.isfinite(values).all():
+                    raise FloatingPointError("Se detectó una pérdida no finita.")
+                wi.writerow([iteration, ep, values[0], "" if lg is None else values[1], *values[2:]])
+                sums += values
+                count += 1
+            averages = sums / count
+            averages[1] = g_sum / g_updates if g_updates else float("nan")
+            div = snapshot(ep) if ep % a.sample_every == 0 or ep == a.epochs else ""
+            seconds = elapsed + time.perf_counter() - t0
+            wm.writerow([ep, *averages, div, seconds])
+            fi.flush()
+            fm.flush()
+            checkpoint = {"G": G.state_dict(), "D": D.state_dict(), "oG": oG.state_dict(),
+                          "oD": oD.state_dict(), "epoch": ep, "iteration": iteration, "elapsed": seconds,
+                          "config": config, "torch_rng": torch.get_rng_state(),
+                          "python_rng": random.getstate(), "numpy_rng": np.random.get_state(),
+                          "data_rng": data_rng.get_state(), "noise_rng": noise_rng.get_state(),
+                          "cuda_rng": torch.cuda.get_rng_state_all() if dev.type == "cuda" else []}
+            temp = run / "ckpt" / "last.tmp"
+            torch.save(checkpoint, temp)
+            temp.replace(last)
+            if ep % a.ckpt_every == 0 or ep == a.epochs:
+                torch.save({"G": G.state_dict(), "config": config}, run / "ckpt" / f"G_ep{ep:03d}.pt")
+            print(f"ep {ep:3d} | D {averages[0]:.3f} G {averages[1]:.3f} | div {div} | {seconds:.1f}s", flush=True)
+    torch.save({"G": G.state_dict(), "config": config}, run / "ckpt" / "G_final.pt")
+    print(f"listo -> {run}")
 
-new_files = start == 1
-fi = open(run / "losses.csv", "a", newline=""); wi = csv.writer(fi)
-fm = open(run / "metrics.csv", "a", newline=""); wm = csv.writer(fm)
-if new_files:
-    wi.writerow(["iter", "epoch", "loss_d", "loss_g", "d_real", "d_fake"])
-    wm.writerow(["epoch", "loss_d", "loss_g", "d_real", "d_fake", "diversity", "seconds"])
-    div0 = save_grid(0); wm.writerow([0, "", "", "", "", f"{div0:.5f}", 0])
 
-it = (start - 1) * len(dl); t0 = time.time()
-for ep in range(start, a.epochs + 1):
-    acc = dict(ld=0., lg=0., dr=0., df=0., n=0)
-    for i, (real, _) in enumerate(dl):
-        real = real.to(dev); b = real.size(0)
-        z = torch.randn(b, a.nz, device=dev)
-        fake = G(z)
-        ld, r, f = d_loss_fn(a.loss, D, real, fake, a.label_real, a.gp_lambda)
-        oD.zero_grad(set_to_none=True); ld.backward(); oD.step()
-        lg = torch.zeros(())
-        if (i + 1) % a.n_critic == 0:
-            lg = g_loss_fn(a.loss, D, G(torch.randn(b, a.nz, device=dev)) if a.n_critic > 1 else fake)
-            oG.zero_grad(set_to_none=True); lg.backward(); oG.step()
-        # Para BCE se reporta D(x) como probabilidad; para el resto, salida cruda.
-        dr, df = (r.sigmoid().mean(), f.sigmoid().mean()) if a.loss in ("bce", "bce_sat") else (r.mean(), f.mean())
-        it += 1
-        wi.writerow([it, ep, f"{ld.item():.5f}", f"{lg.item():.5f}", f"{dr.item():.5f}", f"{df.item():.5f}"])
-        acc["ld"] += ld.item(); acc["lg"] += lg.item(); acc["dr"] += dr.item(); acc["df"] += df.item(); acc["n"] += 1
-    n = acc["n"]
-    div = save_grid(ep) if (ep % a.sample_every == 0 or ep == a.epochs) else ""
-    wm.writerow([ep, f"{acc['ld']/n:.5f}", f"{acc['lg']/n:.5f}", f"{acc['dr']/n:.5f}", f"{acc['df']/n:.5f}",
-                 f"{div:.5f}" if div != "" else "", f"{time.time()-t0:.0f}"])
-    fi.flush(); fm.flush()
-    print(f"ep {ep:3d} | D {acc['ld']/n:.3f} G {acc['lg']/n:.3f} | D(x) {acc['dr']/n:.3f} D(G(z)) {acc['df']/n:.3f} | div {div}")
-    torch.save(dict(G=G.state_dict(), D=D.state_dict(), oG=oG.state_dict(), oD=oD.state_dict(), epoch=ep), run / "ckpt" / "last.pt")
-    if ep % a.ckpt_every == 0 or ep == a.epochs:
-        torch.save(dict(G=G.state_dict(), config=vars(a)), run / "ckpt" / f"G_ep{ep:03d}.pt")
-torch.save(dict(G=G.state_dict(), config=vars(a)), run / "ckpt" / "G_final.pt")
-print("listo ->", run)
+if __name__ == "__main__":
+    main()
