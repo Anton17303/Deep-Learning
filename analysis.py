@@ -85,9 +85,16 @@ def regularization(run):
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser(); p.add_argument("cmd"); p.add_argument("runs", nargs="+")
-    p.add_argument("--epochs", type=int, nargs="+", default=[0, 5, 25, 50, 100])
+    p.add_argument("--epochs", type=int, nargs="+")
     a = p.parse_args()
     if a.cmd == "curves": curves(a.runs[0])
-    elif a.cmd == "evolution": evolution(a.runs[0], a.epochs)
+    elif a.cmd == "evolution":
+        epochs = a.epochs
+        if epochs is None:
+            path = Path(a.runs[0])
+            final_epoch = json.loads((path / "config.json").read_text(encoding="utf-8"))["epochs"]
+            epochs = list(dict.fromkeys([0, 5, 20, final_epoch // 2, final_epoch]))
+            epochs = [epoch for epoch in epochs if (path / "grids" / f"epoch_{epoch:03d}.png").exists()]
+        evolution(a.runs[0], epochs)
     elif a.cmd == "compare": compare(a.runs)
     elif a.cmd == "regularization": regularization(a.runs[0])

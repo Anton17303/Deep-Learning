@@ -1,6 +1,7 @@
 """Empaqueta únicamente los archivos y resultados del proyecto GAN."""
 import argparse
 import json
+import re
 import zipfile
 from pathlib import Path
 
@@ -29,6 +30,8 @@ def main():
     files.add(root / "comparacion.png")
     selection = json.loads((root / "galeria/seleccion.json").read_text(encoding="utf-8"))
     files.add(root / selection["checkpoint"])
+    files = {path for path in files if not (path.name.startswith("candidatos")
+                                           and re.search(r"_\d{3}_\d{3}\.png$", path.name))}
     with zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) as archive:
         for path in sorted(files):
             archive.write(path, path.relative_to(root).as_posix())

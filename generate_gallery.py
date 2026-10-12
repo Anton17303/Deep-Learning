@@ -108,19 +108,27 @@ def main():
                 if key in original:
                     item[key] = original[key]
     total = a.n + a.previous_candidates
-    save_json({"tasa_seleccion": f"{len(seeds)} de {total}", "candidatos_generados": a.n,
+    metadata = {"tasa_seleccion": f"{len(seeds)} de {total}", "candidatos_generados": a.n,
                "candidatos_previos": a.previous_candidates, "candidatos_totales": total,
                "criterio": a.criterio, "checkpoint": a.ckpt, "checkpoint_sha256": digest,
-               "personajes": info}, out / "seleccion.json")
+               "personajes": info}
+    if recorded:
+        for key in ["grupos_previos", "definicion_candidatos"]:
+            if key in recorded:
+                metadata[key] = recorded[key]
+    save_json(metadata, out / "seleccion.json")
     rows = (len(info) + 4) // 5
     fig, axes = plt.subplots(rows, 5, figsize=(12, 2.7 * rows), squeeze=False)
     for ax in axes.flat:
         ax.axis("off")
     for item, image, ax in zip(info, images, axes.flat):
         ax.imshow(((image + 1) / 2).clamp(0, 1).permute(1, 2, 0).numpy())
-        ax.set_title(f"{item['personaje']:02d} · semilla {item['seed']}")
+        label = f"{item['personaje']:02d} · semilla {item['seed']}"
+        if item.get("nombre"):
+            label = f"{item['personaje']:02d} {item['nombre']}\n{item['rol']} · semilla {item['seed']}"
+        ax.set_title(label, fontsize=10)
         ax.axis("off")
-    fig.tight_layout()
+    fig.tight_layout(h_pad=3.0)
     fig.savefig(out / "galeria.png", dpi=160)
     plt.close(fig)
     print(f"{len(seeds)} de {total} -> {out}")

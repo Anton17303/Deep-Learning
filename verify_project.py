@@ -9,8 +9,9 @@ from pathlib import Path
 
 import torch
 
-from gan.images import ImageDataset
-from gan.conditioning import input_from_seed
+from gan.images import ImageDataset, save_grid
+from gan.conditioning import input_from_seed, model_noise_size
+from gan.models import Generator
 
 
 def require(condition, message):
@@ -19,6 +20,7 @@ def require(condition, message):
 
 
 def main():
+    torch.set_num_threads(4)
     root = Path(__file__).resolve().parent
     configs = []
     for name in ["base", "exp_loss_hinge", "exp_stab_sn"]:
@@ -49,6 +51,13 @@ def main():
                 "El ruido fijo no coincide.")
     dataset = ImageDataset(root / "data/processed")
     require(dataset.fingerprint() == configs[0]["dataset_sha256"], "El conjunto cambió después del entrenamiento.")
+    for name in ["refined", "moment_refined", "conditional", "conditional_refined"]:
+        run = root / "runs" / name
+        config = json.loads((run / "config.json").read_text(encoding="utf-8"))
+        with (run / "metrics.csv").open(newline="", encoding="utf-8") as stream:
+            epochs = [int(row["epoch"]) for row in csv.DictReader(stream)]
+        require(epochs == list(range(config["epochs"] + 1)), f"{name}: fases incompletas.")
+        require(config["dataset_sha256"] == configs[0]["dataset_sha256"], f"{name}: conjunto distinto.")
     selection = json.loads((root / "galeria/seleccion.json").read_text(encoding="utf-8"))
     require(len(selection["personajes"]) >= 10, "La galería contiene menos de 10 personajes.")
     checkpoint = root / selection["checkpoint"]
@@ -57,8 +66,11 @@ def main():
     config = torch.load(checkpoint, map_location="cpu", weights_only=True)["config"]
     require(config["dataset_sha256"] == dataset.fingerprint(), "El modelo de la galería utilizó otro conjunto.")
     if config.get("conditional", False):
-        require(hashlib.sha256((root / "data/raw/manifest.json").read_bytes()).hexdigest()
-                == config["condition_manifest_sha256"], "El manifiesto de atributos cambió.")
+        manifest_bytes = (root / "data/raw/manifest.json").read_bytes()
+        normalized = manifest_bytes.replace(b"\r\n", b"\n")
+        signatures = {hashlib.sha256(value).hexdigest() for value in
+                      [manifest_bytes, normalized, normalized.replace(b"\n", b"\r\n")]}
+        require(config["condition_manifest_sha256"] in signatures, "El manifiesto de atributos cambió.")
     if config.get("initialize_from"):
         initial_path = root / config["initialize_from"].replace("\\", "/")
         require(hashlib.sha256(initial_path.read_bytes()).hexdigest() == config["initialize_from_sha256"],
@@ -77,6 +89,21 @@ def main():
     with tempfile.TemporaryDirectory(dir=root / "tmp", prefix="gallery_replay_") as directory:
         subprocess.run([sys.executable, str(root / "generate_gallery.py"), "--from_selection",
                         str(root / "galeria/seleccion.json"), "--galeria", directory], cwd=root, check=True)
+        if config.get("initialize_from"):
+            source = torch.load(initial_path, map_location="cpu", weights_only=True)
+            original_config = source["config"]
+            generator = Generator(model_noise_size(original_config), original_config["ngf"],
+                                  architecture=original_config.get("g_arch", "dcgan"))
+            generator.load_state_dict(source["G"])
+            generator.eval()
+            training_run = checkpoint.parents[1]
+            fixed_noise = torch.load(training_run / "fixed_noise.pt", weights_only=True)
+            with torch.no_grad():
+                initial_images = generator(fixed_noise)
+            rendered = Path(directory) / "initial.png"
+            save_grid(initial_images, rendered)
+            require(rendered.read_bytes() == (training_run / "grids/epoch_000.png").read_bytes(),
+                    "La etapa cero no corresponde a los pesos de origen declarados.")
     with (root / "nn_resultados/vecinos.csv").open(newline="", encoding="utf-8") as stream:
         neighbors = list(csv.DictReader(stream))
     require({row["archivo"] for row in neighbors} == {item["archivo"] for item in selection["personajes"]},
