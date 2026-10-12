@@ -104,15 +104,6 @@ La verificación compara las huellas de los PNG originales y regenerados. Tambi�
 
 La prueba de vecinos utiliza distancia RMS en píxeles RGB. Se informa el archivo real más cercano para cada personaje, la distancia sobre el primer plano y la semejanza entre personajes de la propia galería. No se interpreta una distancia alta como una prueba absoluta de novedad.
 
-## Entrega
-
-```bash
-python package_project.py
-```
-
-Se genera `entrega/proyecto_2_luminarios.zip` con datos procesados, código, notebook, pesos finales, galería y evidencias. Se excluyen el conjunto de transacciones de otro proyecto, archivos temporales, cachés y checkpoints de reanudación.
-
-La presentación se conserva como Markdown en `presentacion.md`. El documento contiene el texto, las especificaciones, las figuras y la matriz necesarios para organizar el PDF solicitado por el curso.
 
 ## Referencias
 
