@@ -13,6 +13,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from gan.images import ImageDataset, save_grid
+from gan.conditioning import DIM, condition_from_seed, critic_input, model_noise_size
 from gan.losses import KINDS, d_loss_fn, g_loss_fn, moment_loss
 from gan.models import Discriminator, Generator
 from gan.utils import diversity_score, make_fixed_noise, save_json, set_seed
@@ -26,6 +27,8 @@ def arguments():
     p.add_argument("--loss", default="bce", choices=KINDS)
     p.add_argument("--g_arch", choices=["dcgan", "resize"], default=argparse.SUPPRESS)
     p.add_argument("--moment_weight", type=float, default=argparse.SUPPRESS)
+    p.add_argument("--conditional", action="store_true", default=argparse.SUPPRESS)
+    p.add_argument("--reconstruction_weight", type=float, default=argparse.SUPPRESS)
     for name, default in {"epochs": 60, "bs": 64, "nz": 64, "ngf": 16, "ndf": 16,
                           "n_critic": 1, "n_eval": 16, "sample_every": 5, "ckpt_every": 20,
                           "workers": 0, "threads": 4, "seed": 42, "eval_seed": 1234}.items():
@@ -55,7 +58,8 @@ def main():
     run = Path(a.out) / a.name
     if (run / "config.json").exists() and not a.resume:
         raise FileExistsError("La corrida ya existe. Se requiere --resume o un nombre distinto.")
-    ds = ImageDataset(a.data, flip=a.flip)
+    conditional = getattr(a, "conditional", False)
+    ds = ImageDataset(a.data, flip=a.flip, conditional=conditional)
     if len(ds) < a.bs:
         raise ValueError("El conjunto debe contener al menos un lote completo.")
     data_rng = torch.Generator().manual_seed(a.seed + 1000)
@@ -63,6 +67,8 @@ def main():
                     num_workers=a.workers, generator=data_rng)
     config = vars(a).copy()
     config.update(dataset_sha256=ds.fingerprint(), image_count=len(ds), resolution=64)
+    if conditional:
+        config.update(condition_dim=DIM, condition_manifest_sha256=ds.condition_manifest_sha256)
     last = run / "ckpt" / "last.pt"
     if a.resume:
         if not last.exists():
@@ -76,11 +82,14 @@ def main():
         (run / "grids").mkdir(parents=True)
         (run / "ckpt").mkdir()
         save_json(config, run / "config.json")
-    G = Generator(a.nz, a.ngf, architecture=getattr(a, "g_arch", "dcgan")).to(dev)
-    D = Discriminator(a.ndf, norm=a.d_norm, spectral=a.spectral, dropout=a.d_dropout).to(dev)
+    G = Generator(model_noise_size(config), a.ngf, architecture=getattr(a, "g_arch", "dcgan")).to(dev)
+    D = Discriminator(a.ndf, nc=3 + (DIM if conditional else 0), norm=a.d_norm, spectral=a.spectral, dropout=a.d_dropout).to(dev)
     oG = torch.optim.Adam(G.parameters(), a.lr_g, betas=(a.beta1, a.beta2))
     oD = torch.optim.Adam(D.parameters(), a.lr_d, betas=(a.beta1, a.beta2))
     fixed = make_fixed_noise(a.n_eval, a.nz, a.eval_seed).to(dev)
+    if conditional:
+        fixed_conditions = torch.stack([condition_from_seed(i * 13) for i in range(a.n_eval)]).to(dev)
+        fixed = torch.cat([fixed, fixed_conditions], dim=1)
     noise_rng = torch.Generator(device=dev).manual_seed(a.seed + 2000)
     start, iteration, elapsed = 1, 0, 0.0
     if a.resume:
@@ -134,16 +143,21 @@ def main():
 
     mode = "a" if a.resume else "w"
     moment_weight = getattr(a, "moment_weight", 0)
+    reconstruction_weight = getattr(a, "reconstruction_weight", 0)
+    if reconstruction_weight < 0 or (reconstruction_weight and not conditional):
+        raise ValueError("La reconstrucción requiere condiciones y un peso no negativo.")
     if moment_weight < 0:
         raise ValueError("El peso de regularización debe ser no negativo.")
+    has_regularization = moment_weight or reconstruction_weight
     with (run / "losses.csv").open(mode, newline="", encoding="utf-8") as fi, \
          (run / "metrics.csv").open(mode, newline="", encoding="utf-8") as fm, \
          ((run / "regularization.csv").open(mode, newline="", encoding="utf-8")
-          if moment_weight else nullcontext(None)) as fr:
+          if has_regularization else nullcontext(None)) as fr:
         wi, wm = csv.writer(fi), csv.writer(fm)
         wr = csv.writer(fr) if fr else None
         if wr and not a.resume:
-            wr.writerow(["iter", "epoch", "g_adversarial", "moment_loss", "g_total"])
+            wr.writerow(["iter", "epoch", "g_adversarial", "moment_loss", "g_total"]
+                        + (["reconstruction_loss"] if reconstruction_weight else []))
         if not a.resume:
             wi.writerow(["iter", "epoch", "loss_d", "loss_g", "d_real", "d_fake"])
             wm.writerow(["epoch", "loss_d", "loss_g", "d_real", "d_fake", "diversity", "seconds"])
@@ -153,13 +167,20 @@ def main():
         for ep in range(start, a.epochs + 1):
             sums = np.zeros(4)
             count, g_updates, g_sum = 0, 0, 0.0
-            for real in dl:
-                real = real.to(dev)
+            for batch in dl:
+                if conditional:
+                    real, conditions = batch
+                    real, conditions = real.to(dev), conditions.to(dev)
+                    critic = lambda image: D(critic_input(image, conditions))
+                else:
+                    real, critic = batch.to(dev), D
                 z = torch.randn(len(real), a.nz, device=dev, generator=noise_rng)
+                if conditional:
+                    z = torch.cat([z, conditions], dim=1)
                 fake = G(z)
                 for parameter in D.parameters():
                     parameter.requires_grad_(True)
-                ld, r, f = d_loss_fn(a.loss, D, real, fake, a.label_real, a.gp_lambda)
+                ld, r, f = d_loss_fn(a.loss, critic, real, fake, a.label_real, a.gp_lambda)
                 oD.zero_grad(set_to_none=True)
                 ld.backward()
                 oD.step()
@@ -168,12 +189,14 @@ def main():
                 if iteration % a.n_critic == 0:
                     for parameter in D.parameters():
                         parameter.requires_grad_(False)
-                    lg = g_loss_fn(a.loss, D, fake)
-                    if moment_weight:
+                    lg = g_loss_fn(a.loss, critic, fake)
+                    if has_regularization:
                         adversarial = lg
-                        penalty = moment_loss(real, fake)
-                        lg = adversarial + moment_weight * penalty
-                        wr.writerow([iteration, ep, adversarial.item(), penalty.item(), lg.item()])
+                        penalty = moment_loss(real, fake) if moment_weight else torch.zeros((), device=dev)
+                        reconstruction = (fake - real).abs().mean() if reconstruction_weight else torch.zeros((), device=dev)
+                        lg = adversarial + moment_weight * penalty + reconstruction_weight * reconstruction
+                        wr.writerow([iteration, ep, adversarial.item(), penalty.item(), lg.item()]
+                                    + ([reconstruction.item()] if reconstruction_weight else []))
                     oG.zero_grad(set_to_none=True)
                     lg.backward()
                     oG.step()

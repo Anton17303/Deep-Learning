@@ -11,6 +11,7 @@ import torch
 
 from gan.images import save_image
 from gan.models import Generator
+from gan.conditioning import attributes_from_seed, input_from_seed, model_noise_size
 from gan.utils import save_json, z_from_seed
 
 
@@ -23,6 +24,7 @@ def main():
     p.add_argument("--galeria", default="galeria")
     p.add_argument("--candidates", default="evidencias/candidatos.png")
     p.add_argument("--from_selection", help="Regenera la galería usando seleccion.json")
+    p.add_argument("--previous_candidates", type=int, default=0)
     a = p.parse_args()
     recorded = None
     if a.from_selection:
@@ -31,6 +33,7 @@ def main():
         a.n = recorded["candidatos_generados"]
         a.select = [item["seed"] for item in recorded["personajes"]]
         a.criterio = recorded["criterio"]
+        a.previous_candidates = recorded.get("candidatos_previos", 0)
     if not a.ckpt or a.n < 1:
         p.error("Se requiere un checkpoint y una cantidad positiva de candidatos.")
     if a.select and (len(a.select) < 10 or len(set(a.select)) != len(a.select)
@@ -40,7 +43,7 @@ def main():
     ck = torch.load(a.ckpt, map_location="cpu", weights_only=True)
     config = ck["config"]
     nz = config["nz"]
-    G = Generator(nz, config.get("ngf", 64), architecture=config.get("g_arch", "dcgan"))
+    G = Generator(model_noise_size(config), config.get("ngf", 64), architecture=config.get("g_arch", "dcgan"))
     G.load_state_dict(ck["G"])
     G.eval()
     digest = hashlib.sha256(Path(a.ckpt).read_bytes()).hexdigest()
@@ -48,7 +51,7 @@ def main():
         raise ValueError("El checkpoint no coincide con el de la selección.")
     seeds = a.select if a.select else list(range(a.n))
     with torch.no_grad():
-        batches = [G(torch.cat([z_from_seed(seed, nz) for seed in seeds[i:i + 32]]))
+        batches = [G(torch.cat([input_from_seed(seed, config) for seed in seeds[i:i + 32]]))
                    for i in range(0, len(seeds), 32)]
         images = torch.cat(batches)
     if not a.select:
@@ -66,6 +69,19 @@ def main():
         plt.close(fig)
         save_json({"checkpoint": a.ckpt, "checkpoint_sha256": digest,
                    "candidatos_generados": a.n, "seeds": seeds}, out.with_suffix(".json"))
+        if a.n > 50:
+            for start in range(0, a.n, 50):
+                end = min(start + 50, a.n)
+                fig, axes = plt.subplots(5, 10, figsize=(15, 7.5), squeeze=False)
+                for index, ax in enumerate(axes.flat, start):
+                    ax.axis("off")
+                    if index < end:
+                        ax.imshow(((images[index] + 1) / 2).clamp(0, 1).permute(1, 2, 0).numpy())
+                        ax.set_title(f"semilla {index}", fontsize=9)
+                fig.tight_layout()
+                page = out.with_name(f"{out.stem}_{start:03d}_{end - 1:03d}.png")
+                fig.savefig(page, dpi=130)
+                plt.close(fig)
         print(out)
         return
     out = Path(a.galeria)
@@ -77,11 +93,13 @@ def main():
     for index, (seed, image) in enumerate(zip(seeds, images), 1):
         filename = f"personaje_{index:02d}_seed{seed}.png"
         save_image(image, out / filename)
-        vector = z_from_seed(seed, nz)
+        vector = input_from_seed(seed, config)
         torch.save(vector, out / f"personaje_{index:02d}_z.pt")
         info.append({"personaje": index, "seed": seed, "archivo": filename,
                      "sha256_png": hashlib.sha256((out / filename).read_bytes()).hexdigest(),
                      "z": vector.flatten().tolist()})
+        if config.get("conditional", False):
+            info[-1]["condicion"] = attributes_from_seed(seed)
     if recorded:
         for item, original in zip(info, recorded["personajes"]):
             if item["sha256_png"] != original["sha256_png"]:
@@ -89,7 +107,9 @@ def main():
             for key in ["nombre", "rol", "rasgos"]:
                 if key in original:
                     item[key] = original[key]
-    save_json({"tasa_seleccion": f"{len(seeds)} de {a.n}", "candidatos_generados": a.n,
+    total = a.n + a.previous_candidates
+    save_json({"tasa_seleccion": f"{len(seeds)} de {total}", "candidatos_generados": a.n,
+               "candidatos_previos": a.previous_candidates, "candidatos_totales": total,
                "criterio": a.criterio, "checkpoint": a.ckpt, "checkpoint_sha256": digest,
                "personajes": info}, out / "seleccion.json")
     rows = (len(info) + 4) // 5

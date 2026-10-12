@@ -21,7 +21,7 @@ def main():
         refined_rows = list(csv.DictReader(stream))
     final = refined_rows[-1]
     auxiliary_table = "| Variante adicional | Épocas | D final | G final | Diversidad final | Tiempo |\n|---|---:|---:|---:|---:|---:|\n"
-    for name in ["refined", "moment_refined"]:
+    for name in ["refined", "moment_refined", "conditional"]:
         with (Path("runs") / name / "metrics.csv").open(newline="", encoding="utf-8") as stream:
             auxiliary = list(csv.DictReader(stream))[-1]
         auxiliary_table += (f"| {name} | {auxiliary['epoch']} | {float(auxiliary['loss_d']):.4f} | "
@@ -52,6 +52,10 @@ def main():
 La base tiene 304,352 parámetros en G y 175,296 en D. Se eligió una arquitectura pequeña para permitir entrenamiento real en CPU. La variante final usa ampliación bilineal seguida de convoluciones 3 × 3, normalización espectral y ausencia de BatchNorm en D. Sus parámetros son {selected_environment['parameters_g']:,} en G y {selected_environment['parameters_d']:,} en D.
 
 La variante final cambia varias condiciones y se analiza como una configuración completa. No sustituye las comparaciones controladas."""
+    if selected_config.get("conditional", False):
+        architecture += (" La entrada final de G combina 64 componentes de ruido y 16 indicadores de color, ojos, cuerpo y antenas. "
+                         "D recibe tres canales RGB y 16 canales constantes de atributos. Los atributos se verifican contra las "
+                         "huellas de los dibujos originales. No se entrenan etiquetas de nombre o rol.")
     protocol = """Se mantienen los mismos datos, 60 épocas, lote de 64, semilla 42, ruido fijo con semilla 1234 y 16 vectores de evaluación. Adam utiliza tasas 0.0002 para ambas redes y betas (0.5, 0.999). No se aplica aumento de datos. El orden de los lotes y el ruido de entrenamiento usan secuencias independientes con semillas 1042 y 2042.
 
 El experimento hinge cambia únicamente la pérdida. El experimento espectral cambia únicamente la normalización espectral de D. Las hipótesis se conservan en el notebook y en `experimentos.md` desde antes de la ejecución. Se verifica que los conjuntos, los vectores fijos y las condiciones comunes coinciden."""
@@ -64,6 +68,10 @@ El experimento hinge cambia únicamente la pérdida. El experimento espectral ca
         refinement += (f" Se agregó una regularización propia con peso {selected_config['moment_weight']:g} para comparar "
                        "las medias y desviaciones de los lotes a 8 × 8. La pérdida total de G incluye ese término; "
                        "la pérdida adversarial y la penalización se registran por separado en regularization.csv.")
+    if selected_config.get("reconstruction_weight", 0):
+        refinement += (f" También se agregó L1 con peso {selected_config['reconstruction_weight']:g} frente a una imagen real "
+                       "de la misma condición. El ruido no identifica una imagen real; el término favorece un prototipo por "
+                       "atributos y puede reducir la variación dentro de cada condición. Ese término también se registra por separado.")
     regularization_figure = (f"![Componentes de la pérdida de G]({selected_run.as_posix()}/regularizacion.png)"
                              if selected_config.get("moment_weight", 0) else "")
     nn_interpretation = (f"Se buscó el vecino exacto en píxeles entre las {neighbors['training_count']:,} imágenes de entrenamiento para cada personaje. "
@@ -76,12 +84,15 @@ El experimento hinge cambia únicamente la pérdida. El experimento espectral ca
                          "Estos valores no demuestran novedad semántica por sí solos. El fondo, el desenfoque y los defectos afectan la distancia.")
     references = """- Goodfellow et al. (2014), [Generative Adversarial Nets](https://arxiv.org/abs/1406.2661).
 - Radford et al. (2015), [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](https://arxiv.org/abs/1511.06434).
-- Miyato et al. (2018), [Spectral Normalization for Generative Adversarial Networks](https://arxiv.org/abs/1802.05957)."""
+- Miyato et al. (2018), [Spectral Normalization for Generative Adversarial Networks](https://arxiv.org/abs/1802.05957).
+- Zhang et al. (2018), [Self-Attention Generative Adversarial Networks](https://arxiv.org/abs/1805.08318), referencia para la pérdida hinge; no se implementa atención.
+- Salimans et al. (2016), [Improved Techniques for Training GANs](https://arxiv.org/abs/1606.03498), referencia general para comparar estadísticas; la regularización del proyecto utiliza píxeles, no características aprendidas."""
+    references += "\n- Mirza y Osindero (2014), [Conditional Generative Adversarial Nets](https://arxiv.org/abs/1411.1784)."
     results = f"""# Resultados: Luminarios del arrecife astral
 
 ## Ejecución real
 
-Se prepararon {data['kept']:,} dibujos originales. Se ejecutaron tres corridas controladas y dos variantes adicionales. Los valores de este informe se obtienen de los registros CSV y de la prueba de vecinos. Se conserva la separación entre hipótesis previa, medición posterior e inspección visual.
+Se prepararon {data['kept']:,} dibujos originales. Se ejecutaron tres corridas controladas y tres variantes adicionales. Los valores de este informe se obtienen de los registros CSV y de la prueba de vecinos. Se conserva la separación entre hipótesis previa, medición posterior e inspección visual.
 
 ## Arquitectura
 
@@ -123,13 +134,15 @@ La relación de diversidad media frente a la base fue {experiments[2]['diversity
 
 {visual['refined']}
 
+{visual['moments']}
+
 {refinement}
 
 ## Galería y tasa de selección
 
-Se seleccionaron {selection['tasa_seleccion']} candidatos de la variante final. Las semillas de los candidatos fueron de 0 a {selection['candidatos_generados'] - 1}. Criterio: {selection['criterio']}.
+Se seleccionaron {selection['tasa_seleccion']} candidatos en total. El modelo final produjo {selection['candidatos_generados']} candidatos, con semillas de 0 a {selection['candidatos_generados'] - 1}. También se generaron {selection.get('candidatos_previos', 0)} candidatos de una variante anterior, que se descartaron para la galería. Criterio: {selection['criterio']}.
 
-La selección corresponde a una hoja de candidatos de un solo checkpoint. Las rejillas de las corridas anteriores se utilizaron para seguir el entrenamiento y elegir la configuración, y no se incorporaron como imágenes finales.
+La selección final corresponde a un solo checkpoint. Las rejillas de seguimiento se utilizaron para revisar el entrenamiento; la tasa declarada incluye las dos hojas de candidatos y no oculta la selección de la configuración anterior.
 
 {gallery_table}
 
@@ -221,7 +234,7 @@ Fuente: Radford et al. (2015), https://arxiv.org/abs/1511.06434.
 | Pérdida | BCE → hinge |
 | Estabilización | Normalización espectral en D |
 
-La variante final de 120 épocas se analiza aparte, porque cambia arquitectura, pérdida, normalización y tasa de D.
+La variante final de {selected_config['epochs']} épocas se analiza aparte, porque cambia arquitectura, pérdida, normalización, condiciones y tasa de D.
 
 ## Diapositiva 5: Experimento de pérdida
 
@@ -235,7 +248,7 @@ Diversidad media final: base {experiments[0]['tail_diversity_mean']:.4f}; hinge 
 
 ![Comparación de diversidad y pérdidas](comparacion.png)
 
-Fuente: Goodfellow et al. (2014), https://arxiv.org/abs/1406.2661.
+Fuentes: Goodfellow et al. (2014), https://arxiv.org/abs/1406.2661; Zhang et al. (2018), https://arxiv.org/abs/1805.08318, ecuación 4 para hinge.
 
 ## Diapositiva 6: Experimento de estabilización
 
@@ -270,6 +283,8 @@ Se guardaron los mismos 16 vectores de evaluación, con semilla 1234, y se gener
 ![Curvas de la variante final]({selected_run.as_posix()}/curvas.png)
 
 {regularization_figure}
+
+La regularización sobre medias y desviaciones es una adaptación propia en píxeles. La comparación de estadísticas se relaciona con Salimans et al. (2016), https://arxiv.org/abs/1606.03498; no se replica su método de características aprendidas.
 
 La pérdida de D cercana a cero durante muchas épocas se interpreta como una señal de desbalance. La diversidad RMS también puede aumentar por ruido. Las curvas se leen junto con las imágenes; no se comparan pérdidas absolutas entre BCE y hinge.
 

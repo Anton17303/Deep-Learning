@@ -35,3 +35,4 @@ Los resultados se registran en `resultados.md` una vez finalizadas las corridas.
 - Goodfellow et al. (2014), [Generative Adversarial Nets](https://arxiv.org/abs/1406.2661).
 - Radford et al. (2015), [Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks](https://arxiv.org/abs/1511.06434).
 - Miyato et al. (2018), [Spectral Normalization for Generative Adversarial Networks](https://arxiv.org/abs/1802.05957).
+- Zhang et al. (2018), [Self-Attention Generative Adversarial Networks](https://arxiv.org/abs/1805.08318), ecuación 4 para hinge; no se implementa atención.

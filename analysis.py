@@ -62,9 +62,12 @@ def regularization(run):
     rows = read(path / "regularization.csv")
     weight = config["moment_weight"]
     fig, ax = plt.subplots(figsize=(10, 3.8))
-    for label, key, scale in [("Adversarial", "g_adversarial", 1),
-                              (f"Estadísticas × {weight:g}", "moment_loss", weight),
-                              ("Total G", "g_total", 1)]:
+    components = [("Adversarial", "g_adversarial", 1),
+                  (f"Estadísticas × {weight:g}", "moment_loss", weight)]
+    if config.get("reconstruction_weight", 0):
+        components.append((f"L1 × {config['reconstruction_weight']:g}", "reconstruction_loss", config["reconstruction_weight"]))
+    components.append(("Total G", "g_total", 1))
+    for label, key, scale in components:
         values = smooth([float(row[key]) * scale for row in rows])
         ax.plot(values, label=label)
     ax.set_xlabel("Iteración")

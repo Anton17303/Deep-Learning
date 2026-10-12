@@ -45,11 +45,12 @@ def main():
     save_json({"runs": summaries, "visual_review_required": True,
                "note": "Las condiciones cuantitativas no sustituyen el criterio visual registrado en la hipótesis."},
               out / "resumen_experimentos.json")
-    for name in ["refined", "moment_refined"]:
+    for name in ["refined", "moment_refined", "conditional"]:
         refined = Path("runs") / name
         if (refined / "ckpt/G_final.pt").exists():
             curves(refined)
-            evolution(refined, [0, 5, 20, 60, 120])
+            config = json.loads((refined / "config.json").read_text(encoding="utf-8"))
+            evolution(refined, [0, 5, 20, config["epochs"] // 2, config["epochs"]])
             if (refined / "regularization.csv").exists():
                 regularization(refined)
     print(summaries)

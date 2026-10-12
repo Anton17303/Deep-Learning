@@ -10,7 +10,7 @@ from pathlib import Path
 import torch
 
 from gan.images import ImageDataset
-from gan.utils import z_from_seed
+from gan.conditioning import input_from_seed
 
 
 def require(condition, message):
@@ -56,6 +56,9 @@ def main():
             "El checkpoint de la galería cambió.")
     config = torch.load(checkpoint, map_location="cpu", weights_only=True)["config"]
     require(config["dataset_sha256"] == dataset.fingerprint(), "El modelo de la galería utilizó otro conjunto.")
+    if config.get("conditional", False):
+        require(hashlib.sha256((root / "data/raw/manifest.json").read_bytes()).hexdigest()
+                == config["condition_manifest_sha256"], "El manifiesto de atributos cambió.")
     png_hashes = []
     for item in selection["personajes"]:
         path = root / "galeria" / item["archivo"]
@@ -63,7 +66,7 @@ def main():
         require(digest == item["sha256_png"], "Una imagen fue modificada después de la selección.")
         png_hashes.append(digest)
         vector = torch.load(root / "galeria" / f"personaje_{item['personaje']:02d}_z.pt", weights_only=True)
-        require(torch.equal(vector, z_from_seed(item["seed"], config["nz"])), "El vector no coincide con su semilla.")
+        require(torch.equal(vector, input_from_seed(item["seed"], config)), "El vector no coincide con su semilla.")
         require(vector.flatten().tolist() == item["z"], "El vector del manifiesto no coincide.")
     require(len(set(png_hashes)) == len(png_hashes), "La galería contiene copias exactas.")
     (root / "tmp").mkdir(exist_ok=True)

@@ -1,5 +1,6 @@
 """Carga de imágenes RGB y exportación sin dependencia de torchvision."""
 import hashlib
+import json
 from pathlib import Path
 
 import numpy as np
@@ -15,7 +16,7 @@ def image_tensor(path, size=64):
 
 
 class ImageDataset(Dataset):
-    def __init__(self, root, size=64, flip=False):
+    def __init__(self, root, size=64, flip=False, conditional=False):
         self.root = Path(root)
         extensions = {".png", ".jpg", ".jpeg", ".webp", ".bmp"}
         self.files = sorted(p for p in Path(root).rglob("*") if p.suffix.lower() in extensions)
@@ -23,6 +24,19 @@ class ImageDataset(Dataset):
             raise ValueError("El conjunto no contiene imágenes.")
         self.images = torch.stack([image_tensor(p, size) for p in self.files])
         self.flip = flip
+        self.conditions = None
+        if conditional:
+            from gan.conditioning import condition_from_record
+            manifest_path = self.root.parent / "raw" / "manifest.json"
+            records = json.loads(manifest_path.read_text(encoding="utf-8"))["images"]
+            if len(records) != len(self.files):
+                raise ValueError("El manifiesto de condiciones no coincide con el conjunto.")
+            for tensor, record in zip(self.images, records):
+                pixels = (tensor * 255).round().byte().permute(1, 2, 0).numpy().tobytes()
+                if hashlib.sha256(pixels).hexdigest() != record["sha256_pixels"]:
+                    raise ValueError("Los atributos no corresponden a las imágenes procesadas.")
+            self.conditions = torch.stack([condition_from_record(record) for record in records])
+            self.condition_manifest_sha256 = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
 
     def __len__(self):
         return len(self.files)
@@ -31,7 +45,8 @@ class ImageDataset(Dataset):
         image = self.images[index]
         if self.flip and torch.rand(()) < 0.5:
             image = image.flip(-1)
-        return image * 2 - 1
+        normalized = image * 2 - 1
+        return (normalized, self.conditions[index]) if self.conditions is not None else normalized
 
     def fingerprint(self):
         digest = hashlib.sha256()

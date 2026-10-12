@@ -8,6 +8,7 @@ from build_dataset import draw_creature
 from gan.losses import d_loss_fn, g_loss_fn, moment_loss
 from gan.models import Discriminator, Generator
 from gan.utils import make_fixed_noise, set_seed
+from gan.conditioning import DIM, condition_from_seed, critic_input, input_from_seed
 
 
 class GANChecks(unittest.TestCase):
@@ -68,6 +69,21 @@ class GANChecks(unittest.TestCase):
         penalty.backward()
         self.assertTrue(torch.isfinite(fake.grad).all())
         self.assertGreater(fake.grad.abs().sum().item(), 0)
+
+    def test_conditional_inputs_and_adversarial_gradient(self):
+        config = {"nz": 8, "conditional": True}
+        first = input_from_seed(6, config)
+        self.assertEqual(first.shape, (1, 8 + DIM))
+        self.assertTrue(torch.equal(first, input_from_seed(6, config)))
+        condition = condition_from_seed(6).repeat(2, 1)
+        self.assertEqual(condition[0].sum().item(), 4)
+        generator = Generator(8 + DIM, 4, architecture="resize")
+        discriminator = Discriminator(4, nc=3 + DIM, norm="none", spectral=True)
+        fake = generator(first.repeat(2, 1))
+        critic = lambda image: discriminator(critic_input(image, condition))
+        loss = g_loss_fn("hinge", critic, fake)
+        loss.backward()
+        self.assertGreater(sum(parameter.grad.abs().sum().item() for parameter in generator.parameters()), 0)
 
 
 if __name__ == "__main__":
