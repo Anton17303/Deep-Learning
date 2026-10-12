@@ -266,7 +266,7 @@ Fuente: Miyato et al. (2018), https://arxiv.org/abs/1802.05957.
 
 ## Diapositiva 7: Evolución con ruido fijo
 
-Se guardaron los mismos 16 vectores de evaluación, con semilla 1234, y se generaron imágenes en diferentes épocas. Las rejillas permiten seguir cambios de forma y detectar repetición.
+En las comparaciones controladas se guardaron los mismos 16 vectores de evaluación, con semilla 1234, y se generaron imágenes en diferentes épocas. En la variante condicional se conserva ese ruido y se añade una condición fija por posición. Las rejillas permiten seguir cambios de forma y detectar repetición.
 
 ![Evolución de la base](runs/base/evolucion.png)
 
@@ -291,6 +291,8 @@ La pérdida de D cercana a cero durante muchas épocas se interpreta como una se
 ## Diapositiva 9: Galería y tasa de selección
 
 Se seleccionaron **{selection['tasa_seleccion']}** candidatos. Criterio: {selection['criterio']}.
+
+La cantidad incluye {selection.get('candidatos_previos', 0)} candidatos de una variante anterior y {selection['candidatos_generados']} del checkpoint final. No se mezclan modelos dentro de la galería.
 
 ![Diez personajes generados por la GAN](galeria/galeria.png)
 

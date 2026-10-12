@@ -12,7 +12,7 @@ import torch
 from gan.images import save_image
 from gan.models import Generator
 from gan.conditioning import attributes_from_seed, input_from_seed, model_noise_size
-from gan.utils import save_json, z_from_seed
+from gan.utils import save_json
 
 
 def main():
@@ -34,7 +34,7 @@ def main():
         a.select = [item["seed"] for item in recorded["personajes"]]
         a.criterio = recorded["criterio"]
         a.previous_candidates = recorded.get("candidatos_previos", 0)
-    if not a.ckpt or a.n < 1:
+    if not a.ckpt or a.n < 1 or a.previous_candidates < 0:
         p.error("Se requiere un checkpoint y una cantidad positiva de candidatos.")
     if a.select and (len(a.select) < 10 or len(set(a.select)) != len(a.select)
                      or any(seed < 0 or seed >= a.n for seed in a.select) or not a.criterio):

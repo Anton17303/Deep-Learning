@@ -30,7 +30,7 @@ python -m pip install -r requirements.txt
 python -m unittest discover -s tests -v
 ```
 
-`requirements.txt` permite instalar las dependencias disponibles. `requirements-lock.txt` registra las versiones exactas del entorno empleado; la disponibilidad de esas versiones depende del sistema y del Índice de paquetes.
+`requirements.txt` permite instalar las dependencias disponibles. `requirements-lock.txt` registra las versiones exactas del entorno empleado; la disponibilidad de esas versiones depende del sistema y del índice de paquetes.
 
 ## Preparación desde un repositorio sin datos
 
@@ -49,9 +49,9 @@ python collect_results.py
 python analysis.py compare runs/base runs/exp_loss_hinge runs/exp_stab_sn
 ```
 
-La configuración común utiliza lote de 64, vector latente de 64 componentes, 16 canales iniciales en ambas redes y Adam con tasa 0.0002 y betas (0.5, 0.999). La pérdida base es BCE no saturante. El experimento de pérdida cambia Únicamente a hinge. El experimento de estabilización activa Únicamente la normalización espectral en el discriminador.
+La configuración común utiliza lote de 64, vector latente de 64 componentes, 16 canales iniciales en ambas redes y Adam con tasa 0.0002 y betas (0.5, 0.999). La pérdida base es BCE no saturante. El experimento de pérdida cambia únicamente a hinge. El experimento de estabilización activa únicamente la normalización espectral en el discriminador.
 
-Una corrida existente se reanuda desde `last.pt`; el programa rechaza cambios en las condiciones experimentales. Los estados aleatorios y de los optimizadores también se conservan. Al recuperar una interrupción se eliminan del registro las filas posteriores al Último checkpoint confirmado.
+Una corrida existente se reanuda desde `last.pt`; el programa rechaza cambios en las condiciones experimentales. Los estados aleatorios y de los optimizadores también se conservan. Al recuperar una interrupción se eliminan del registro las filas posteriores al último checkpoint confirmado.
 
 ```bash
 python train.py --data data/processed --name base --epochs 60 --resume
@@ -61,9 +61,15 @@ El archivo `last.pt` no forma parte de la entrega, por su tamaño y porque se ut
 
 ## Variantes adicionales
 
-La base mostró poca variedad y las corridas controladas conservaron ruido visible. Se probaron dos variantes de 120 Épocas con generador bilineal, hinge, normalización espectral y menor tasa para D. La segunda agrega una regularización que compara medias y desviaciones de lotes a 8 × 8. El motivo, las hipótesis y los comandos se conservan en `refinamiento.md` y `estadisticas.md`.
+La base mostró poca variedad y las corridas controladas conservaron ruido visible. Se probaron dos variantes de 120 épocas con generador bilineal, hinge, normalización espectral y menor tasa para D. La segunda agrega una regularización que compara medias y desviaciones de lotes a 8 × 8. El motivo, las hipótesis y los comandos se conservan en `refinamiento.md` y `estadisticas.md`.
 
 Estos entrenamientos se analizan aparte de las comparaciones obligatorias. La segunda variante agrega una penalización a la pérdida de G y registra ese término por separado. `resultados.md` identifica el checkpoint utilizado en la galería.
+
+## Variante condicional y selección
+
+La hoja de 200 candidatos del modelo con estadísticas mostró predominio de un ojo central. Se agregó una tercera variante condicional de 80 épocas, descrita en `condicional.md`. La entrada combina 64 componentes de ruido y 16 indicadores de atributos. Se utiliza una pérdida L1 auxiliar con peso 10 y estadísticas con peso 2. Los atributos se comprueban contra las huellas del manifiesto original.
+
+La tasa de selección incluye los 200 candidatos anteriores y los 200 del modelo final. La galería conserva únicamente imágenes de un mismo checkpoint. El manifiesto registra ambas cantidades para distinguir el conjunto final de candidatos del total generado durante la selección.
 
 ## Semillas y evidencia
 
@@ -88,7 +94,7 @@ python nn_test.py --data data/processed --galeria galeria
 python verify_project.py
 ```
 
-La verificación compara las huellas de los PNG originales y regenerados. También comprueba las condiciones fijas, las iteraciones, las Épocas y el ruido de evaluación. La tasa de selección y el criterio se conservan en el manifiesto de la galería.
+La verificación compara las huellas de los PNG originales y regenerados. También comprueba las condiciones fijas, las iteraciones, las épocas y el ruido de evaluación. La tasa de selección y el criterio se conservan en el manifiesto de la galería.
 
 La prueba de vecinos utiliza distancia RMS en píxeles RGB. Se informa el archivo real más cercano para cada personaje, la distancia sobre el primer plano y la semejanza entre personajes de la propia galería. No se interpreta una distancia alta como una prueba absoluta de novedad.
 

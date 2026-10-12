@@ -6,7 +6,7 @@ Se busca generar personajes de un universo visual propio y comprobar si son dist
 
 ## Datos
 
-Se construyeron dibujos originales mediante reglas geométricas. Los colores, el cuerpo, los ojos, las antenas y las patas varían entre imágenes. El programa de dibujo produce Únicamente el conjunto de entrenamiento. La GAN produce la galería final.
+Se construyeron dibujos originales mediante reglas geométricas. Los colores, el cuerpo, los ojos, las antenas y las patas varían entre imágenes. El programa de dibujo produce únicamente el conjunto de entrenamiento. La GAN produce la galería final.
 
 ## Modelo
 

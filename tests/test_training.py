@@ -1,6 +1,8 @@
 """Verifica que reanudar una corrida conserva su trayectoria y sus registros."""
 import csv
+import hashlib
 import json
+import random
 import subprocess
 import sys
 import tempfile
@@ -8,7 +10,7 @@ import unittest
 from pathlib import Path
 
 import torch
-from PIL import Image
+from build_dataset import draw_creature
 
 
 class TrainingRecovery(unittest.TestCase):
@@ -17,14 +19,21 @@ class TrainingRecovery(unittest.TestCase):
         (project / "tmp").mkdir(exist_ok=True)
         with tempfile.TemporaryDirectory(dir=project / "tmp", prefix="training_check_") as directory:
             root = Path(directory)
-            data = root / "data"
-            data.mkdir()
+            data = root / "data" / "processed"
+            data.mkdir(parents=True)
+            raw = root / "data/raw"
+            raw.mkdir()
+            records = []
+            rng = random.Random(42)
             for index in range(8):
-                Image.new("RGB", (64, 64), (20 + index * 18, 50, 100)).save(data / f"{index}.png")
+                image, traits = draw_creature(rng)
+                image.save(data / f"{index}.png")
+                records.append({"sha256_pixels": hashlib.sha256(image.tobytes()).hexdigest(), **traits})
+            (raw / "manifest.json").write_text(json.dumps({"images": records}), encoding="utf-8")
             common = [sys.executable, str(project / "train.py"), "--data", str(data),
                       "--out", str(root / "runs"), "--bs", "4", "--nz", "8", "--ngf", "4",
                       "--ndf", "4", "--threads", "1", "--ckpt_every", "1",
-                      "--g_arch", "resize", "--moment_weight", "10"]
+                      "--g_arch", "resize", "--moment_weight", "10", "--conditional", "--reconstruction_weight", "10"]
             subprocess.run([*common, "--name", "full", "--epochs", "2"], check=True, capture_output=True)
             subprocess.run([*common, "--name", "split", "--epochs", "1"], check=True, capture_output=True)
             split = root / "runs/split"
