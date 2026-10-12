@@ -3,7 +3,7 @@
   python analysis.py evolution runs/base --epochs 0 5 25 50 100
   python analysis.py compare  runs/base runs/exp_loss_hinge runs/exp_stab_sn
 """
-import argparse, csv
+import argparse, csv, json
 from pathlib import Path
 import numpy as np
 import matplotlib; matplotlib.use("Agg")
@@ -56,6 +56,28 @@ def compare(runs):
     plt.tight_layout(); plt.savefig("comparacion.png", dpi=150); print("comparacion.png")
 
 
+def regularization(run):
+    path = Path(run)
+    config = json.loads((path / "config.json").read_text(encoding="utf-8"))
+    rows = read(path / "regularization.csv")
+    weight = config["moment_weight"]
+    fig, ax = plt.subplots(figsize=(10, 3.8))
+    for label, key, scale in [("Adversarial", "g_adversarial", 1),
+                              (f"Estadísticas × {weight:g}", "moment_loss", weight),
+                              ("Total G", "g_total", 1)]:
+        values = smooth([float(row[key]) * scale for row in rows])
+        ax.plot(values, label=label)
+    ax.set_xlabel("Iteración")
+    ax.set_ylabel("Pérdida de G")
+    ax.set_title("Componentes de la pérdida del generador")
+    ax.legend()
+    fig.tight_layout()
+    output = path / "regularizacion.png"
+    fig.savefig(output, dpi=160)
+    plt.close(fig)
+    print(output)
+
+
 if __name__ == "__main__":
     p = argparse.ArgumentParser(); p.add_argument("cmd"); p.add_argument("runs", nargs="+")
     p.add_argument("--epochs", type=int, nargs="+", default=[0, 5, 25, 50, 100])
@@ -63,3 +85,4 @@ if __name__ == "__main__":
     if a.cmd == "curves": curves(a.runs[0])
     elif a.cmd == "evolution": evolution(a.runs[0], a.epochs)
     elif a.cmd == "compare": compare(a.runs)
+    elif a.cmd == "regularization": regularization(a.runs[0])

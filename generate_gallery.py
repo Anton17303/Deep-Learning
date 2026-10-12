@@ -92,7 +92,10 @@ def main():
     save_json({"tasa_seleccion": f"{len(seeds)} de {a.n}", "candidatos_generados": a.n,
                "criterio": a.criterio, "checkpoint": a.ckpt, "checkpoint_sha256": digest,
                "personajes": info}, out / "seleccion.json")
-    fig, axes = plt.subplots(2, 5, figsize=(12, 5.4), squeeze=False)
+    rows = (len(info) + 4) // 5
+    fig, axes = plt.subplots(rows, 5, figsize=(12, 2.7 * rows), squeeze=False)
+    for ax in axes.flat:
+        ax.axis("off")
     for item, image, ax in zip(info, images, axes.flat):
         ax.imshow(((image + 1) / 2).clamp(0, 1).permute(1, 2, 0).numpy())
         ax.set_title(f"{item['personaje']:02d} · semilla {item['seed']}")

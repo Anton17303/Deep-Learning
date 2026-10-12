@@ -57,6 +57,8 @@ El experimento hinge cambia únicamente la pérdida. El experimento espectral ca
         refinement += (f" Se agregó una regularización propia con peso {selected_config['moment_weight']:g} para comparar "
                        "las medias y desviaciones de los lotes a 8 × 8. La pérdida total de G incluye ese término; "
                        "la pérdida adversarial y la penalización se registran por separado en regularization.csv.")
+    regularization_figure = (f"![Componentes de la pérdida de G]({selected_run.as_posix()}/regularizacion.png)"
+                             if selected_config.get("moment_weight", 0) else "")
     nn_interpretation = (f"Se buscó el vecino exacto en píxeles entre las {neighbors['training_count']:,} imágenes de entrenamiento para cada personaje. "
                          f"La distancia RMS se calcula sobre RGB en [0, 1]. Una distancia menor indica mayor parecido. "
                          f"La mediana real frente a otra imagen real fue {neighbors['real_nn_median']:.4f}; "
@@ -255,6 +257,8 @@ Se guardaron los mismos 16 vectores de evaluación, con semilla 1234, y se gener
 {refinement}
 
 ![Curvas de la variante final]({selected_run.as_posix()}/curvas.png)
+
+{regularization_figure}
 
 La pérdida de D cercana a cero durante muchas épocas se interpreta como una señal de desbalance. La diversidad RMS también puede aumentar por ruido. Las curvas se leen junto con las imágenes; no se comparan pérdidas absolutas entre BCE y hinge.
 

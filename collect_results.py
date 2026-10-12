@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 
-from analysis import curves, evolution
+from analysis import curves, evolution, regularization
 from gan.utils import save_json
 
 
@@ -50,6 +50,8 @@ def main():
         if (refined / "ckpt/G_final.pt").exists():
             curves(refined)
             evolution(refined, [0, 5, 20, 60, 120])
+            if (refined / "regularization.csv").exists():
+                regularization(refined)
     print(summaries)
 
 
