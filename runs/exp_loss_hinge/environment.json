@@ -1,0 +1,9 @@
+{
+  "python": "3.13.2",
+  "torch": "2.13.0+cpu",
+  "numpy": "2.4.2",
+  "device": "cpu",
+  "threads": 4,
+  "parameters_g": 304352,
+  "parameters_d": 175296
+}
