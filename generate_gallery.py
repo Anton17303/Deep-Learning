@@ -40,7 +40,7 @@ def main():
     ck = torch.load(a.ckpt, map_location="cpu", weights_only=True)
     config = ck["config"]
     nz = config["nz"]
-    G = Generator(nz, config.get("ngf", 64))
+    G = Generator(nz, config.get("ngf", 64), architecture=config.get("g_arch", "dcgan"))
     G.load_state_dict(ck["G"])
     G.eval()
     digest = hashlib.sha256(Path(a.ckpt).read_bytes()).hexdigest()

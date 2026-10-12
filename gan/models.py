@@ -21,9 +21,25 @@ def init_weights(m):
 
 
 class Generator(nn.Module):
-    def __init__(self, nz=100, ngf=64, nc=3):
+    def __init__(self, nz=100, ngf=64, nc=3, architecture="dcgan"):
         super().__init__()
         self.nz = nz
+        if architecture == "resize":
+            layers = [nn.ConvTranspose2d(nz, ngf * 8, 4, 1, 0, bias=False),
+                      nn.BatchNorm2d(ngf * 8), nn.ReLU(True)]
+            channels = ngf * 8
+            for next_channels in [ngf * 4, ngf * 2, ngf, nc]:
+                layers.extend([nn.Upsample(scale_factor=2, mode="bilinear", align_corners=False),
+                               nn.Conv2d(channels, next_channels, 3, 1, 1, bias=False)])
+                if next_channels != nc:
+                    layers.extend([nn.BatchNorm2d(next_channels), nn.ReLU(True)])
+                channels = next_channels
+            layers.append(nn.Tanh())
+            self.net = nn.Sequential(*layers)
+            self.apply(init_weights)
+            return
+        if architecture != "dcgan":
+            raise ValueError(f"Arquitectura desconocida: {architecture}")
         self.net = nn.Sequential(
             nn.ConvTranspose2d(nz, ngf * 8, 4, 1, 0, bias=False),       # 4x4
             nn.BatchNorm2d(ngf * 8), nn.ReLU(True),

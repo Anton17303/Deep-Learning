@@ -52,6 +52,13 @@ class GANChecks(unittest.TestCase):
         self.assertEqual(traits, second_traits)
         self.assertEqual(first.size, (64, 64))
 
+    def test_resize_generator_propagates_gradients(self):
+        generator = Generator(8, 4, architecture="resize")
+        output = generator(make_fixed_noise(2, 8))
+        self.assertEqual(tuple(output.shape), (2, 3, 64, 64))
+        output.square().mean().backward()
+        self.assertGreater(sum(parameter.grad.abs().sum().item() for parameter in generator.parameters()), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -23,6 +23,7 @@ def arguments():
     p.add_argument("--name", required=True)
     p.add_argument("--out", default="runs")
     p.add_argument("--loss", default="bce", choices=KINDS)
+    p.add_argument("--g_arch", choices=["dcgan", "resize"], default=argparse.SUPPRESS)
     for name, default in {"epochs": 60, "bs": 64, "nz": 64, "ngf": 16, "ndf": 16,
                           "n_critic": 1, "n_eval": 16, "sample_every": 5, "ckpt_every": 20,
                           "workers": 0, "threads": 4, "seed": 42, "eval_seed": 1234}.items():
@@ -73,7 +74,7 @@ def main():
         (run / "grids").mkdir(parents=True)
         (run / "ckpt").mkdir()
         save_json(config, run / "config.json")
-    G = Generator(a.nz, a.ngf).to(dev)
+    G = Generator(a.nz, a.ngf, architecture=getattr(a, "g_arch", "dcgan")).to(dev)
     D = Discriminator(a.ndf, norm=a.d_norm, spectral=a.spectral, dropout=a.d_dropout).to(dev)
     oG = torch.optim.Adam(G.parameters(), a.lr_g, betas=(a.beta1, a.beta2))
     oD = torch.optim.Adam(D.parameters(), a.lr_d, betas=(a.beta1, a.beta2))

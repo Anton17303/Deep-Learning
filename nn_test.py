@@ -70,6 +70,19 @@ def main():
     fig.tight_layout()
     fig.savefig(out / "vecinos.png", dpi=140)
     plt.close(fig)
+    fig, axes = plt.subplots((len(files) + 4) // 5, 10,
+                              figsize=(16, 2.3 * ((len(files) + 4) // 5)), squeeze=False)
+    for ax in axes.flat:
+        ax.axis("off")
+    for i, nearest in enumerate(indices):
+        row, pair = divmod(i, 5)
+        axes[row, 2 * pair].imshow(generated[i].permute(1, 2, 0))
+        axes[row, 2 * pair].set_title(f"P{i + 1:02d}", fontsize=9)
+        axes[row, 2 * pair + 1].imshow(train[nearest].permute(1, 2, 0))
+        axes[row, 2 * pair + 1].set_title(f"RMS {best[i]:.3f}", fontsize=9)
+    fig.tight_layout()
+    fig.savefig(out / "vecinos_presentacion.png", dpi=160)
+    plt.close(fig)
     with (out / "vecinos.csv").open("w", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=list(records[0]))
         writer.writeheader()
