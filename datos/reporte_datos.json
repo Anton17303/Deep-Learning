@@ -1,0 +1,48 @@
+{
+  "candidatos": 3102,
+  "aceptados": 3023,
+  "descartados": 79,
+  "descartes_por_motivo": {
+    "resultado vacío": 75,
+    "más de 500 filas": 4
+  },
+  "descartes_por_plantilla": {
+    "e_like": 26,
+    "m_having_avg": 15,
+    "e_filtro_cat": 2,
+    "m_join_filtro": 1,
+    "e_fecha_anio": 6,
+    "e_rango_fechas": 12,
+    "h_datediff": 6,
+    "e_between": 10,
+    "m_group_filtro_padre": 1
+  },
+  "aceptados_por_nivel": {
+    "1": 1086,
+    "2": 891,
+    "3": 1046
+  },
+  "aceptados_por_esquema": {
+    "tienda_full": 146,
+    "tienda_abr": 146,
+    "universidad_full": 173,
+    "universidad_abr": 170,
+    "clinica_full": 141,
+    "clinica_abr": 144,
+    "biblioteca_full": 167,
+    "biblioteca_abr": 166,
+    "aerolinea_full": 136,
+    "aerolinea_abr": 137,
+    "banco_full": 162,
+    "banco_abr": 164,
+    "restaurante_full": 156,
+    "restaurante_abr": 157,
+    "rrhh_full": 143,
+    "rrhh_abr": 136,
+    "cine_full": 151,
+    "cine_abr": 152,
+    "logistica_full": 138,
+    "logistica_abr": 138
+  },
+  "motor": "MySQL (ver README: pre-validado en 8.0.46; repetir en 8.4.10)"
+}

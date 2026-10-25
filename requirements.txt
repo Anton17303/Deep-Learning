@@ -1,4 +1,10 @@
-torch
+transformers>=4.51
+peft>=0.13
+accelerate>=1.0
+datasets
+trl
+pymysql
 matplotlib
-numpy
-pillow
+pandas
+# torch y bitsandbytes vienen en Colab. Después de correr todo en Colab T4,
+# fijen versiones exactas con `pip freeze | grep -i -E "transformers|peft|accelerate|trl|datasets|pymysql"`.
