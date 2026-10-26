@@ -51,7 +51,7 @@ def main():
     for esq in todos():
         texto = construir(esq, a.semilla)
         (RAIZ / "datos/esquemas" / f"{esq.id}.sql").write_text(texto, encoding="utf-8")
-        print("ok", esq.id)
+        print("ok", esq.id, flush=True)
 
 
 if __name__ == "__main__":

@@ -14,7 +14,8 @@ RAIZ = Path(__file__).resolve().parent
 
 
 def ejecutar(*argumentos):
-    subprocess.run([sys.executable, *argumentos], cwd=RAIZ, check=True)
+    print('Ejecutando:', ' '.join(argumentos), flush=True)
+    subprocess.run([sys.executable, '-u', *argumentos], cwd=RAIZ, check=True)
 
 
 def evaluacion_valida(salida, config):
