@@ -23,6 +23,17 @@ from prompt import cargar_ejemplos, construir_mensajes, resolver_modelo
 RAIZ = Path(__file__).resolve().parent
 
 
+def contexto_activaciones(congelados, pin_memory=True):
+    guardado = torch.autograd.graph.save_on_cpu(pin_memory=pin_memory)
+
+    def empaquetar(tensor):
+        if tensor.data_ptr() in congelados:
+            return tensor.device, tensor
+        return guardado.pack_hook(tensor)
+
+    return torch.autograd.graph.saved_tensors_hooks(empaquetar, guardado.unpack_hook)
+
+
 def codificar(tokenizer, fila, formato, max_length):
     mensajes = construir_mensajes(fila['esquema'], fila['pregunta'], formato)
     prefijo = tokenizer.apply_chat_template(mensajes, tokenize=True, add_generation_prompt=True)
@@ -66,6 +77,7 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
     if not cuantizado:
         modelo.to(dispositivo)
     modelo.gradient_checkpointing_enable(gradient_checkpointing_kwargs={'use_reentrant': False})
+    congelados = {p.data_ptr() for p in modelo.parameters() if not p.requires_grad}
     datos = cargar_ejemplos()
     sha_dataset = hashlib.sha256((RAIZ / 'datos/entrenamiento.jsonl').read_bytes()).hexdigest()
     ejemplos = [codificar(tokenizer, r, config['formato_esquema'], config['max_length']) for r in datos]
@@ -118,7 +130,7 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
             e = ejemplos[i]
             ids = torch.tensor([e['input_ids']], device=dispositivo)
             labels = torch.tensor([e['labels']], device=dispositivo)
-            contexto = torch.autograd.graph.save_on_cpu(pin_memory=True) if dispositivo == 'cuda' and config.get('offload_activaciones') else nullcontext()
+            contexto = contexto_activaciones(congelados) if dispositivo == 'cuda' and config.get('offload_activaciones') else nullcontext()
             with contexto:
                 with torch.autocast(device_type=dispositivo, dtype=dtype, enabled=dispositivo == 'cuda'):
                     respuesta = int((labels != -100).sum().item()) + 1

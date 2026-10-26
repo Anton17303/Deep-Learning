@@ -18,6 +18,8 @@ Se fija un presupuesto de 76 pasos por configuración, equivalente a 0.1 épocas
 
 Se compara el adapter seleccionado sin reparación y con reparación de errores de ejecución. Se mantiene el modelo, el esquema, la pregunta y la generación determinista. La reparación puede usar como máximo dos llamadas a ejecutar y conserva un presupuesto conjunto de 25 segundos. No se entrega la consulta de referencia al modelo.
 
+La reparación contrasta primero los identificadores contra el DDL. Se corrigen nombres inexistentes solo con similitud de al menos 0.88 y una ventaja de al menos 0.10 frente al segundo candidato. Los literales y los nombres válidos se conservan. Cuando no existe una corrección única, se utiliza el mensaje de error para regenerar SQL.
+
 **Hipótesis previa:** el mensaje de error de MySQL puede corregir columnas inexistentes y sintaxis. No garantiza corregir consultas ejecutables que responden otra pregunta. Se comparan EX, errores por categoría y tiempo por consulta.
 
 ## Criterios de selección

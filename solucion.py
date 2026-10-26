@@ -16,7 +16,7 @@ os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":16:8")
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, set_seed
 
-from prompt import construir_mensajes, es_solo_lectura, extraer_sql, resolver_modelo
+from prompt import construir_mensajes, es_solo_lectura, extraer_sql, resolver_modelo, corregir_identificadores
 
 RAIZ = Path(__file__).resolve().parent
 CFG = json.loads(Path(os.environ.get("CONFIG_JSON", RAIZ / "config.json")).read_text(encoding="utf-8"))
@@ -98,14 +98,23 @@ def generar_sql(esquema: str, pregunta: str, ejecutar=None) -> str:
     sql = extraer_sql(_generar(msgs, LIMITE_SEG))
     if REPARAR and ejecutar is not None:
         for _ in range(MAX_REINTENTOS):          # 2 ejecuciones + 2 regeneraciones como máximo
-            if not es_solo_lectura(sql) or time.time() - t0 > LIMITE_SEG - 10:
+            if time.time() - t0 > LIMITE_SEG - 10:
                 break
-            r = ejecutar(sql)
+            if es_solo_lectura(sql):
+                r = ejecutar(sql)
+            else:
+                r = dict(ok=False, error="La salida no es una consulta SELECT o WITH SELECT válida de solo lectura.")
             if r.get("ok"):
                 break
+            corregido = corregir_identificadores(sql, esquema)
+            if corregido != sql and es_solo_lectura(corregido):
+                sql = corregido
+                continue
             msgs = msgs + [
                 {"role": "assistant", "content": sql},
                 {"role": "user", "content": f"La consulta falló en MySQL con: {r.get('error')}. "
-                                            f"Devuelve solo la consulta SQL corregida."}]
+                                            "Comprueba las tablas, columnas y alias contra el esquema. "
+                                            "Usa sus identificadores exactos, sin traducirlos ni inventarlos. "
+                                            "Devuelve solo la consulta SQL corregida."}]
             sql = extraer_sql(_generar(msgs, LIMITE_SEG - (time.time() - t0)))
     return sql if es_solo_lectura(sql) else FALLBACK

@@ -129,6 +129,77 @@ def es_solo_lectura(sql: str) -> bool:
         return False
 
 
+def corregir_identificadores(sql, esquema):
+    """Corrige nombres inexistentes con una coincidencia fuerte y única en el DDL."""
+    from collections import defaultdict
+    from difflib import SequenceMatcher
+    import unicodedata
+    from sqlglot import parse, parse_one, exp
+    if not es_solo_lectura(sql):
+        return sql
+
+    def normalizar(nombre):
+        return ''.join(c for c in unicodedata.normalize('NFKD', nombre).casefold() if c.isalnum())
+
+    def cercano(nombre, candidatos):
+        if nombre in candidatos:
+            return nombre
+        puntuaciones = sorted(((SequenceMatcher(None, normalizar(nombre), normalizar(c)).ratio(), c)
+                               for c in candidatos), reverse=True)
+        if not puntuaciones or puntuaciones[0][0] < .88:
+            return None
+        if len(puntuaciones) > 1 and puntuaciones[0][0] - puntuaciones[1][0] < .10:
+            return None
+        return puntuaciones[0][1]
+
+    try:
+        tablas = {}
+        for ddl in parse(esquema, read='mysql'):
+            if isinstance(ddl, exp.Create) and isinstance(ddl.this, exp.Schema):
+                tablas[ddl.this.this.name] = {c.name for c in ddl.this.expressions if isinstance(c, exp.ColumnDef)}
+        if not tablas:
+            return sql
+        arbol = parse_one(sql, read='mysql')
+        ctes = {c.alias_or_name.casefold() for c in arbol.find_all(exp.CTE)}
+        relaciones, renombres, cambios = defaultdict(set), {}, False
+        usadas, desconocidas = set(), False
+        for tabla in arbol.find_all(exp.Table):
+            if tabla.name.casefold() in ctes:
+                continue
+            original = tabla.name
+            nombre = cercano(original, tablas)
+            if nombre is None:
+                desconocidas = True
+                continue
+            if nombre != original:
+                tabla.set('this', exp.to_identifier(nombre, quoted=True))
+                cambios = True
+                if not tabla.alias:
+                    renombres[original] = nombre
+            usadas.add(nombre)
+            relaciones[tabla.alias_or_name.casefold()].add(nombre)
+        aliases_salida = {a.alias.casefold() for a in arbol.find_all(exp.Alias)}
+        for columna in arbol.find_all(exp.Column):
+            if columna.table in renombres:
+                columna.set('table', exp.to_identifier(renombres[columna.table], quoted=True))
+            if columna.name.casefold() in aliases_salida:
+                continue
+            if columna.table:
+                opciones = relaciones.get(columna.table.casefold(), set())
+            else:
+                opciones = usadas if not desconocidas else set()
+            if len(opciones) != 1:
+                continue
+            candidatas = tablas[next(iter(opciones))]
+            nombre = cercano(columna.name, candidatas)
+            if nombre is not None and nombre != columna.name:
+                columna.set('this', exp.to_identifier(nombre, quoted=True))
+                cambios = True
+        return arbol.sql(dialect='mysql') if cambios else sql
+    except Exception:
+        return sql
+
+
 # ------------------------------------------------------------------- datos ---
 def cargar_esquema(esquema_id: str) -> str:
     return (RAIZ / "datos/esquemas" / f"{esquema_id}.sql").read_text(encoding="utf-8")

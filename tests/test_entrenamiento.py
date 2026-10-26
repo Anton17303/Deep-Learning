@@ -6,6 +6,27 @@ os.environ.setdefault('USE_FLAX', '0')
 
 
 class TestPerdidaSQL(unittest.TestCase):
+    def test_offload_conserva_gradientes(self):
+        import torch
+        from entrenar import contexto_activaciones
+        torch.manual_seed(2026)
+        base = torch.nn.Linear(8, 8, bias=False)
+        base.weight.requires_grad_(False)
+        adapter = torch.nn.Linear(8, 3, bias=False)
+        x = torch.randn(4, 8, requires_grad=True)
+        perdidas, gradientes = [], []
+        for contexto in [torch.autograd.graph.save_on_cpu(), contexto_activaciones({base.weight.data_ptr()}, pin_memory=False)]:
+            adapter.zero_grad(set_to_none=True)
+            x.grad = None
+            with contexto:
+                loss = adapter(base(x)).square().mean()
+            loss.backward()
+            perdidas.append(loss.detach())
+            gradientes.append((x.grad.clone(), adapter.weight.grad.clone()))
+        torch.testing.assert_close(perdidas[0], perdidas[1], rtol=0, atol=0)
+        for a, b in zip(gradientes[0], gradientes[1]):
+            torch.testing.assert_close(a, b, rtol=0, atol=0)
+
     def test_logits_de_respuesta_conservan_la_perdida(self):
         import torch
         from transformers import Qwen2Config, Qwen2ForCausalLM
