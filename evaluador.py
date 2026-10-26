@@ -208,11 +208,20 @@ def main():
     if a.oraculo:
         refs = {q["pregunta"]: q["sql_ref"] for q in qs}
         generar = lambda esquema, pregunta, ejecutar=None: refs[pregunta]  # noqa: E731
+        metadata = dict(modo="oraculo")
     else:
         if a.config:
             os.environ["CONFIG_JSON"] = a.config
-        from solucion import generar_sql as generar
+        from solucion import generar_sql as generar, CARGA_SEG, CFG
+        import torch
+        metadata = dict(modo="modelo", configuracion=CFG, carga_segundos=CARGA_SEG,
+                        dispositivo=torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU",
+                        torch=torch.__version__)
     evaluar(qs, generar, a.salida)
+    p = Path(a.salida).with_suffix('.json')
+    resumen = json.loads(p.read_text(encoding='utf-8'))
+    resumen.update(metadata)
+    p.write_text(json.dumps(resumen, indent=2, ensure_ascii=False), encoding='utf-8')
 
 
 if __name__ == "__main__":

@@ -102,7 +102,7 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
         inicio_paso, historial, transcurrido = estado['paso'], estado['historial'], estado['segundos']
         torch.set_rng_state(estado['rng_cpu'].cpu())
         if dispositivo == 'cuda' and estado.get('rng_cuda') is not None:
-            torch.cuda.set_rng_state_all(estado['rng_cuda'])
+            torch.cuda.set_rng_state_all([s.cpu() for s in estado['rng_cuda']])
     print(json.dumps({'dispositivo': dispositivo, 'parametros_entrenables': entrenables,
                       'parametros_totales': total, 'ejemplos': len(ejemplos),
                       'pasos_completos': pasos_totales, 'limite': limite}), flush=True)

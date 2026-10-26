@@ -21,6 +21,7 @@ def resumir(filas):
     return dict(preguntas=len(filas), aciertos=int(aciertos.sum()),
                 ex=float((pesos * aciertos).sum() / pesos.sum()),
                 tiempo_medio_s=float(tiempos.mean()), tiempo_maximo_s=float(tiempos.max()),
+                tiempo_mediano_s=float(np.median(tiempos)),
                 exceden_30s=int((tiempos > 30).sum()),
                 errores=dict(collections.Counter(r.get('categoria_revisada', r['categoria_error']) for r in filas if r['acierto'] == '0')),
                 por_nivel={str(n): dict(preguntas=sum(int(r['nivel']) == n for r in filas),
@@ -47,7 +48,7 @@ def main():
     parser.add_argument('--directorio', default='resultados')
     args = parser.parse_args()
     raiz = Path(args.directorio)
-    nombres = ['baseline', 'baseline_cpu', 'lora_r8', 'lora_r16', 'reparacion', 'validacion_propia']
+    nombres = ['baseline', 'baseline_cpu', 'baseline_reparacion', 'lora_r8', 'lora_r16', 'reparacion', 'validacion_propia']
     revisiones = cargar_csv(raiz / 'revision_errores.csv') if (raiz / 'revision_errores.csv').exists() else []
     resumen = {}
     lineas = ['# Resultados de Text-to-SQL', '',
@@ -87,8 +88,9 @@ def main():
                       f"Se estima una EX oculta de **{estimacion:.2f}**, frente a {s['ex']:.3f} en la validación propia. Se aplica un descuento relativo del 20% por la generación con plantillas, el uso de solo dos dominios de validación y la selección del adapter sobre ese mismo conjunto. El descuento es una hipótesis conservadora, no una medición ni un intervalo de confianza.", '',
                       f"El intervalo bootstrap jerárquico de EX propia es [{intervalo[0]:.3f}, {intervalo[1]:.3f}]. Se remuestrean esquemas y preguntas con semilla 2026. Con dos esquemas, este intervalo no representa toda la variación esperable entre bases desconocidas.", '',
                       'Los errores de tablas o columnas indican problemas de correspondencia con el esquema; los de JOIN y agregación requieren revisar relaciones y nivel de agrupación. Una consulta ejecutable puede seguir teniendo filtros o resultados incorrectos. La clasificación automática es heurística; los casos particulares se registran en revision_errores.csv.'])
-        if 'baseline' in resumen:
-            mejora = s['ex'] - resumen['baseline']['ex']
+        nombre_base = 'baseline_reparacion' if 'baseline_reparacion' in resumen else 'baseline'
+        if nombre_base in resumen:
+            mejora = s['ex'] - resumen[nombre_base]['ex']
             puntos = 30 * min(1., s['ex'] / .70) + 10 * min(1., max(0., mejora) / .15)
             lineas.extend(['', f'La mejora local frente al baseline es {mejora:+.3f}. Si estos valores se repitieran en la evaluación oculta, el componente de rendimiento sería {puntos:.1f}/40. No corresponde a una nota observada del docente.'])
     (raiz / 'resumen_resultados.json').write_text(json.dumps(resumen, indent=2, ensure_ascii=False), encoding='utf-8')

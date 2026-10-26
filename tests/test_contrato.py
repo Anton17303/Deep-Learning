@@ -25,6 +25,8 @@ class TestContrato(unittest.TestCase):
         self.assertGreaterEqual(len(train), 2000)
         self.assertEqual(len(val), 40)
         self.assertFalse({r['esquema_id'] for r in train} & {r['esquema_id'] for r in val})
+        self.assertFalse({r['esquema_id'].rsplit('_', 1)[0] for r in train} &
+                         {r['esquema_id'].rsplit('_', 1)[0] for r in val})
         self.assertEqual({r['nivel'] for r in val}, {1, 2, 3})
 
     def test_un_solo_factor_lora(self):

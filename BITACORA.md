@@ -9,5 +9,6 @@
 | 2026-10-25 | Nina Nájera | Se reconstruyeron las bases y se revalidaron los candidatos. | Se aceptaron 3,023 pares y se documentaron 79 descartes con `ONLY_FULL_GROUP_BY` activo. |
 | 2026-10-25 | Nina Nájera | Se ejecutaron las consultas de referencia en los dos esquemas de validación. | Las 40 consultas se ejecutaron correctamente y el oráculo alcanzó EX 1.000. |
 | 2026-10-25 | Nina Nájera | Se implementó el entrenamiento con pérdida solo sobre SQL y checkpoints. | Se ejecutó una prueba real de rango 8 con 540,672 parámetros entrenables. |
-| 2026-10-25 | Nina Nájera | Se reforzó la validación de consultas y se añadieron pruebas de integridad. | Se aprobaron 15 pruebas del evaluador, extracción de SQL y contrato. |
+| 2026-10-25 | Nina Nájera | Se reforzó la validación de consultas y se añadieron pruebas de integridad. | Se aprobaron 16 pruebas del evaluador, extracción de SQL y contrato. |
 | 2026-10-25 | Nina Nájera | Se integraron los notebooks y el flujo de comparación experimental. | Se automatizaron baseline, selección de adapter, reparación, análisis y empaquetado. |
+| 2026-10-25 | Nina Nájera | Se preparó un entorno CUDA aislado y se ajustó el entrenamiento a NF4 con activaciones en CPU. | Se inició el entrenamiento QLoRA en la GPU MX350 sin modificar el controlador del equipo. |

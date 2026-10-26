@@ -61,11 +61,17 @@ def main():
     fuente = 'reparacion' if reparar else mejor
     shutil.copy2(RAIZ / f'resultados/{fuente}.csv', RAIZ / 'resultados/validacion_propia.csv')
     shutil.copy2(RAIZ / f'resultados/{fuente}.json', RAIZ / 'resultados/validacion_propia.json')
+    if reparar:
+        config_base_reparacion = {**config_reparacion, 'usar_adapter': False}
+        (RAIZ / 'config_base_reparacion.json').write_text(json.dumps(config_base_reparacion, indent=2) + '\n', encoding='utf-8')
+        ejecutar('evaluador.py', '--config', 'config_base_reparacion.json', '--salida', 'resultados/baseline_reparacion.csv')
     (RAIZ / 'resultados/seleccion.json').write_text(json.dumps(dict(adapter=mejor, reparar=reparar,
         ex_original=original['ex'], ex_reparacion=reparada['ex'],
         entrenamiento_completo=all(json.loads((RAIZ / f'resultados/{n}/resumen.json').read_text())['entrenamiento_completo']
                                     for n in ['lora_r8', 'lora_r16'])), indent=2), encoding='utf-8')
     ejecutar('analizar.py')
+    ejecutar('comprobar_inferencia.py')
+    ejecutar('preparar_presentacion.py')
     ejecutar('-m', 'unittest', 'discover', '-s', 'tests', '-v')
 
 

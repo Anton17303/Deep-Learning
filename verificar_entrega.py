@@ -10,8 +10,8 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent
 DIRECTORIOS = ['adapter', 'datos', 'generador', 'notebooks', 'resultados', 'scripts', 'tests', 'configuraciones']
 ARCHIVOS = ['solucion.py', 'prompt.py', 'evaluador.py', 'entrenar.py', 'analizar.py',
-            'ejecutar_proyecto.py', 'verificar_entrega.py', 'config.json', 'config_base.json',
-            'config_reparacion.json', 'requirements.txt', 'README.md', 'BITACORA.md',
+            'ejecutar_proyecto.py', 'comprobar_inferencia.py', 'preparar_presentacion.py', 'presentacion.pdf', 'verificar_entrega.py', 'config.json', 'config_base.json',
+            'config_reparacion.json', 'config_base_reparacion.json', 'requirements.txt', 'README.md', 'BITACORA.md',
             'CONTRIBUCIONES.md', 'historial_git.txt', 'experimentos.md', 'LICENCIAS.md']
 
 
@@ -35,7 +35,8 @@ def main():
                   esquemas_entrenamiento=len({r['esquema_id'].rsplit('_', 1)[0] for r in train}) >= 10,
                   preguntas_validacion=len(val) >= 40,
                   esquemas_validacion=len({r['esquema_id'] for r in val}) >= 2,
-                  particion_sin_fuga=not bool({r['esquema_id'] for r in train} & {r['esquema_id'] for r in val}),
+                  particion_sin_fuga=not bool({r['esquema_id'].rsplit('_', 1)[0] for r in train} &
+                                             {r['esquema_id'].rsplit('_', 1)[0] for r in val}),
                   mysql_correcto=reporte['motor'] == 'MySQL 8.4.10',
                   adapter_presente=(RAIZ / 'adapter/adapter_model.safetensors').exists(),
                   resultados_presentes=(RAIZ / 'resultados/validacion_propia.csv').exists(),
@@ -43,6 +44,8 @@ def main():
     for nombre in ['lora_r8', 'lora_r16']:
         p = RAIZ / f'resultados/{nombre}/resumen.json'
         checks[f'{nombre}_completo'] = p.exists() and json.loads(p.read_text())['entrenamiento_completo']
+    contrato = RAIZ / 'resultados/contrato_inferencia.json'
+    checks['contrato_inferencia'] = contrato.exists() and json.loads(contrato.read_text(encoding='utf-8'))['cumple']
     pruebas = subprocess.run([sys.executable, '-m', 'unittest', 'discover', '-s', 'tests'], cwd=RAIZ,
                              capture_output=True, text=True)
     checks['pruebas'] = pruebas.returncode == 0
