@@ -35,6 +35,14 @@ En Windows se inicia la instancia local con `. ./scripts/iniciar_mysql.ps1`, que
 
 El flujo completo construye los datos, ejecuta el baseline, entrena las dos configuraciones, evalúa los adapters y compara la reparación. Se selecciona por EX ponderada; en empate se prefiere el rango 8. Los checkpoints permiten reanudar una corrida interrumpida.
 
+La ampliación de cobertura continúa ambos rangos durante una época adicional completa y conserva los candidatos iniciales en la selección:
+
+```bash
+python ejecutar_proyecto.py --reanudar --ampliar-entrenamiento
+```
+
+`notebooks/04_entrenamiento_completo_t4.ipynb` integra la preparación del entorno, la comprobación de los datos, el entrenamiento y la evaluación en T4. Verifica el acelerador antes de ejecutar y guarda los registros obtenidos en ese dispositivo.
+
 Para evaluar la entrega:
 
 ```bash
@@ -64,7 +72,7 @@ Los resultados por pregunta, el análisis por categoría, la selección del adap
 
 Se seleccionó lora_r8, con reparación desactivada. La EX oculta estimada es 0.35; corresponde a una predicción, no a una medición oficial.
 
-La carga del modelo tardó 6.37 segundos. Los tres casos repetidos cumplieron determinismo, consulta de solo lectura, límite de llamadas y tiempo. Las 23 pruebas automatizadas se aprobaron.
+La carga del modelo tardó 6.37 segundos. Los tres casos repetidos cumplieron determinismo, consulta de solo lectura, límite de llamadas y tiempo. Las 25 pruebas automatizadas se aprobaron.
 
 ## Estructura
 

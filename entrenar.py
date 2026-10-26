@@ -53,6 +53,9 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
     salida = Path(salida)
     salida.mkdir(parents=True, exist_ok=True)
     dispositivo = 'cuda' if torch.cuda.is_available() else 'cpu'
+    opcion_offload = config.get('offload_activaciones', False)
+    offload = (torch.cuda.get_device_properties(0).total_memory < 6 * 1024 ** 3
+               if opcion_offload == 'auto' and dispositivo == 'cuda' else opcion_offload is True)
     dtype = torch.float16 if dispositivo == 'cuda' else torch.float32
     origen = resolver_modelo(config['modelo_base'])
     tokenizer = AutoTokenizer.from_pretrained(origen)
@@ -74,6 +77,18 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
     modelo = get_peft_model(modelo, LoraConfig(
         task_type='CAUSAL_LM', r=config['r'], lora_alpha=config['lora_alpha'],
         lora_dropout=config['lora_dropout'], target_modules=config['target_modules'], bias='none'))
+    firma_inicial = None
+    if config.get('adapter_inicial'):
+        from peft import set_peft_model_state_dict
+        from safetensors.torch import load_file
+        inicial = RAIZ / config['adapter_inicial']
+        informacion = json.loads((inicial / 'adapter_config.json').read_text(encoding='utf-8'))
+        firma_inicial = hashlib.sha256((inicial / 'adapter_model.safetensors').read_bytes()).hexdigest()
+        if informacion['r'] != config['r'] or informacion['base_model_name_or_path'] != config['modelo_base']:
+            raise ValueError('El adapter inicial no coincide con el modelo y rango configurados')
+        carga = set_peft_model_state_dict(modelo, load_file(str(inicial / 'adapter_model.safetensors')))
+        if carga.unexpected_keys or any('lora_' in k for k in carga.missing_keys):
+            raise ValueError('Los pesos del adapter inicial no coinciden con los módulos configurados')
     if not cuantizado:
         modelo.to(dispositivo)
     modelo.gradient_checkpointing_enable(gradient_checkpointing_kwargs={'use_reentrant': False})
@@ -106,12 +121,16 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
             raise ValueError('El checkpoint corresponde a otra configuración')
         if estado.get('sha256_dataset') != sha_dataset:
             raise ValueError('Los datos cambiaron respecto al checkpoint')
+        if estado.get('sha256_adapter_inicial') != firma_inicial:
+            raise ValueError('El adapter inicial cambió respecto al checkpoint')
         from peft import set_peft_model_state_dict
         set_peft_model_state_dict(modelo, estado['adapter'])
         optim.load_state_dict(estado['optim'])
         scheduler.load_state_dict(estado['scheduler'])
         scaler.load_state_dict(estado['scaler'])
         inicio_paso, historial, transcurrido = estado['paso'], estado['historial'], estado['segundos']
+        for registro in historial:
+            registro.setdefault('acelerador', estado.get('acelerador', 'no registrado'))
         torch.set_rng_state(estado['rng_cpu'].cpu())
         if dispositivo == 'cuda' and estado.get('rng_cuda') is not None:
             torch.cuda.set_rng_state_all([s.cpu() for s in estado['rng_cuda']])
@@ -130,7 +149,7 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
             e = ejemplos[i]
             ids = torch.tensor([e['input_ids']], device=dispositivo)
             labels = torch.tensor([e['labels']], device=dispositivo)
-            contexto = contexto_activaciones(congelados) if dispositivo == 'cuda' and config.get('offload_activaciones') else nullcontext()
+            contexto = contexto_activaciones(congelados) if dispositivo == 'cuda' and offload else nullcontext()
             with contexto:
                 with torch.autocast(device_type=dispositivo, dtype=dtype, enabled=dispositivo == 'cuda'):
                     respuesta = int((labels != -100).sum().item()) + 1
@@ -138,7 +157,7 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
                                   labels=labels[:, -respuesta:], logits_to_keep=respuesta).loss
             if not torch.isfinite(loss):
                 raise RuntimeError('Pérdida no finita')
-            if dispositivo == 'cuda' and config.get('offload_activaciones'):
+            if dispositivo == 'cuda' and offload:
                 torch.cuda.empty_cache()
             scaler.scale(loss / len(indices)).backward()
             perdida += loss.detach().float().item() / len(indices)
@@ -150,32 +169,46 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
         scheduler.step()
         registro = dict(paso=paso + 1, epoca=epoca + min((dentro + 1) * acumulacion / len(orden), 1.),
                         loss=perdida, learning_rate=scheduler.get_last_lr()[0],
-                        segundos=time.perf_counter() - t0, tokens=tokens)
+                        segundos=time.perf_counter() - t0, tokens=tokens,
+                        acelerador=torch.cuda.get_device_name(0) if dispositivo == 'cuda' else 'CPU')
         historial.append(registro)
         print(json.dumps(registro), flush=True)
-        from peft import get_peft_model_state_dict
-        modelo.save_pretrained(salida / 'adapter', safe_serialization=True)
-        torch.save(dict(config=config, sha256_dataset=sha_dataset, paso=paso + 1, historial=historial,
-                        segundos=transcurrido + time.perf_counter() - inicio,
-                        adapter=get_peft_model_state_dict(modelo), optim=optim.state_dict(),
-                        scheduler=scheduler.state_dict(), scaler=scaler.state_dict(),
-                        rng_cpu=torch.get_rng_state(),
-                        rng_cuda=torch.cuda.get_rng_state_all() if dispositivo == 'cuda' else None), checkpoint)
-        guardar_resultados(salida, config, historial, entrenables, total, len(ejemplos),
-                           pasos_totales, transcurrido + time.perf_counter() - inicio, dispositivo)
+        if paso == inicio_paso or (paso + 1) % config.get('guardar_cada', 1) == 0 or paso + 1 == limite:
+            from peft import get_peft_model_state_dict
+            modelo.save_pretrained(salida / 'adapter', safe_serialization=True)
+            temporal = checkpoint.with_suffix('.pt.tmp')
+            torch.save(dict(config=config, sha256_dataset=sha_dataset, paso=paso + 1, historial=historial,
+                            sha256_adapter_inicial=firma_inicial,
+                            acelerador=registro['acelerador'],
+                            segundos=transcurrido + time.perf_counter() - inicio,
+                            adapter=get_peft_model_state_dict(modelo), optim=optim.state_dict(),
+                            scheduler=scheduler.state_dict(), scaler=scaler.state_dict(),
+                            rng_cpu=torch.get_rng_state(),
+                            rng_cuda=torch.cuda.get_rng_state_all() if dispositivo == 'cuda' else None), temporal)
+            temporal.replace(checkpoint)
+            guardar_resultados(salida, config, historial, entrenables, total, len(ejemplos),
+                               pasos_totales, transcurrido + time.perf_counter() - inicio, dispositivo,
+                               firma_inicial=firma_inicial, offload_efectivo=offload)
     return salida / 'adapter'
 
 
-def guardar_resultados(salida, config, historial, entrenables, total, ejemplos, pasos_totales, segundos, dispositivo):
+def guardar_resultados(salida, config, historial, entrenables, total, ejemplos, pasos_totales, segundos, dispositivo,
+                       firma_inicial=None, offload_efectivo=False):
     with (salida / 'loss.csv').open('w', newline='', encoding='utf-8') as f:
         w = csv.DictWriter(f, fieldnames=list(historial[0]))
         w.writeheader()
         w.writerows(historial)
+    pasos_epoca = math.ceil(ejemplos / config['gradient_accumulation_steps'])
+    epocas, resto = divmod(len(historial), pasos_epoca)
+    procesados = epocas * ejemplos + min(resto * config['gradient_accumulation_steps'], ejemplos)
     resumen = dict(config=config, parametros_entrenables=entrenables, parametros_totales=total,
                    ejemplos_dataset=ejemplos, pasos_realizados=len(historial), pasos_previstos=pasos_totales,
-                   ejemplos_procesados=min(len(historial) * config['gradient_accumulation_steps'], ejemplos),
+                   ejemplos_procesados=procesados,
                    entrenamiento_completo=len(historial) >= pasos_totales,
                    segundos_entrenamiento=segundos, dispositivo=dispositivo,
+                   acelerador=torch.cuda.get_device_name(0) if dispositivo == 'cuda' else 'CPU',
+                   aceleradores=sorted({h.get('acelerador', dispositivo) for h in historial}),
+                   sha256_adapter_inicial=firma_inicial, offload_activaciones_efectivo=offload_efectivo,
                    sha256_dataset=hashlib.sha256((RAIZ / 'datos/entrenamiento.jsonl').read_bytes()).hexdigest(),
                    torch=torch.__version__)
     (salida / 'resumen.json').write_text(json.dumps(resumen, indent=2, ensure_ascii=False), encoding='utf-8')

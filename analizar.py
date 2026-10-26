@@ -48,7 +48,7 @@ def main():
     parser.add_argument('--directorio', default='resultados')
     args = parser.parse_args()
     raiz = Path(args.directorio)
-    nombres = ['baseline', 'lora_r8', 'lora_r16', 'reparacion', 'validacion_propia']
+    nombres = ['baseline', 'lora_r8', 'lora_r16', 'lora_r8_completo', 'lora_r16_completo', 'reparacion', 'validacion_propia']
     revisiones = cargar_csv(raiz / 'revision_errores.csv') if (raiz / 'revision_errores.csv').exists() else []
     resumen = {}
     lineas = ['# Resultados de Text-to-SQL', '',
@@ -71,7 +71,7 @@ def main():
             resumen[nombre] = s
             lineas.append(f"| {nombre} | {s['aciertos']}/40 | {s['ex']:.3f} | {s['tiempo_medio_s']:.2f} | {s['tiempo_maximo_s']:.2f} |")
     entrenamientos = []
-    for nombre in ['lora_r8', 'lora_r16']:
+    for nombre in ['lora_r8', 'lora_r16', 'lora_r8_completo', 'lora_r16_completo']:
         ruta = raiz / nombre / 'resumen.json'
         if ruta.exists():
             entrenamientos.append(json.loads(ruta.read_text(encoding='utf-8')))
@@ -81,7 +81,7 @@ def main():
                        '|---|---:|---:|---:|---:|'])
         for e in entrenamientos:
             lineas.append(f"| {e['config']['r']} | {e['parametros_entrenables']:,} | {e['pasos_realizados']}/{e['pasos_previstos']} | {e['ejemplos_procesados']}/{e['ejemplos_dataset']} | {e['segundos_entrenamiento']/60:.2f} |")
-        lineas.extend(['', 'Se utiliza la misma base NF4, semilla, orden de ejemplos, tasa de aprendizaje y presupuesto. El rango es el único factor de comparación. La cobertura de 304 ejemplos no equivale a recorrer el corpus completo.', '',
+        lineas.extend(['', 'Cada comparación entre rangos comparte base NF4, semilla, orden de ejemplos, tasa de aprendizaje y presupuesto. Los entrenamientos iniciales procesaron 304 ejemplos. Las continuaciones parten del adapter del rango correspondiente y recorren una época adicional del corpus completo.', '',
                        'Las curvas se conservan en lora_r8/loss.png y lora_r16/loss.png, junto con sus CSV por paso.'])
         for e in entrenamientos:
             perdidas = cargar_csv(raiz / e['config']['nombre'] / 'loss.csv')
@@ -90,9 +90,11 @@ def main():
                 final = np.mean([float(p['loss']) for p in perdidas[-10:]])
                 lineas.extend(['', f"En rango {e['config']['r']}, la pérdida media de los primeros diez pasos fue {inicial:.3f} y la de los últimos diez fue {final:.3f}."])
         lineas.extend(['', 'Estos promedios describen el ajuste sobre ejemplos de entrenamiento distintos. Una pérdida menor no garantiza una EX mayor en esquemas nuevos; la selección se apoya en la evaluación por ejecución.'])
-    if 'lora_r8' in resumen and 'lora_r16' in resumen:
-        diferencia = resumen['lora_r16']['ex'] - resumen['lora_r8']['ex']
-        lineas.extend(['', f"El rango 16 obtuvo una diferencia de EX de {diferencia:+.3f} frente al rango 8. " +
+    for sufijo, etapa in [('', 'el presupuesto inicial'), ('_completo', 'la época adicional')]:
+        if f'lora_r8{sufijo}' not in resumen or f'lora_r16{sufijo}' not in resumen:
+            continue
+        diferencia = resumen[f'lora_r16{sufijo}']['ex'] - resumen[f'lora_r8{sufijo}']['ex']
+        lineas.extend(['', f"Con {etapa}, el rango 16 obtuvo una diferencia de EX de {diferencia:+.3f} frente al rango 8. " +
                        ('La hipótesis de mayor EX con rango 16 recibió apoyo en esta validación.' if diferencia > 0 else
                         'No se observó una mejora de EX al aumentar el rango bajo este presupuesto.') +
                        ' La comparación se limita a 40 preguntas y dos esquemas; no demuestra una ventaja general sobre bases desconocidas.'])

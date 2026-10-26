@@ -6,6 +6,21 @@ os.environ.setdefault('USE_FLAX', '0')
 
 
 class TestPerdidaSQL(unittest.TestCase):
+    def test_recuento_de_ejemplos_con_lote_final_incompleto(self):
+        import json
+        import tempfile
+        from pathlib import Path
+        from entrenar import guardar_resultados
+        config = {'nombre': 'prueba', 'gradient_accumulation_steps': 4}
+        historial = [dict(paso=p, epoca=p / 2, loss=.2, learning_rate=.0001,
+                          segundos=1., tokens=10) for p in [1, 2, 3]]
+        with tempfile.TemporaryDirectory() as carpeta:
+            ruta = Path(carpeta)
+            guardar_resultados(ruta, config, historial, 8, 100, 5, 4, 3., 'cpu')
+            resumen = json.loads((ruta / 'resumen.json').read_text(encoding='utf-8'))
+            self.assertEqual(resumen['ejemplos_procesados'], 9)
+            self.assertFalse(resumen['entrenamiento_completo'])
+
     def test_offload_conserva_gradientes(self):
         import torch
         from entrenar import contexto_activaciones

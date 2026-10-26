@@ -25,3 +25,13 @@ La reparación contrasta primero los identificadores contra el DDL. Se corrigen 
 ## Criterios de selección
 
 Se selecciona el adapter con mayor EX ponderada sobre las 40 preguntas. En empate, se prefiere el menor rango. La reparación se activa únicamente si mejora EX sin exceder el límite de tiempo. Los resultados se obtienen de los CSV de evaluación y de los registros de entrenamiento, sin asignar valores a experimentos no ejecutados.
+
+## Ampliación de cobertura registrada el 26 de octubre de 2026
+
+Se comparan continuaciones de los rangos 8 y 16 durante una época adicional completa: 756 pasos y 3,023 ejemplos por configuración. Se parte de los adapters de cada rango que procesaron 304 ejemplos. Se reinicia el optimizador con tasa 0.0001; el resto de condiciones se mantiene igual entre ambos rangos. Los checkpoints se guardan cada diez pasos y al finalizar.
+
+**Hipótesis previa:** recorrer el corpus completo puede mejorar la correspondencia con los identificadores, las agregaciones y las subconsultas frente al presupuesto de 304 ejemplos. El rango 16 podría aprovechar la mayor cobertura, aunque la pérdida de entrenamiento no garantiza una mejora de EX. Se conservan los adapters iniciales y se selecciona por EX ponderada, sin reemplazar la entrega con un candidato que empeore el resultado.
+
+La validación de hotel y fútbol continúa excluida del cálculo de gradientes. La ejecución en T4 se acredita únicamente mediante registros obtenidos en ese dispositivo.
+
+En la ampliación se usa offload automático: las activaciones se transfieren a CPU cuando la GPU tiene menos de 6 GiB; en una T4 permanecen en GPU. Esta decisión se aplica igual a ambos rangos y se registra junto con el dispositivo utilizado.

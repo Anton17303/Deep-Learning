@@ -1,0 +1,24 @@
+{
+  "nombre": "lora_r8_completo",
+  "modelo_base": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "semilla": 2026,
+  "r": 8,
+  "lora_alpha": 16,
+  "lora_dropout": 0.05,
+  "target_modules": [
+    "q_proj",
+    "v_proj"
+  ],
+  "learning_rate": 0.0001,
+  "num_train_epochs": 1.0,
+  "batch_size": 1,
+  "gradient_accumulation_steps": 4,
+  "max_length": 4096,
+  "warmup_ratio": 0.03,
+  "weight_decay": 0.01,
+  "formato_esquema": "show_create",
+  "cuantizacion": "nf4",
+  "offload_activaciones": "auto",
+  "adapter_inicial": "resultados/lora_r8/adapter",
+  "guardar_cada": 10
+}

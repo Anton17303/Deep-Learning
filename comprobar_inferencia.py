@@ -30,7 +30,10 @@ def main():
                           cumple_tiempo=max(tiempos) <= 30, tiempos_segundos=tiempos,
                           llamadas_diagnostico=llamadas, cumple_llamadas=max(llamadas) <= 3,
                           sql=respuestas[0]))
+    import torch
     resultado = dict(configuracion=solucion.CFG, carga_segundos=solucion.CARGA_SEG,
+                     dispositivo=torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU',
+                     torch=torch.__version__, cuda=torch.version.cuda,
                      carga_valida=solucion.CARGA_SEG <= 300, casos=filas,
                      cumple=solucion.CARGA_SEG <= 300 and all(r['determinista'] and r['solo_lectura'] and r['cumple_tiempo'] and r['cumple_llamadas'] for r in filas))
     (raiz / 'resultados/contrato_inferencia.json').write_text(json.dumps(resultado, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')

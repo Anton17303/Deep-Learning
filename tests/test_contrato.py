@@ -35,6 +35,17 @@ class TestContrato(unittest.TestCase):
         diferencias = {k for k in a if a[k] != b[k]} - {'nombre'}
         self.assertEqual(diferencias, {'r'})
 
+    def test_continuaciones_mantienen_comparacion_por_rango(self):
+        raiz = Path(__file__).resolve().parents[1] / 'configuraciones'
+        configs = []
+        for rango in [8, 16]:
+            c = json.loads((raiz / f'lora_r{rango}_completo.json').read_text(encoding='utf-8'))
+            self.assertEqual(c.pop('adapter_inicial'), f'resultados/lora_r{rango}/adapter')
+            c.pop('nombre')
+            self.assertEqual(c['num_train_epochs'], 1.)
+            configs.append(c)
+        self.assertEqual({k for k in configs[0] if configs[0][k] != configs[1][k]}, {'r'})
+
 
 if __name__ == '__main__':
     unittest.main()

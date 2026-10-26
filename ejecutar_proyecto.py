@@ -65,6 +65,10 @@ def entrenamiento_valido(nombre):
         return False
     resumen = json.loads(resumen_ruta.read_text(encoding='utf-8'))
     config = json.loads((RAIZ / f'configuraciones/{nombre}.json').read_text(encoding='utf-8'))
+    if config.get('adapter_inicial'):
+        pesos = RAIZ / config['adapter_inicial'] / 'adapter_model.safetensors'
+        if not pesos.exists() or resumen.get('sha256_adapter_inicial') != hashlib.sha256(pesos.read_bytes()).hexdigest():
+            return False
     return (resumen.get('entrenamiento_completo', False) and resumen['config'] == config and
             resumen['sha256_dataset'] == hashlib.sha256((RAIZ / 'datos/entrenamiento.jsonl').read_bytes()).hexdigest() and
             all((RAIZ / f'resultados/{nombre}' / p).exists() for p in ['adapter/adapter_model.safetensors', 'loss.csv', 'loss.png']))
@@ -84,6 +88,8 @@ def normalizar_adapter(nombre):
                f"Parámetros entrenables: {resumen['parametros_entrenables']:,}. "
                f"Tiempo de entrenamiento: {resumen['segundos_entrenamiento'] / 60:.2f} minutos.\n\n"
                "Los pesos del modelo base se descargan por separado. La inferencia se realiza mediante solucion.py.\n")
+    if resumen['config'].get('adapter_inicial'):
+        tarjeta += '\nSe continuó desde un adapter del mismo rango que procesó 304 ejemplos, con un optimizador reiniciado para recorrer una época adicional completa.\n'
     (ruta / 'README.md').write_text(tarjeta, encoding='utf-8')
     shutil.copy2(RAIZ / 'LICENCIA_MODELO.txt', ruta / 'LICENSE')
 
@@ -93,6 +99,7 @@ def main():
     parser.add_argument('--omitir-datos', action='store_true')
     parser.add_argument('--reanudar', action='store_true')
     parser.add_argument('--max-steps', type=int)
+    parser.add_argument('--ampliar-entrenamiento', action='store_true')
     args = parser.parse_args()
     os.environ.setdefault('USE_TF', '0')
     os.environ.setdefault('USE_FLAX', '0')
@@ -103,7 +110,10 @@ def main():
     ejecutar('evaluador.py', '--oraculo', '--salida', 'resultados/oraculo.csv')
     if not (args.reanudar and evaluacion_valida('resultados/baseline.csv', 'config_base.json')):
         ejecutar('evaluador.py', '--config', 'config_base.json', '--salida', 'resultados/baseline.csv')
-    for nombre in ['lora_r8', 'lora_r16']:
+    nombres = ['lora_r8', 'lora_r16']
+    if args.ampliar_entrenamiento:
+        nombres += ['lora_r8_completo', 'lora_r16_completo']
+    for nombre in nombres:
         parametros = ['entrenar.py', '--config', f'configuraciones/{nombre}.json', '--salida', f'resultados/{nombre}']
         if args.reanudar:
             parametros.append('--reanudar')
@@ -116,7 +126,7 @@ def main():
         if not (args.reanudar and evaluacion_valida(f'resultados/{nombre}.csv', f'configuraciones/evaluar_{rango}.json')):
             ejecutar('evaluador.py', '--config', f'configuraciones/evaluar_{rango}.json', '--salida', f'resultados/{nombre}.csv')
     from analizar import cargar_csv, resumir
-    mejor = max(['lora_r8', 'lora_r16'], key=lambda n: resumir(cargar_csv(RAIZ / f'resultados/{n}.csv'))['ex'])
+    mejor = max(nombres, key=lambda n: resumir(cargar_csv(RAIZ / f'resultados/{n}.csv'))['ex'])
     destino = RAIZ / 'adapter'
     destino.mkdir(exist_ok=True)
     for archivo in (RAIZ / f'resultados/{mejor}/adapter').iterdir():
@@ -143,7 +153,7 @@ def main():
     (RAIZ / 'resultados/seleccion.json').write_text(json.dumps(dict(adapter=mejor, reparar=reparar,
         ex_original=original['ex'], ex_reparacion=reparada['ex'],
         entrenamiento_completo=all(json.loads((RAIZ / f'resultados/{n}/resumen.json').read_text())['entrenamiento_completo']
-                                    for n in ['lora_r8', 'lora_r16'])), indent=2), encoding='utf-8')
+                                    for n in nombres)), indent=2), encoding='utf-8')
     ejecutar('analizar.py')
     ejecutar('comprobar_inferencia.py')
     ejecutar('-m', 'unittest', 'discover', '-s', 'tests', '-v')
