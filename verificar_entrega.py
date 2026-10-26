@@ -1,5 +1,6 @@
 """Comprobación de integridad y empaquetado de archivos del proyecto."""
 import argparse
+import csv
 import hashlib
 import json
 import subprocess
@@ -65,6 +66,13 @@ def main():
     estado = dict(comprobaciones=checks, completo=all(checks.values()),
                   pruebas=pruebas.stderr, sha256_dataset=hashlib.sha256((RAIZ / 'datos/entrenamiento.jsonl').read_bytes()).hexdigest())
     metadata = RAIZ / 'resultados/validacion_propia.json'
+    if checks['resultados_presentes']:
+        with (RAIZ / 'resultados/validacion_propia.csv').open(encoding='utf-8', newline='') as archivo:
+            filas = list(csv.DictReader(archivo))
+        checks['evaluacion_completa'] = len(filas) == len(val) and {r['id'] for r in filas} == {r['id'] for r in val}
+        checks['limite_tiempo_evaluacion'] = bool(filas) and all(float(r['tiempo_s']) <= 30 for r in filas)
+        checks['proveniencia_validacion'] = metadata.exists() and json.loads(metadata.read_text(encoding='utf-8')).get('sha256_preguntas') == hashlib.sha256((RAIZ / 'datos/validacion/preguntas.jsonl').read_bytes()).hexdigest()
+    estado['completo'] = all(checks.values())
     estado['entorno_objetivo_verificado'] = metadata.exists() and 'T4' in json.loads(metadata.read_text(encoding='utf-8')).get('dispositivo', '')
     (RAIZ / 'resultados/verificacion.json').write_text(json.dumps(estado, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     manifiesto = {str(p.relative_to(RAIZ)).replace('\\', '/'): hashlib.sha256(p.read_bytes()).hexdigest()

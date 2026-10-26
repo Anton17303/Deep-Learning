@@ -83,6 +83,13 @@ def main():
             lineas.append(f"| {e['config']['r']} | {e['parametros_entrenables']:,} | {e['pasos_realizados']}/{e['pasos_previstos']} | {e['ejemplos_procesados']}/{e['ejemplos_dataset']} | {e['segundos_entrenamiento']/60:.2f} |")
         lineas.extend(['', 'Se utiliza la misma base NF4, semilla, orden de ejemplos, tasa de aprendizaje y presupuesto. El rango es el único factor de comparación. La cobertura de 304 ejemplos no equivale a recorrer el corpus completo.', '',
                        'Las curvas se conservan en lora_r8/loss.png y lora_r16/loss.png, junto con sus CSV por paso.'])
+        for e in entrenamientos:
+            perdidas = cargar_csv(raiz / e['config']['nombre'] / 'loss.csv')
+            if len(perdidas) >= 20:
+                inicial = np.mean([float(p['loss']) for p in perdidas[:10]])
+                final = np.mean([float(p['loss']) for p in perdidas[-10:]])
+                lineas.extend(['', f"En rango {e['config']['r']}, la pérdida media de los primeros diez pasos fue {inicial:.3f} y la de los últimos diez fue {final:.3f}."])
+        lineas.extend(['', 'Estos promedios describen el ajuste sobre ejemplos de entrenamiento distintos. Una pérdida menor no garantiza una EX mayor en esquemas nuevos; la selección se apoya en la evaluación por ejecución.'])
     if 'lora_r8' in resumen and 'lora_r16' in resumen:
         diferencia = resumen['lora_r16']['ex'] - resumen['lora_r8']['ex']
         lineas.extend(['', f"El rango 16 obtuvo una diferencia de EX de {diferencia:+.3f} frente al rango 8. " +
