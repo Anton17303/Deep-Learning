@@ -11,8 +11,9 @@ from pathlib import Path
 
 os.environ.setdefault("USE_TF", "0")
 os.environ.setdefault("USE_FLAX", "0")
+os.environ.setdefault("CUDA_MODULE_LOADING", "LAZY")
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, set_seed
 
 from prompt import construir_mensajes, es_solo_lectura, extraer_sql
 
@@ -38,15 +39,22 @@ _t0 = time.time()
 _origen = os.environ.get("MODEL_LOCAL_PATH", CFG["modelo_base"])
 _tok = AutoTokenizer.from_pretrained(_origen)
 _cuda = torch.cuda.is_available()
+_cuantizado = _cuda and CFG.get("cuantizacion") == "nf4"
+_opciones = {}
+if _cuantizado:
+    _opciones["quantization_config"] = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4",
+        bnb_4bit_use_double_quant=True, bnb_4bit_compute_dtype=torch.float16)
 _modelo = AutoModelForCausalLM.from_pretrained(
     _origen,
     torch_dtype=torch.float16 if _cuda else torch.float32,  # la T4 no soporta bf16
     device_map="auto" if _cuda else None,
+    **_opciones,
 )
 if CFG.get("usar_adapter", True):
     from peft import PeftModel
     _modelo = PeftModel.from_pretrained(_modelo, str(RAIZ / CFG["adapter"]))
-    _modelo = _modelo.merge_and_unload()
+    if not _cuantizado:
+        _modelo = _modelo.merge_and_unload()
 _modelo.eval()
 CARGA_SEG = time.time() - _t0  # el límite de carga es 5 min
 if CARGA_SEG > 300:

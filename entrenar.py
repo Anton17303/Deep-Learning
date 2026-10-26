@@ -11,9 +11,10 @@ from pathlib import Path
 
 os.environ.setdefault('USE_TF', '0')
 os.environ.setdefault('USE_FLAX', '0')
+os.environ.setdefault('CUDA_MODULE_LOADING', 'LAZY')
 import torch
-from peft import LoraConfig, get_peft_model
-from transformers import AutoModelForCausalLM, AutoTokenizer, set_seed
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, set_seed
 
 from prompt import cargar_ejemplos, construir_mensajes
 
@@ -43,12 +44,25 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
     origen = os.environ.get('MODEL_LOCAL_PATH', config['modelo_base'])
     tokenizer = AutoTokenizer.from_pretrained(origen)
     tokenizer.pad_token = tokenizer.eos_token
-    modelo = AutoModelForCausalLM.from_pretrained(origen, torch_dtype=dtype)
+    cuantizado = config.get('cuantizacion') == 'nf4'
+    if cuantizado and dispositivo != 'cuda':
+        raise RuntimeError('El entrenamiento NF4 requiere una GPU CUDA')
+    opciones = {}
+    if cuantizado:
+        opciones = dict(device_map={'': 0}, quantization_config=BitsAndBytesConfig(
+            load_in_4bit=True, bnb_4bit_quant_type='nf4', bnb_4bit_use_double_quant=True,
+            bnb_4bit_compute_dtype=torch.float16))
+    modelo = AutoModelForCausalLM.from_pretrained(origen, torch_dtype=dtype, **opciones)
     modelo.config.use_cache = False
+    if cuantizado:
+        modelo = prepare_model_for_kbit_training(modelo, use_gradient_checkpointing=True,
+                    gradient_checkpointing_kwargs={'use_reentrant': False})
+        modelo.get_input_embeddings().to(torch.float16)
     modelo = get_peft_model(modelo, LoraConfig(
         task_type='CAUSAL_LM', r=config['r'], lora_alpha=config['lora_alpha'],
         lora_dropout=config['lora_dropout'], target_modules=config['target_modules'], bias='none'))
-    modelo.to(dispositivo)
+    if not cuantizado:
+        modelo.to(dispositivo)
     modelo.gradient_checkpointing_enable(gradient_checkpointing_kwargs={'use_reentrant': False})
     datos = cargar_ejemplos()
     sha_dataset = hashlib.sha256((RAIZ / 'datos/entrenamiento.jsonl').read_bytes()).hexdigest()
@@ -59,8 +73,7 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
     pasos_epoca = math.ceil(len(orden) / acumulacion)
     pasos_totales = math.ceil(pasos_epoca * config['num_train_epochs'])
     limite = min(max_steps, pasos_totales) if max_steps else pasos_totales
-    entrenables = sum(p.numel() for p in modelo.parameters() if p.requires_grad)
-    total = sum(p.numel() for p in modelo.parameters())
+    entrenables, total = modelo.get_nb_trainable_parameters()
     optim = torch.optim.AdamW((p for p in modelo.parameters() if p.requires_grad),
                              lr=config['learning_rate'], weight_decay=config['weight_decay'])
     calentamiento = max(1, round(pasos_totales * config['warmup_ratio']))
@@ -122,17 +135,16 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
                         segundos=time.perf_counter() - t0, tokens=tokens)
         historial.append(registro)
         print(json.dumps(registro), flush=True)
-        if (paso + 1) % 1 == 0:
-            from peft import get_peft_model_state_dict
-            modelo.save_pretrained(salida / 'adapter', safe_serialization=True)
-            torch.save(dict(config=config, sha256_dataset=sha_dataset, paso=paso + 1, historial=historial,
-                            segundos=transcurrido + time.perf_counter() - inicio,
-                            adapter=get_peft_model_state_dict(modelo), optim=optim.state_dict(),
-                            scheduler=scheduler.state_dict(), scaler=scaler.state_dict(),
-                            rng_cpu=torch.get_rng_state(),
-                            rng_cuda=torch.cuda.get_rng_state_all() if dispositivo == 'cuda' else None), checkpoint)
-            guardar_resultados(salida, config, historial, entrenables, total, len(ejemplos),
-                               pasos_totales, transcurrido + time.perf_counter() - inicio, dispositivo)
+        from peft import get_peft_model_state_dict
+        modelo.save_pretrained(salida / 'adapter', safe_serialization=True)
+        torch.save(dict(config=config, sha256_dataset=sha_dataset, paso=paso + 1, historial=historial,
+                        segundos=transcurrido + time.perf_counter() - inicio,
+                        adapter=get_peft_model_state_dict(modelo), optim=optim.state_dict(),
+                        scheduler=scheduler.state_dict(), scaler=scaler.state_dict(),
+                        rng_cpu=torch.get_rng_state(),
+                        rng_cuda=torch.cuda.get_rng_state_all() if dispositivo == 'cuda' else None), checkpoint)
+        guardar_resultados(salida, config, historial, entrenables, total, len(ejemplos),
+                           pasos_totales, transcurrido + time.perf_counter() - inicio, dispositivo)
     return salida / 'adapter'
 
 

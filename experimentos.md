@@ -4,7 +4,7 @@
 
 Se utiliza Qwen2.5-Coder-0.5B-Instruct, uno de los modelos permitidos, con semilla 2026. Se conserva el mismo prompt en el baseline y en los adapters. La validación de hotel y fútbol no se utiliza para calcular gradientes ni para ajustar la pérdida de entrenamiento.
 
-Se comparan los rangos LoRA 8 y 16. El rango es el único hiperparámetro que cambia: se mantienen alpha 16, dropout 0.05, módulos q_proj y v_proj, tasa de aprendizaje 0.0002, 0.1 épocas y acumulación de cuatro ejemplos. El aumento de rango también cambia la escala efectiva alpha/r; esta relación forma parte del efecto del rango bajo alpha fijo.
+Se comparan los rangos LoRA 8 y 16 sobre la misma base cuantizada a 4 bits NF4 con doble cuantización y cómputo FP16 (QLoRA). El rango es el único hiperparámetro que cambia: se mantienen alpha 16, dropout 0.05, módulos q_proj y v_proj, tasa de aprendizaje 0.0002, 0.1 épocas y acumulación de cuatro ejemplos. El aumento de rango también cambia la escala efectiva alpha/r; esta relación forma parte del efecto del rango bajo alpha fijo.
 
 **Hipótesis previa:** el rango 16 permite representar más relaciones entre las tablas y podría mejorar la EX en consultas con JOIN y subconsultas. El rango 8 utiliza menos parámetros y puede generalizar mejor frente a las plantillas repetidas. La comparación se realiza mediante EX ponderada; las curvas de loss describen el ajuste, pero no sustituyen la evaluación por ejecución.
 

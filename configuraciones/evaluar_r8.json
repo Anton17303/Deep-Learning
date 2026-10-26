@@ -2,5 +2,6 @@
   "modelo_base": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
   "adapter": "resultados/lora_r8/adapter",
   "usar_adapter": true,
-  "semilla": 2026
+  "semilla": 2026,
+  "cuantizacion": "nf4"
 }

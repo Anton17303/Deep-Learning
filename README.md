@@ -19,7 +19,7 @@ Hotel (7 tablas) y fútbol (6 tablas) se reservan para validación. Sus esquemas
 
 ## Ejecución
 
-Se requiere Python 3.11 o superior. Para entrenamiento se recomienda Colab con GPU T4 y el PyTorch del entorno. La inferencia utiliza FP16 en GPU y FP32 en CPU.
+Se requiere Python 3.11 o superior. Para entrenamiento se recomienda Colab con GPU T4 y el PyTorch del entorno. El entrenamiento utiliza QLoRA con base NF4 de 4 bits y cómputo FP16. La inferencia conserva esa cuantización en GPU; en CPU utiliza el modelo en FP32.
 
 ```bash
 pip install -r requirements.txt
