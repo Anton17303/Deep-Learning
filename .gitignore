@@ -1,0 +1,11 @@
+.venv/
+.runtime/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+data/
+gan/
+runs/
+checkpoints/
+*.log
+entrega.zip
