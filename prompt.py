@@ -82,8 +82,19 @@ def extraer_sql(texto: str) -> str:
 
 
 def es_solo_lectura(sql: str) -> bool:
-    s = _sin_literales(sql)
-    return bool(re.match(r"\s*(with|select)\b", s, re.I)) and not _PROHIBIDAS.search(s)
+    from sqlglot import parse, exp
+    try:
+        sentencias = [s for s in parse(sql, read="mysql") if s is not None]
+        if len(sentencias) != 1:
+            return False
+        arbol = sentencias[0]
+        if not isinstance(arbol, (exp.Select, exp.Union, exp.Intersect, exp.Except)):
+            return False
+        prohibidas = (exp.Insert, exp.Update, exp.Delete, exp.Create, exp.Drop,
+                      exp.Alter, exp.Command, exp.Into, exp.Lock, exp.Merge)
+        return not any(isinstance(n, prohibidas) for n in arbol.walk())
+    except Exception:
+        return False
 
 
 # ------------------------------------------------------------------- datos ---

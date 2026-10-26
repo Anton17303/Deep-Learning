@@ -1,0 +1,6 @@
+{
+  "modelo_base": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "adapter": "resultados/lora_r16/adapter",
+  "usar_adapter": true,
+  "semilla": 2026
+}

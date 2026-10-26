@@ -19,6 +19,7 @@ import json
 import os
 import re
 import time
+import hashlib
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent
@@ -132,14 +133,21 @@ class Ejecutor:
             return dict(ok=False, columnas=[], filas=[], error=str(e)[:300])
 
     def completo(self, sql):
+        from prompt import es_solo_lectura
+        if not es_solo_lectura(sql):
+            raise ValueError("Solo se permite una consulta SELECT o WITH SELECT")
         cur = self.con.cursor()
+        cur.execute("SET SESSION MAX_EXECUTION_TIME=10000")
         cur.execute(sql)
         return cur.fetchall()
+
+    def cerrar(self):
+        self.con.close()
 
 
 def evaluar(preguntas, generar, salida):
     from prompt import cargar_esquema
-    filas_csv, bases = [], {}
+    filas_csv = []
     for q in preguntas:
         ej = Ejecutor(f"p3_{q['esquema_id']}")
         t0 = time.time()
@@ -157,11 +165,17 @@ def evaluar(preguntas, generar, salida):
                 acierto = coincide(pred, ref, q["ordenado"]) and seg <= 30
             except Exception as e:  # noqa: BLE001
                 error = str(e)[:300]
-        cat = "" if acierto else categoria_error(sql_pred, q["sql_ref"], error)
+        cat = "" if acierto else ("tiempo excedido" if seg > 30 else categoria_error(sql_pred, q["sql_ref"], error))
         filas_csv.append(dict(id=q["id"], esquema_id=q["esquema_id"], nivel=q["nivel"], peso=q["peso"],
                               acierto=int(acierto), categoria_error=cat, tiempo_s=round(seg, 2),
                               pregunta=q["pregunta"], sql_pred=sql_pred, sql_ref=q["sql_ref"], error=error or ""))
-        print(f"{q['id']} nivel {q['nivel']} {'OK ' if acierto else 'FALLA'} {cat}")
+        ej.cerrar()
+        print(f"{q['id']} nivel {q['nivel']} {'OK ' if acierto else 'FALLA'} {cat} {seg:.2f}s", flush=True)
+        Path(salida).parent.mkdir(parents=True, exist_ok=True)
+        with open(salida, "w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=list(filas_csv[0]))
+            w.writeheader()
+            w.writerows(filas_csv)
     Path(salida).parent.mkdir(parents=True, exist_ok=True)
     with open(salida, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=list(filas_csv[0]))
@@ -170,6 +184,11 @@ def evaluar(preguntas, generar, salida):
     total = sum(r["peso"] for r in filas_csv)
     ex = sum(r["peso"] for r in filas_csv if r["acierto"]) / total
     print(f"\nEX ponderada = {ex:.3f}")
+    resumen = dict(ex_ponderada=ex, preguntas=len(filas_csv), peso_total=total,
+                   aciertos=sum(r['acierto'] for r in filas_csv),
+                   tiempo_medio_s=sum(r['tiempo_s'] for r in filas_csv) / len(filas_csv),
+                   tiempo_maximo_s=max(r['tiempo_s'] for r in filas_csv))
+    Path(salida).with_suffix('.json').write_text(json.dumps(resumen, indent=2), encoding='utf-8')
     for n in (1, 2, 3):
         rs = [r for r in filas_csv if r["nivel"] == n]
         print(f"  nivel {n}: {sum(r['acierto'] for r in rs)}/{len(rs)}")
@@ -184,6 +203,8 @@ def main():
     ap.add_argument("--oraculo", action="store_true", help="usa el SQL de referencia (prueba del evaluador)")
     a = ap.parse_args()
     qs = [json.loads(l) for l in (RAIZ / a.preguntas).read_text(encoding="utf-8").splitlines() if l.strip()]
+    if not qs:
+        raise ValueError("No hay preguntas para evaluar")
     if a.oraculo:
         refs = {q["pregunta"]: q["sql_ref"] for q in qs}
         generar = lambda esquema, pregunta, ejecutar=None: refs[pregunta]  # noqa: E731

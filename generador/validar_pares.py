@@ -31,6 +31,15 @@ def main():
     ap.add_argument("--semilla", type=int, default=2026)
     a = ap.parse_args()
     aceptados, descartes = [], []
+    conexion = conectar()
+    with conexion.cursor() as cursor:
+        cursor.execute("SELECT VERSION(), @@sql_mode")
+        version, sql_mode = cursor.fetchone()
+    conexion.close()
+    if not version.startswith("8.4.10"):
+        raise RuntimeError(f"Se requiere MySQL 8.4.10; versión detectada: {version}")
+    if "ONLY_FULL_GROUP_BY" not in sql_mode:
+        raise RuntimeError("ONLY_FULL_GROUP_BY debe estar activo")
     for S in todos(rol="train"):
         con = conectar(S.base)
         cur = con.cursor()
@@ -64,7 +73,8 @@ def main():
         "descartes_por_plantilla": dict(collections.Counter(d["plantilla"] for d in descartes)),
         "aceptados_por_nivel": dict(collections.Counter(r["nivel"] for r in aceptados)),
         "aceptados_por_esquema": dict(collections.Counter(r["esquema_id"] for r in aceptados)),
-        "motor": "MySQL (ver README: pre-validado en 8.0.46; repetir en 8.4.10)",
+        "motor": f"MySQL {version}",
+        "sql_mode": sql_mode,
     }
     (RAIZ / "datos/reporte_datos.json").write_text(json.dumps(rep, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(rep, ensure_ascii=False, indent=2))

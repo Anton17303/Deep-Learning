@@ -44,5 +44,6 @@
     "logistica_full": 138,
     "logistica_abr": 138
   },
-  "motor": "MySQL (ver README: pre-validado en 8.0.46; repetir en 8.4.10)"
+  "motor": "MySQL 8.4.10",
+  "sql_mode": "ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
 }

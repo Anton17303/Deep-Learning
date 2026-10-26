@@ -15,4 +15,5 @@ def conectar(base=None, autocommit=True):
     else:
         kw["host"] = os.environ.get("MYSQL_HOST", "127.0.0.1")
         kw["port"] = int(os.environ.get("MYSQL_PORT", "3306"))
+    kw.update(connect_timeout=10, read_timeout=35, write_timeout=35)
     return pymysql.connect(**kw)
