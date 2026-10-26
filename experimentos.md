@@ -8,6 +8,8 @@ Se comparan los rangos LoRA 8 y 16 sobre la misma base cuantizada a 4 bits NF4 c
 
 **Hipótesis previa:** el rango 16 permite representar más relaciones entre las tablas y podría mejorar la EX en consultas con JOIN y subconsultas. El rango 8 utiliza menos parámetros y puede generalizar mejor frente a las plantillas repetidas. La comparación se realiza mediante EX ponderada; las curvas de loss describen el ajuste, pero no sustituyen la evaluación por ejecución.
 
+Las activaciones guardadas para backward se transfieren a CPU en ambas configuraciones para reducir el consumo de VRAM. Se conservan el mismo modelo base NF4 y el mismo presupuesto de entrenamiento.
+
 ## Presupuesto de entrenamiento
 
 Se fija un presupuesto de 76 pasos por configuración, equivalente a 0.1 épocas y 304 ejemplos procesados del corpus de 3,023 pares. Se utiliza el mismo orden aleatorio con semilla 2026 en ambas corridas. Esta cobertura limitada puede producir subajuste. La prueba inicial de un paso en CPU se conserva aparte y no se utiliza para comparar los rangos.

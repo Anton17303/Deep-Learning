@@ -8,10 +8,12 @@ import os
 import random
 import time
 from pathlib import Path
+from contextlib import nullcontext
 
 os.environ.setdefault('USE_TF', '0')
 os.environ.setdefault('USE_FLAX', '0')
 os.environ.setdefault('CUDA_MODULE_LOADING', 'LAZY')
+os.environ.setdefault('CUBLAS_WORKSPACE_CONFIG', ':16:8')
 import torch
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, set_seed
@@ -116,12 +118,16 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
             e = ejemplos[i]
             ids = torch.tensor([e['input_ids']], device=dispositivo)
             labels = torch.tensor([e['labels']], device=dispositivo)
-            with torch.autocast(device_type=dispositivo, dtype=dtype, enabled=dispositivo == 'cuda'):
-                respuesta = int((labels != -100).sum().item()) + 1
-                loss = modelo(input_ids=ids, attention_mask=torch.ones_like(ids),
-                              labels=labels[:, -respuesta:], logits_to_keep=respuesta).loss
+            contexto = torch.autograd.graph.save_on_cpu(pin_memory=True) if dispositivo == 'cuda' and config.get('offload_activaciones') else nullcontext()
+            with contexto:
+                with torch.autocast(device_type=dispositivo, dtype=dtype, enabled=dispositivo == 'cuda'):
+                    respuesta = int((labels != -100).sum().item()) + 1
+                    loss = modelo(input_ids=ids, attention_mask=torch.ones_like(ids),
+                                  labels=labels[:, -respuesta:], logits_to_keep=respuesta).loss
             if not torch.isfinite(loss):
                 raise RuntimeError('Pérdida no finita')
+            if dispositivo == 'cuda' and config.get('offload_activaciones'):
+                torch.cuda.empty_cache()
             scaler.scale(loss / len(indices)).backward()
             perdida += loss.detach().float().item() / len(indices)
             tokens += len(e['input_ids'])

@@ -12,6 +12,7 @@ from pathlib import Path
 os.environ.setdefault("USE_TF", "0")
 os.environ.setdefault("USE_FLAX", "0")
 os.environ.setdefault("CUDA_MODULE_LOADING", "LAZY")
+os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":16:8")
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, set_seed
 

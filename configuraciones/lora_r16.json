@@ -17,5 +17,6 @@
   "warmup_ratio": 0.03,
   "weight_decay": 0.01,
   "formato_esquema": "show_create",
-  "cuantizacion": "nf4"
+  "cuantizacion": "nf4",
+  "offload_activaciones": true
 }
