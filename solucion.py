@@ -16,7 +16,7 @@ os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":16:8")
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, set_seed
 
-from prompt import construir_mensajes, es_solo_lectura, extraer_sql
+from prompt import construir_mensajes, es_solo_lectura, extraer_sql, resolver_modelo
 
 RAIZ = Path(__file__).resolve().parent
 CFG = json.loads(Path(os.environ.get("CONFIG_JSON", RAIZ / "config.json")).read_text(encoding="utf-8"))
@@ -37,7 +37,7 @@ if CFG.get("usar_adapter", True) and not (RAIZ / CFG["adapter"] / "adapter_model
 torch.set_num_threads(int(os.environ.get("TORCH_NUM_THREADS", "4")))
 set_seed(CFG["semilla"])
 _t0 = time.time()
-_origen = os.environ.get("MODEL_LOCAL_PATH", CFG["modelo_base"])
+_origen = resolver_modelo(CFG["modelo_base"])
 _tok = AutoTokenizer.from_pretrained(_origen)
 _cuda = torch.cuda.is_available()
 _cuantizado = _cuda and CFG.get("cuantizacion") == "nf4"

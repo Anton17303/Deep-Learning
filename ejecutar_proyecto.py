@@ -14,6 +14,24 @@ def ejecutar(*argumentos):
     subprocess.run([sys.executable, *argumentos], cwd=RAIZ, check=True)
 
 
+def normalizar_adapter(nombre):
+    resumen = json.loads((RAIZ / f'resultados/{nombre}/resumen.json').read_text(encoding='utf-8'))
+    ruta = RAIZ / f'resultados/{nombre}/adapter'
+    configuracion = json.loads((ruta / 'adapter_config.json').read_text(encoding='utf-8'))
+    configuracion['base_model_name_or_path'] = resumen['config']['modelo_base']
+    (ruta / 'adapter_config.json').write_text(json.dumps(configuracion, indent=2) + '\n', encoding='utf-8')
+    tarjeta = (f"---\nlicense: apache-2.0\nbase_model: {resumen['config']['modelo_base']}\nlibrary_name: peft\n---\n\n"
+               f"# Adapter Text-to-SQL\n\nSe entrenó un adapter QLoRA de rango {resumen['config']['r']} "
+               f"sobre la base NF4 de 4 bits, con semilla {resumen['config']['semilla']}. "
+               f"Se procesaron {resumen['ejemplos_procesados']} ejemplos del corpus de {resumen['ejemplos_dataset']} pares "
+               f"en {resumen['pasos_realizados']} pasos. La pérdida se calculó únicamente sobre la respuesta SQL.\n\n"
+               f"Parámetros entrenables: {resumen['parametros_entrenables']:,}. "
+               f"Tiempo de entrenamiento: {resumen['segundos_entrenamiento'] / 60:.2f} minutos.\n\n"
+               "Los pesos del modelo base se descargan por separado. La inferencia se realiza mediante solucion.py.\n")
+    (ruta / 'README.md').write_text(tarjeta, encoding='utf-8')
+    shutil.copy2(RAIZ / 'LICENCIA_MODELO.txt', ruta / 'LICENSE')
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--omitir-datos', action='store_true')
@@ -35,6 +53,7 @@ def main():
         if args.max_steps:
             parametros.extend(['--max-steps', str(args.max_steps)])
         ejecutar(*parametros)
+        normalizar_adapter(nombre)
         rango = nombre.replace('lora_', '')
         ejecutar('evaluador.py', '--config', f'configuraciones/evaluar_{rango}.json', '--salida', f'resultados/{nombre}.csv')
     from analizar import cargar_csv, resumir

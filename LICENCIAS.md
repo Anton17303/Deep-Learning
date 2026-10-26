@@ -6,6 +6,7 @@ Se utiliza Qwen/Qwen2.5-Coder-0.5B-Instruct, distribuido bajo Apache License 2.0
 
 - Modelo: https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct
 - Licencia: https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct/blob/main/LICENSE
+- El texto completo de la licencia se conserva en `LICENCIA_MODELO.txt` y acompaña los adapters.
 - Transformers: Apache-2.0.
 - PEFT: Apache-2.0.
 - PyTorch: BSD-3-Clause.

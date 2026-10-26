@@ -32,12 +32,12 @@ class Presentacion:
         self.pdf.setAuthor('Nina Nájera y Alejandro Antón')
         self.numero = 0
 
-    def pagina(self, titulo, fuente=None):
+    def pagina(self, titulo, fuente=None, tam_titulo=34):
         if self.numero:
             self.pdf.showPage()
         self.numero += 1
         self.pdf.setFillColor(TINTA)
-        self.pdf.setFont('Helvetica-Bold', 34)
+        self.pdf.setFont('Helvetica-Bold', tam_titulo)
         self.pdf.drawString(62, 474, titulo)
         self.pdf.setFillColor(GRIS)
         self.pdf.setFont('Helvetica', 12)
@@ -83,7 +83,7 @@ def curva_comparada():
     for nombre, color in [('lora_r8', '#007F92'), ('lora_r16', '#C76035')]:
         filas = csv_archivo(f'resultados/{nombre}/loss.csv')
         ax.plot([int(r['paso']) for r in filas], [float(r['loss']) for r in filas],
-                label=nombre.replace('lora_', 'rango '), color=color, linewidth=1.4)
+                label=nombre.replace('lora_r', 'Rango '), color=color, linewidth=1.4)
     ax.set(xlabel='Paso de optimización', ylabel='Loss sobre SQL')
     ax.legend(frameon=False)
     ax.spines[['top', 'right']].set_visible(False)
@@ -105,7 +105,7 @@ def main():
     contrato = json_archivo('resultados/contrato_inferencia.json')
     d = Presentacion(RAIZ / 'presentacion.pdf')
 
-    d.pagina('Text-to-SQL con QLoRA')
+    d.pagina('Text-to-SQL con QLoRA', tam_titulo=44)
     d.texto('Generación de consultas MySQL<br/>a partir de preguntas en español', 366, tam=32, negrita=True)
     d.texto('Qwen2.5-Coder-0.5B-Instruct', 240, tam=24, color=AZUL)
     d.texto('Nina Nájera · Alejandro Antón<br/>Deep Learning · Universidad del Valle de Guatemala<br/>25 de octubre de 2026', 170, tam=21)
@@ -148,7 +148,7 @@ def main():
         r = resumen[nombre]
         filas.append([etiqueta, f"{r['aciertos']}/40", f"{r['ex']:.3f}", f"{r['tiempo_maximo_s']:.2f}"])
     y = d.tabla(filas, 423, [350, 150, 150, 180], tam=19)
-    d.texto(f"Se seleccionó {seleccion['adapter'].replace('lora_', 'rango ')}. La reparación {'se activó' if seleccion['reparar'] else 'se mantuvo desactivada'} para la entrega.", y - 24, tam=20)
+    d.texto(f"Se seleccionó {seleccion['adapter'].replace('lora_r', 'rango ')}. La reparación {'se activó' if seleccion['reparar'] else 'se mantuvo desactivada'} para la entrega.", y - 24, tam=20)
 
     d.pagina('Experimento de reparación', 'Fuente: resultados/seleccion.json, resultados/reparacion.csv')
     y = d.texto('Se mantiene el adapter seleccionado y se cambia únicamente el uso de mensajes de error de MySQL.', 416)

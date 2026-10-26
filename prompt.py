@@ -4,10 +4,21 @@ Regla de oro: el formato que se use para entrenar debe ser el mismo que usa
 solucion.py; si se cambia aquí, hay que reentrenar.
 """
 import json
+import os
 import re
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent
+
+
+def resolver_modelo(modelo_base):
+    origen = os.environ.get('MODEL_LOCAL_PATH')
+    if origen:
+        return origen
+    local = RAIZ / '.runtime/model'
+    if modelo_base == 'Qwen/Qwen2.5-Coder-0.5B-Instruct' and (local / 'model.safetensors').is_file():
+        return str(local)
+    return modelo_base
 
 SISTEMA = (
     "Eres un experto en MySQL 8.4. Recibes el esquema de una base de datos (sentencias "

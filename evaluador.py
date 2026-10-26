@@ -1,4 +1,4 @@
-"""Evaluador de exactitud por ejecución (EX ponderada), réplica del criterio del enunciado.
+"""Evaluador de exactitud por ejecución (EX ponderada).
 
   - el orden de filas solo cuenta si la pregunta lo pide (campo `ordenado`)
   - números redondeados a 2 decimales

@@ -16,7 +16,14 @@ if (-not (Test-Path (Join-Path $data 'mysql'))) {
 }
 $env:MYSQL_HOST = '127.0.0.1'
 $env:MYSQL_PORT = "$Port"
-$listener = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
+$listener = $false
+try {
+    $probe = [System.Net.Sockets.TcpClient]::new('127.0.0.1', $Port)
+    $listener = $probe.Connected
+    $probe.Dispose()
+} catch {
+    $listener = $false
+}
 if (-not $listener) {
     Start-Process -FilePath "$base/bin/mysqld.exe" -WindowStyle Hidden -ArgumentList @(
         '--no-defaults', "--basedir=`"$base`"", "--datadir=`"$data`"", "--port=$Port",

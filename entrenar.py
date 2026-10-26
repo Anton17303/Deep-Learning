@@ -18,7 +18,7 @@ import torch
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, set_seed
 
-from prompt import cargar_ejemplos, construir_mensajes
+from prompt import cargar_ejemplos, construir_mensajes, resolver_modelo
 
 RAIZ = Path(__file__).resolve().parent
 
@@ -43,7 +43,7 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
     salida.mkdir(parents=True, exist_ok=True)
     dispositivo = 'cuda' if torch.cuda.is_available() else 'cpu'
     dtype = torch.float16 if dispositivo == 'cuda' else torch.float32
-    origen = os.environ.get('MODEL_LOCAL_PATH', config['modelo_base'])
+    origen = resolver_modelo(config['modelo_base'])
     tokenizer = AutoTokenizer.from_pretrained(origen)
     tokenizer.pad_token = tokenizer.eos_token
     cuantizado = config.get('cuantizacion') == 'nf4'

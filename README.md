@@ -19,7 +19,7 @@ Hotel (7 tablas) y fútbol (6 tablas) se reservan para validación. Sus esquemas
 
 ## Ejecución
 
-Se requiere Python 3.11 o superior. Para entrenamiento se recomienda Colab con GPU T4 y el PyTorch del entorno. El entrenamiento utiliza QLoRA con base NF4 de 4 bits y cómputo FP16. La inferencia conserva esa cuantización en GPU; en CPU utiliza el modelo en FP32.
+Se requiere Python 3.11 o superior. El entrenamiento requiere PyTorch con soporte CUDA; se recomienda Colab con GPU T4 y el PyTorch del entorno. El entrenamiento utiliza QLoRA con base NF4 de 4 bits y cómputo FP16. La inferencia conserva esa cuantización en GPU; en CPU utiliza el modelo en FP32.
 
 ```bash
 pip install -r requirements.txt
@@ -28,6 +28,8 @@ export MYSQL_SOCKET=/tmp/my8run/mysql.sock
 python ejecutar_proyecto.py --reanudar
 python verificar_entrega.py --zip
 ```
+
+En el entorno local se utiliza `.venv-gpu/Scripts/python.exe`. El modelo descargado se reutiliza desde `.runtime/model` cuando está disponible.
 
 En Windows se inicia la instancia local con `. ./scripts/iniciar_mysql.ps1`, que establece `MYSQL_PORT=3307`. Se ejecutan después los mismos comandos de Python. Las bases sintéticas usan el prefijo `p3_`; su reconstrucción reemplaza exclusivamente esas bases.
 

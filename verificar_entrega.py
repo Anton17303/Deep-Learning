@@ -7,12 +7,15 @@ import sys
 import zipfile
 from pathlib import Path
 
+import numpy as np
+from safetensors.numpy import load_file
+
 RAIZ = Path(__file__).resolve().parent
 DIRECTORIOS = ['adapter', 'datos', 'generador', 'notebooks', 'resultados', 'scripts', 'tests', 'configuraciones']
 ARCHIVOS = ['solucion.py', 'prompt.py', 'evaluador.py', 'entrenar.py', 'analizar.py',
             'ejecutar_proyecto.py', 'comprobar_inferencia.py', 'preparar_presentacion.py', 'presentacion.pdf', 'verificar_entrega.py', 'config.json', 'config_base.json',
             'config_reparacion.json', 'config_base_reparacion.json', 'requirements.txt', 'README.md', 'BITACORA.md',
-            'CONTRIBUCIONES.md', 'historial_git.txt', 'experimentos.md', 'LICENCIAS.md']
+            'CONTRIBUCIONES.md', 'historial_git.txt', 'experimentos.md', 'LICENCIAS.md', 'LICENCIA_MODELO.txt']
 
 
 def archivos_proyecto():
@@ -46,11 +49,23 @@ def main():
         checks[f'{nombre}_completo'] = p.exists() and json.loads(p.read_text())['entrenamiento_completo']
     contrato = RAIZ / 'resultados/contrato_inferencia.json'
     checks['contrato_inferencia'] = contrato.exists() and json.loads(contrato.read_text(encoding='utf-8'))['cumple']
+    if checks['adapter_presente']:
+        pesos = load_file(str(RAIZ / 'adapter/adapter_model.safetensors'))
+        checks['pesos_finitos'] = all(np.isfinite(p).all() for p in pesos.values())
+        checks['adapter_actualizado'] = any(np.any(p != 0) for k, p in pesos.items() if 'lora_B' in k)
+    checks['documentacion'] = all((RAIZ / p).exists() for p in ['README.md', 'LICENCIAS.md', 'BITACORA.md', 'CONTRIBUCIONES.md', 'historial_git.txt', 'presentacion.pdf'])
+    seleccion = RAIZ / 'resultados/seleccion.json'
+    if seleccion.exists() and checks['adapter_presente']:
+        nombre = json.loads(seleccion.read_text(encoding='utf-8'))['adapter']
+        original = RAIZ / f'resultados/{nombre}/adapter/adapter_model.safetensors'
+        checks['adapter_coincide_seleccion'] = original.exists() and original.read_bytes() == (RAIZ / 'adapter/adapter_model.safetensors').read_bytes()
     pruebas = subprocess.run([sys.executable, '-m', 'unittest', 'discover', '-s', 'tests'], cwd=RAIZ,
                              capture_output=True, text=True)
     checks['pruebas'] = pruebas.returncode == 0
     estado = dict(comprobaciones=checks, completo=all(checks.values()),
                   pruebas=pruebas.stderr, sha256_dataset=hashlib.sha256((RAIZ / 'datos/entrenamiento.jsonl').read_bytes()).hexdigest())
+    metadata = RAIZ / 'resultados/validacion_propia.json'
+    estado['entorno_objetivo_verificado'] = metadata.exists() and 'T4' in json.loads(metadata.read_text(encoding='utf-8')).get('dispositivo', '')
     (RAIZ / 'resultados/verificacion.json').write_text(json.dumps(estado, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     manifiesto = {str(p.relative_to(RAIZ)).replace('\\', '/'): hashlib.sha256(p.read_bytes()).hexdigest()
                   for p in archivos_proyecto() if p.name != 'manifest.json'}

@@ -5,6 +5,7 @@ Uso:  python -m generador.construir_bases [--semilla 2026]
 """
 import argparse
 import random
+import re
 from pathlib import Path
 
 from .bd import conectar
@@ -14,9 +15,14 @@ RAIZ = Path(__file__).resolve().parent.parent
 
 
 def construir(esq, semilla):
+    if not re.fullmatch(r'p3_[a-z0-9_]+', esq.base):
+        raise ValueError('La base debe pertenecer al espacio de nombres p3_')
     rng = random.Random(f"{semilla}-{esq.id}")
     con = conectar()
     cur = con.cursor()
+    cur.execute('SELECT VERSION()')
+    if not cur.fetchone()[0].startswith('8.4.10'):
+        raise RuntimeError('Se requiere MySQL 8.4.10')
     cur.execute(f"DROP DATABASE IF EXISTS `{esq.base}`")
     cur.execute(f"CREATE DATABASE `{esq.base}` CHARACTER SET utf8mb4")
     cur.execute(f"USE `{esq.base}`")
