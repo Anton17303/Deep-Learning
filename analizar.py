@@ -70,6 +70,25 @@ def main():
             s = resumir(filas)
             resumen[nombre] = s
             lineas.append(f"| {nombre} | {s['aciertos']}/40 | {s['ex']:.3f} | {s['tiempo_medio_s']:.2f} | {s['tiempo_maximo_s']:.2f} |")
+    entrenamientos = []
+    for nombre in ['lora_r8', 'lora_r16']:
+        ruta = raiz / nombre / 'resumen.json'
+        if ruta.exists():
+            entrenamientos.append(json.loads(ruta.read_text(encoding='utf-8')))
+    if entrenamientos:
+        lineas.extend(['', '## Entrenamiento', '',
+                       '| Rango | Parámetros entrenables | Pasos | Ejemplos procesados | Tiempo (min) |',
+                       '|---|---:|---:|---:|---:|'])
+        for e in entrenamientos:
+            lineas.append(f"| {e['config']['r']} | {e['parametros_entrenables']:,} | {e['pasos_realizados']}/{e['pasos_previstos']} | {e['ejemplos_procesados']}/{e['ejemplos_dataset']} | {e['segundos_entrenamiento']/60:.2f} |")
+        lineas.extend(['', 'Se utiliza la misma base NF4, semilla, orden de ejemplos, tasa de aprendizaje y presupuesto. El rango es el único factor de comparación. La cobertura de 304 ejemplos no equivale a recorrer el corpus completo.', '',
+                       'Las curvas se conservan en lora_r8/loss.png y lora_r16/loss.png, junto con sus CSV por paso.'])
+    if 'lora_r8' in resumen and 'lora_r16' in resumen:
+        diferencia = resumen['lora_r16']['ex'] - resumen['lora_r8']['ex']
+        lineas.extend(['', f"El rango 16 obtuvo una diferencia de EX de {diferencia:+.3f} frente al rango 8. " +
+                       ('La hipótesis de mayor EX con rango 16 recibió apoyo en esta validación.' if diferencia > 0 else
+                        'No se observó una mejora de EX al aumentar el rango bajo este presupuesto.') +
+                       ' La comparación se limita a 40 preguntas y dos esquemas; no demuestra una ventaja general sobre bases desconocidas.'])
     for nombre, s in resumen.items():
         lineas.extend(['', f'## Errores: {nombre}', '', '| Categoría | Cantidad |', '|---|---:|'])
         lineas.extend(f'| {c} | {n} |' for c, n in sorted(s['errores'].items()))
@@ -88,7 +107,9 @@ def main():
                       f"Se estima una EX oculta de **{estimacion:.2f}**, frente a {s['ex']:.3f} en la validación propia. Se aplica un descuento relativo del 20% por la generación con plantillas, el uso de solo dos dominios de validación y la selección del adapter sobre ese mismo conjunto. El descuento es una hipótesis conservadora, no una medición ni un intervalo de confianza.", '',
                       f"El intervalo bootstrap jerárquico de EX propia es [{intervalo[0]:.3f}, {intervalo[1]:.3f}]. Se remuestrean esquemas y preguntas con semilla 2026. Con dos esquemas, este intervalo no representa toda la variación esperable entre bases desconocidas.", '',
                       'Los errores de tablas o columnas indican problemas de correspondencia con el esquema; los de JOIN y agregación requieren revisar relaciones y nivel de agrupación. Una consulta ejecutable puede seguir teniendo filtros o resultados incorrectos. La clasificación automática es heurística; los casos particulares se registran en revision_errores.csv.'])
-        nombre_base = 'baseline_reparacion' if 'baseline_reparacion' in resumen else 'baseline'
+        seleccion_ruta = raiz / 'seleccion.json'
+        usa_reparacion = seleccion_ruta.exists() and json.loads(seleccion_ruta.read_text(encoding='utf-8'))['reparar']
+        nombre_base = 'baseline_reparacion' if usa_reparacion and 'baseline_reparacion' in resumen else 'baseline'
         if nombre_base in resumen:
             mejora = s['ex'] - resumen[nombre_base]['ex']
             puntos = 30 * min(1., s['ex'] / .70) + 10 * min(1., max(0., mejora) / .15)

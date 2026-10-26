@@ -202,7 +202,8 @@ def main():
     ap.add_argument("--config", help="config.json alternativo (p. ej. usar_adapter=false)")
     ap.add_argument("--oraculo", action="store_true", help="usa el SQL de referencia (prueba del evaluador)")
     a = ap.parse_args()
-    qs = [json.loads(l) for l in (RAIZ / a.preguntas).read_text(encoding="utf-8").splitlines() if l.strip()]
+    contenido_preguntas = (RAIZ / a.preguntas).read_bytes()
+    qs = [json.loads(l) for l in contenido_preguntas.decode('utf-8').splitlines() if l.strip()]
     if not qs:
         raise ValueError("No hay preguntas para evaluar")
     if a.oraculo:
@@ -217,6 +218,7 @@ def main():
         metadata = dict(modo="modelo", configuracion=CFG, carga_segundos=CARGA_SEG,
                         dispositivo=torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU",
                         torch=torch.__version__)
+    metadata['sha256_preguntas'] = hashlib.sha256(contenido_preguntas).hexdigest()
     evaluar(qs, generar, a.salida)
     p = Path(a.salida).with_suffix('.json')
     resumen = json.loads(p.read_text(encoding='utf-8'))
