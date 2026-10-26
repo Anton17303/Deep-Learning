@@ -57,7 +57,7 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
     random.Random(config['semilla']).shuffle(orden)
     acumulacion = config['gradient_accumulation_steps']
     pasos_epoca = math.ceil(len(orden) / acumulacion)
-    pasos_totales = pasos_epoca * config['num_train_epochs']
+    pasos_totales = math.ceil(pasos_epoca * config['num_train_epochs'])
     limite = min(max_steps, pasos_totales) if max_steps else pasos_totales
     entrenables = sum(p.numel() for p in modelo.parameters() if p.requires_grad)
     total = sum(p.numel() for p in modelo.parameters())
@@ -122,7 +122,7 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
                         segundos=time.perf_counter() - t0, tokens=tokens)
         historial.append(registro)
         print(json.dumps(registro), flush=True)
-        if (paso + 1) % 10 == 0 or paso + 1 == limite:
+        if (paso + 1) % 1 == 0:
             from peft import get_peft_model_state_dict
             modelo.save_pretrained(salida / 'adapter', safe_serialization=True)
             torch.save(dict(config=config, sha256_dataset=sha_dataset, paso=paso + 1, historial=historial,
@@ -143,6 +143,7 @@ def guardar_resultados(salida, config, historial, entrenables, total, ejemplos, 
         w.writerows(historial)
     resumen = dict(config=config, parametros_entrenables=entrenables, parametros_totales=total,
                    ejemplos_dataset=ejemplos, pasos_realizados=len(historial), pasos_previstos=pasos_totales,
+                   ejemplos_procesados=min(len(historial) * config['gradient_accumulation_steps'], ejemplos),
                    entrenamiento_completo=len(historial) >= pasos_totales,
                    segundos_entrenamiento=segundos, dispositivo=dispositivo,
                    sha256_dataset=hashlib.sha256((RAIZ / 'datos/entrenamiento.jsonl').read_bytes()).hexdigest(),

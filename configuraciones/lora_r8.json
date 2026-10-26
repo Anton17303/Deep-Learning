@@ -5,9 +5,12 @@
   "r": 8,
   "lora_alpha": 16,
   "lora_dropout": 0.05,
-  "target_modules": ["q_proj", "v_proj"],
+  "target_modules": [
+    "q_proj",
+    "v_proj"
+  ],
   "learning_rate": 0.0002,
-  "num_train_epochs": 1,
+  "num_train_epochs": 0.1,
   "batch_size": 1,
   "gradient_accumulation_steps": 4,
   "max_length": 4096,

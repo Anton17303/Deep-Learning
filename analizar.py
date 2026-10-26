@@ -3,6 +3,7 @@ import argparse
 import collections
 import csv
 import json
+import hashlib
 from pathlib import Path
 
 import numpy as np
@@ -21,7 +22,7 @@ def resumir(filas):
                 ex=float((pesos * aciertos).sum() / pesos.sum()),
                 tiempo_medio_s=float(tiempos.mean()), tiempo_maximo_s=float(tiempos.max()),
                 exceden_30s=int((tiempos > 30).sum()),
-                errores=dict(collections.Counter(r['categoria_error'] for r in filas if r['acierto'] == '0')),
+                errores=dict(collections.Counter(r.get('categoria_revisada', r['categoria_error']) for r in filas if r['acierto'] == '0')),
                 por_nivel={str(n): dict(preguntas=sum(int(r['nivel']) == n for r in filas),
                                        aciertos=sum(int(r['acierto']) for r in filas if int(r['nivel']) == n))
                            for n in [1, 2, 3]})
@@ -46,7 +47,8 @@ def main():
     parser.add_argument('--directorio', default='resultados')
     args = parser.parse_args()
     raiz = Path(args.directorio)
-    nombres = ['baseline', 'lora_r8', 'lora_r16', 'reparacion', 'validacion_propia']
+    nombres = ['baseline', 'baseline_cpu', 'lora_r8', 'lora_r16', 'reparacion', 'validacion_propia']
+    revisiones = cargar_csv(raiz / 'revision_errores.csv') if (raiz / 'revision_errores.csv').exists() else []
     resumen = {}
     lineas = ['# Resultados de Text-to-SQL', '',
               'La exactitud se calcula mediante ejecución en MySQL 8.4.10. Los niveles fácil, medio y difícil tienen pesos 1, 2 y 3. El oráculo utiliza las respuestas de referencia y solo comprueba el evaluador.', '',
@@ -58,6 +60,12 @@ def main():
             filas = cargar_csv(ruta)
             if len(filas) != 40:
                 continue
+            for fila in filas:
+                sha = hashlib.sha256(fila['sql_pred'].encode()).hexdigest()
+                revision = next((r for r in revisiones if r['evaluacion'] == nombre and r['id'] == fila['id']
+                                 and r['sha256_sql'] == sha), None)
+                if revision:
+                    fila['categoria_revisada'] = revision['categoria_revisada']
             s = resumir(filas)
             resumen[nombre] = s
             lineas.append(f"| {nombre} | {s['aciertos']}/40 | {s['ex']:.3f} | {s['tiempo_medio_s']:.2f} | {s['tiempo_maximo_s']:.2f} |")
