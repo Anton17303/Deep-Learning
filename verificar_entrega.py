@@ -13,7 +13,7 @@ from safetensors.numpy import load_file
 
 RAIZ = Path(__file__).resolve().parent
 DIRECTORIOS = ['adapter', 'datos', 'generador', 'notebooks', 'resultados', 'scripts', 'tests', 'configuraciones']
-ARCHIVOS = ['solucion.py', 'prompt.py', 'evaluador.py', 'entrenar.py', 'analizar.py',
+ARCHIVOS = ['.gitattributes', '.gitignore', 'solucion.py', 'prompt.py', 'evaluador.py', 'entrenar.py', 'analizar.py',
             'ejecutar_proyecto.py', 'comprobar_inferencia.py', 'preparar_presentacion.py', 'presentacion.pdf', 'verificar_entrega.py', 'config.json', 'config_base.json',
             'config_reparacion.json', 'requirements.txt', 'README.md', 'BITACORA.md',
             'CONTRIBUCIONES.md', 'historial_git.txt', 'experimentos.md', 'LICENCIAS.md', 'LICENCIA_MODELO.txt']

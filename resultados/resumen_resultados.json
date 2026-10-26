@@ -1,0 +1,161 @@
+{
+  "baseline": {
+    "preguntas": 40,
+    "aciertos": 15,
+    "ex": 0.2804878048780488,
+    "tiempo_medio_s": 15.6695,
+    "tiempo_maximo_s": 25.44,
+    "tiempo_mediano_s": 15.58,
+    "exceden_30s": 0,
+    "errores": {
+      "columna o tabla inexistente": 13,
+      "agregación": 6,
+      "sintaxis": 2,
+      "JOIN": 1,
+      "filtro": 2,
+      "resultado distinto": 1
+    },
+    "por_nivel": {
+      "1": {
+        "preguntas": 12,
+        "aciertos": 9
+      },
+      "2": {
+        "preguntas": 14,
+        "aciertos": 4
+      },
+      "3": {
+        "preguntas": 14,
+        "aciertos": 2
+      }
+    }
+  },
+  "lora_r8": {
+    "preguntas": 40,
+    "aciertos": 21,
+    "ex": 0.43902439024390244,
+    "tiempo_medio_s": 11.49325,
+    "tiempo_maximo_s": 25.27,
+    "tiempo_mediano_s": 10.465,
+    "exceden_30s": 0,
+    "errores": {
+      "columna o tabla inexistente": 8,
+      "agregación": 5,
+      "JOIN": 2,
+      "filtro": 3,
+      "sintaxis": 1
+    },
+    "por_nivel": {
+      "1": {
+        "preguntas": 12,
+        "aciertos": 10
+      },
+      "2": {
+        "preguntas": 14,
+        "aciertos": 7
+      },
+      "3": {
+        "preguntas": 14,
+        "aciertos": 4
+      }
+    }
+  },
+  "lora_r16": {
+    "preguntas": 40,
+    "aciertos": 20,
+    "ex": 0.4024390243902439,
+    "tiempo_medio_s": 11.82975,
+    "tiempo_maximo_s": 25.31,
+    "tiempo_mediano_s": 10.975000000000001,
+    "exceden_30s": 0,
+    "errores": {
+      "columna o tabla inexistente": 10,
+      "JOIN": 2,
+      "agregación": 3,
+      "resultado distinto": 1,
+      "filtro": 4
+    },
+    "por_nivel": {
+      "1": {
+        "preguntas": 12,
+        "aciertos": 10
+      },
+      "2": {
+        "preguntas": 14,
+        "aciertos": 7
+      },
+      "3": {
+        "preguntas": 14,
+        "aciertos": 3
+      }
+    }
+  },
+  "reparacion": {
+    "preguntas": 40,
+    "aciertos": 21,
+    "ex": 0.4268292682926829,
+    "tiempo_medio_s": 13.197999999999999,
+    "tiempo_maximo_s": 27.22,
+    "tiempo_mediano_s": 11.135,
+    "exceden_30s": 0,
+    "errores": {
+      "agregación": 5,
+      "JOIN": 2,
+      "columna o tabla inexistente": 6,
+      "sintaxis": 3,
+      "filtro": 3
+    },
+    "por_nivel": {
+      "1": {
+        "preguntas": 12,
+        "aciertos": 11
+      },
+      "2": {
+        "preguntas": 14,
+        "aciertos": 6
+      },
+      "3": {
+        "preguntas": 14,
+        "aciertos": 4
+      }
+    }
+  },
+  "validacion_propia": {
+    "preguntas": 40,
+    "aciertos": 21,
+    "ex": 0.43902439024390244,
+    "tiempo_medio_s": 11.49325,
+    "tiempo_maximo_s": 25.27,
+    "tiempo_mediano_s": 10.465,
+    "exceden_30s": 0,
+    "errores": {
+      "columna o tabla inexistente": 8,
+      "agregación": 5,
+      "JOIN": 2,
+      "filtro": 3,
+      "sintaxis": 1
+    },
+    "por_nivel": {
+      "1": {
+        "preguntas": 12,
+        "aciertos": 10
+      },
+      "2": {
+        "preguntas": 14,
+        "aciertos": 7
+      },
+      "3": {
+        "preguntas": 14,
+        "aciertos": 4
+      }
+    }
+  },
+  "prediccion_oculta": {
+    "ex_estimada": 0.351219512195122,
+    "intervalo_bootstrap": [
+      0.275,
+      0.6049556598852373
+    ],
+    "metodo": "EX propia con descuento relativo heurístico de 20%"
+  }
+}

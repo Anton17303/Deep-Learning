@@ -1,0 +1,28 @@
+{
+  "comprobaciones": {
+    "dataset_minimo": true,
+    "esquemas_entrenamiento": true,
+    "preguntas_validacion": true,
+    "esquemas_validacion": true,
+    "particion_sin_fuga": true,
+    "mysql_correcto": true,
+    "adapter_presente": true,
+    "resultados_presentes": true,
+    "notebooks": true,
+    "lora_r8_completo": true,
+    "lora_r16_completo": true,
+    "contrato_inferencia": true,
+    "pesos_finitos": true,
+    "adapter_actualizado": true,
+    "documentacion": true,
+    "adapter_coincide_seleccion": true,
+    "pruebas": true,
+    "evaluacion_completa": true,
+    "limite_tiempo_evaluacion": true,
+    "proveniencia_validacion": true
+  },
+  "completo": true,
+  "pruebas": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 7.816s\n\nOK\n",
+  "sha256_dataset": "aa6f3302443cc2cfdfb92a5e363625c0c167fcc6c949cc55163a6ae4aa72f833",
+  "entorno_objetivo_verificado": false
+}
