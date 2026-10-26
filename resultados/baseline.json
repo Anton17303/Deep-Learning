@@ -1,0 +1,20 @@
+{
+  "ex_ponderada": 0.2804878048780488,
+  "preguntas": 40,
+  "peso_total": 82,
+  "aciertos": 15,
+  "tiempo_medio_s": 15.6695,
+  "tiempo_maximo_s": 25.44,
+  "modo": "modelo",
+  "configuracion": {
+    "modelo_base": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+    "adapter": "adapter/",
+    "usar_adapter": false,
+    "semilla": 2026,
+    "cuantizacion": "nf4"
+  },
+  "carga_segundos": 7.488549470901489,
+  "dispositivo": "NVIDIA GeForce MX350",
+  "torch": "2.5.1+cu118",
+  "sha256_preguntas": "374513d186690a7752cd9589a7cb9555e8d72d0f4de06fa957eb1d3ad324f096"
+}

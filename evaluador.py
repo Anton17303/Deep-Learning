@@ -86,7 +86,7 @@ def categoria_error(sql_pred, sql_ref, error):
     """Clasificación heurística; revisar a mano los casos dudosos (README)."""
     if error:
         e = error.lower()
-        if "1054" in e or "1146" in e or "unknown column" in e or "doesn't exist" in e:
+        if "1054" in e or "1109" in e or "1146" in e or "unknown column" in e or "unknown table" in e or "doesn't exist" in e:
             return "columna o tabla inexistente"
         if "1055" in e or "1056" in e or "1140" in e or "only_full_group_by" in e or "1111" in e:
             return "agregación"
@@ -218,6 +218,9 @@ def main():
         metadata = dict(modo="modelo", configuracion=CFG, carga_segundos=CARGA_SEG,
                         dispositivo=torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU",
                         torch=torch.__version__)
+        if CFG.get('usar_adapter'):
+            pesos_adapter = RAIZ / CFG['adapter'] / 'adapter_model.safetensors'
+            metadata['sha256_adapter'] = hashlib.sha256(pesos_adapter.read_bytes()).hexdigest()
     metadata['sha256_preguntas'] = hashlib.sha256(contenido_preguntas).hexdigest()
     evaluar(qs, generar, a.salida)
     p = Path(a.salida).with_suffix('.json')

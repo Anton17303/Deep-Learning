@@ -79,11 +79,14 @@ def curva_comparada():
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
+    plt.rcParams.update({'font.size': 18, 'axes.labelsize': 18,
+                         'xtick.labelsize': 17, 'ytick.labelsize': 17, 'legend.fontsize': 18})
     fig, ax = plt.subplots(figsize=(12, 4))
     for nombre, color in [('lora_r8', '#007F92'), ('lora_r16', '#C76035')]:
         filas = csv_archivo(f'resultados/{nombre}/loss.csv')
         ax.plot([int(r['paso']) for r in filas], [float(r['loss']) for r in filas],
-                label=nombre.replace('lora_r', 'Rango '), color=color, linewidth=1.4)
+                label=nombre.replace('lora_r', 'Rango '), color=color, linewidth=1.6,
+                linestyle='--' if nombre == 'lora_r16' else '-')
     ax.set(xlabel='Paso de optimización', ylabel='Loss sobre SQL')
     ax.legend(frameon=False)
     ax.spines[['top', 'right']].set_visible(False)
@@ -151,7 +154,7 @@ def main():
     d.texto(f"Se seleccionó {seleccion['adapter'].replace('lora_r', 'rango ')}. La reparación {'se activó' if seleccion['reparar'] else 'se mantuvo desactivada'} para la entrega.", y - 24, tam=20)
 
     d.pagina('Experimento de reparación', 'Fuente: resultados/seleccion.json, resultados/reparacion.csv')
-    y = d.texto('Se mantiene el adapter seleccionado y se cambia únicamente el uso de mensajes de error de MySQL.', 416)
+    y = d.texto('Se mantiene el adapter seleccionado y se activa la corrección de identificadores y de errores de ejecución.', 416)
     y = d.tabla([['Inferencia', 'EX ponderada'], ['Sin reparación', f"{seleccion['ex_original']:.3f}"],
                  ['Con reparación', f"{seleccion['ex_reparacion']:.3f}"]], y - 22, [560, 270], tam=22)
     d.texto('Se permiten dos ejecuciones de diagnóstico y un presupuesto conjunto de 25 segundos. Una consulta ejecutable puede seguir teniendo errores de significado.', y - 25, tam=21)

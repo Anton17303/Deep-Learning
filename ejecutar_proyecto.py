@@ -1,5 +1,8 @@
 """Flujo completo de datos, baseline, entrenamiento, selección e inferencia."""
 import argparse
+import csv
+import hashlib
+import importlib.metadata
 import json
 import os
 import shutil
@@ -12,6 +15,59 @@ RAIZ = Path(__file__).resolve().parent
 
 def ejecutar(*argumentos):
     subprocess.run([sys.executable, *argumentos], cwd=RAIZ, check=True)
+
+
+def evaluacion_valida(salida, config):
+    csv_ruta, json_ruta = RAIZ / salida, (RAIZ / salida).with_suffix('.json')
+    if not csv_ruta.exists() or not json_ruta.exists():
+        return False
+    try:
+        esperado = json.loads((RAIZ / config).read_text(encoding='utf-8'))
+        metadata = json.loads(json_ruta.read_text(encoding='utf-8'))
+        if metadata.get('torch') != importlib.metadata.version('torch'):
+            return False
+        try:
+            dispositivo = subprocess.check_output(['nvidia-smi', '--query-gpu=name', '--format=csv,noheader'],
+                                                 text=True, stderr=subprocess.DEVNULL).splitlines()[0].strip()
+        except (OSError, subprocess.SubprocessError, IndexError):
+            dispositivo = 'CPU'
+        if '+cpu' in metadata['torch'] or os.environ.get('CUDA_VISIBLE_DEVICES') in ['', '-1']:
+            dispositivo = 'CPU'
+        if metadata.get('dispositivo') != dispositivo:
+            return False
+        preguntas_bytes = (RAIZ / 'datos/validacion/preguntas.jsonl').read_bytes()
+        preguntas = {q['id']: q for q in (json.loads(l) for l in preguntas_bytes.decode('utf-8').splitlines())}
+        with csv_ruta.open(encoding='utf-8', newline='') as f:
+            filas = list(csv.DictReader(f))
+        if metadata.get('configuracion') != esperado or metadata.get('sha256_preguntas') != hashlib.sha256(preguntas_bytes).hexdigest():
+            return False
+        if len(filas) != len(preguntas) or {r['id'] for r in filas} != set(preguntas):
+            return False
+        if not all(r['pregunta'] == preguntas[r['id']]['pregunta'] and r['sql_ref'] == preguntas[r['id']]['sql_ref'] for r in filas):
+            return False
+        if esperado.get('usar_adapter'):
+            pesos = RAIZ / esperado['adapter'] / 'adapter_model.safetensors'
+            if not pesos.exists():
+                return False
+            if metadata.get('sha256_adapter'):
+                if metadata['sha256_adapter'] != hashlib.sha256(pesos.read_bytes()).hexdigest():
+                    return False
+            elif pesos.stat().st_mtime > csv_ruta.stat().st_mtime:
+                return False
+        return True
+    except (OSError, ValueError, KeyError):
+        return False
+
+
+def entrenamiento_valido(nombre):
+    resumen_ruta = RAIZ / f'resultados/{nombre}/resumen.json'
+    if not resumen_ruta.exists():
+        return False
+    resumen = json.loads(resumen_ruta.read_text(encoding='utf-8'))
+    config = json.loads((RAIZ / f'configuraciones/{nombre}.json').read_text(encoding='utf-8'))
+    return (resumen.get('entrenamiento_completo', False) and resumen['config'] == config and
+            resumen['sha256_dataset'] == hashlib.sha256((RAIZ / 'datos/entrenamiento.jsonl').read_bytes()).hexdigest() and
+            all((RAIZ / f'resultados/{nombre}' / p).exists() for p in ['adapter/adapter_model.safetensors', 'loss.csv', 'loss.png']))
 
 
 def normalizar_adapter(nombre):
@@ -45,17 +101,20 @@ def main():
         ejecutar('-m', 'generador.validar_pares')
         ejecutar('-m', 'generador.crear_validacion')
     ejecutar('evaluador.py', '--oraculo', '--salida', 'resultados/oraculo.csv')
-    ejecutar('evaluador.py', '--config', 'config_base.json', '--salida', 'resultados/baseline.csv')
+    if not (args.reanudar and evaluacion_valida('resultados/baseline.csv', 'config_base.json')):
+        ejecutar('evaluador.py', '--config', 'config_base.json', '--salida', 'resultados/baseline.csv')
     for nombre in ['lora_r8', 'lora_r16']:
         parametros = ['entrenar.py', '--config', f'configuraciones/{nombre}.json', '--salida', f'resultados/{nombre}']
         if args.reanudar:
             parametros.append('--reanudar')
         if args.max_steps:
             parametros.extend(['--max-steps', str(args.max_steps)])
-        ejecutar(*parametros)
+        if not (args.reanudar and entrenamiento_valido(nombre)):
+            ejecutar(*parametros)
         normalizar_adapter(nombre)
         rango = nombre.replace('lora_', '')
-        ejecutar('evaluador.py', '--config', f'configuraciones/evaluar_{rango}.json', '--salida', f'resultados/{nombre}.csv')
+        if not (args.reanudar and evaluacion_valida(f'resultados/{nombre}.csv', f'configuraciones/evaluar_{rango}.json')):
+            ejecutar('evaluador.py', '--config', f'configuraciones/evaluar_{rango}.json', '--salida', f'resultados/{nombre}.csv')
     from analizar import cargar_csv, resumir
     mejor = max(['lora_r8', 'lora_r16'], key=lambda n: resumir(cargar_csv(RAIZ / f'resultados/{n}.csv'))['ex'])
     destino = RAIZ / 'adapter'
@@ -71,7 +130,8 @@ def main():
     (RAIZ / 'config.json').write_text(json.dumps(config, indent=2) + '\n', encoding='utf-8')
     config_reparacion = {**config, 'reparar': True}
     (RAIZ / 'config_reparacion.json').write_text(json.dumps(config_reparacion, indent=2) + '\n', encoding='utf-8')
-    ejecutar('evaluador.py', '--config', 'config_reparacion.json', '--salida', 'resultados/reparacion.csv')
+    if not (args.reanudar and evaluacion_valida('resultados/reparacion.csv', 'config_reparacion.json')):
+        ejecutar('evaluador.py', '--config', 'config_reparacion.json', '--salida', 'resultados/reparacion.csv')
     original = resumir(cargar_csv(RAIZ / f'resultados/{mejor}.csv'))
     reparada = resumir(cargar_csv(RAIZ / 'resultados/reparacion.csv'))
     reparar = reparada['ex'] > original['ex'] and reparada['exceden_30s'] == 0
@@ -80,10 +140,6 @@ def main():
     fuente = 'reparacion' if reparar else mejor
     shutil.copy2(RAIZ / f'resultados/{fuente}.csv', RAIZ / 'resultados/validacion_propia.csv')
     shutil.copy2(RAIZ / f'resultados/{fuente}.json', RAIZ / 'resultados/validacion_propia.json')
-    if reparar:
-        config_base_reparacion = {**config_reparacion, 'usar_adapter': False}
-        (RAIZ / 'config_base_reparacion.json').write_text(json.dumps(config_base_reparacion, indent=2) + '\n', encoding='utf-8')
-        ejecutar('evaluador.py', '--config', 'config_base_reparacion.json', '--salida', 'resultados/baseline_reparacion.csv')
     (RAIZ / 'resultados/seleccion.json').write_text(json.dumps(dict(adapter=mejor, reparar=reparar,
         ex_original=original['ex'], ex_reparacion=reparada['ex'],
         entrenamiento_completo=all(json.loads((RAIZ / f'resultados/{n}/resumen.json').read_text())['entrenamiento_completo']

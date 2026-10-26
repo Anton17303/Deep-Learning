@@ -8,5 +8,6 @@ data/
 gan/
 runs/
 checkpoints/
+resultados/**/estado.pt
 *.log
 entrega.zip

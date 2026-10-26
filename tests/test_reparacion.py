@@ -41,6 +41,11 @@ class TestReparacion(unittest.TestCase):
         sql = 'WITH hotels AS (SELECT nombre FROM hoteles) SELECT nombre FROM hotels'
         self.assertEqual(corregir_identificadores(sql, esquema), sql)
 
+    def test_show_create_sin_separadores(self):
+        esquema = 'CREATE TABLE hoteles (nombre TEXT)\n\nCREATE TABLE servicios (precio DECIMAL(8,2))'
+        sql = corregir_identificadores('SELECT nombre FROM HOTELS', esquema)
+        self.assertIn('`hoteles`', sql)
+
     def test_no_ejecuta_una_salida_que_modifica_la_base(self):
         llamadas = []
 

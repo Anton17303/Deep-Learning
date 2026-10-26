@@ -1,0 +1,45 @@
+evaluacion,id,sha256_sql,categoria_automatica,categoria_revisada,observacion
+baseline,v01,cb989bdada714c229be6c1c7f3736e2271360371c8d4e57121b23942b5ccea50,columna o tabla inexistente,columna o tabla inexistente,Se utiliza HOTELS en lugar de hoteles.
+baseline,v05,6859e36cf4f938c384641fb742488c2397ec24ef04e81b20a4122e57aeb1bdde,columna o tabla inexistente,columna o tabla inexistente,El país pertenece a huespedes; se consulta pais en habitaciones y se agrega una relación inexistente.
+baseline,v06,d2c6e1a137a59fd59aa6c9d72f091c0ba63df34b3f6561b199ca8922fa4bbe0e,columna o tabla inexistente,columna o tabla inexistente,id_piso no existe. Se solicitaron numero y piso con piso = 5.
+baseline,v07,3cd98191483b88acde53c36621bd7b74c66e8256e01ee81e65fae0f7aa8280f3,columna o tabla inexistente,columna o tabla inexistente,Se busca nombre en habitaciones. Falta relacionar hoteles con habitaciones.
+baseline,v08,8252e07696e4ad4c95335d209aec01f2bdcd350dd89bd3722fc6a46645a1bd78,agregación,agregación,"Se filtran reservaciones individuales con noches > 15, en lugar de filtrar la suma por huésped mediante HAVING."
+baseline,v09,9d6888d6333e06bf3d70a5a3006fab14b6e0bca830528147e77e78b3c0ad4c4c,sintaxis,sintaxis,La consulta termina en una condición ON incompleta e incorpora tablas innecesarias.
+baseline,v10,cedb0b36a1749631c1df2c7b35d19877db514eff270ae1d0b2b896ce9a2b6e4b,columna o tabla inexistente,columna o tabla inexistente,Se declara el alias t y se utilizan referencias t1 sin declarar.
+baseline,v11,fc13fed871710ed81c3bda990ef613d141fde9cfa555e461150c2162768f2f61,columna o tabla inexistente,columna o tabla inexistente,"La columna de consumos se llama cantidad, no unidades."
+baseline,v12,60487508bc0a13c75060d6fcf9d642f4040aed47ae4cf8d14172fae6a8248bac,columna o tabla inexistente,columna o tabla inexistente,Se busca nombre en habitaciones y se intercambian las entidades de hotel y huésped.
+baseline,v13,737719676edef41e30b02f13c78c2522a9cc33a8e907fc04e98b189145c720db,columna o tabla inexistente,columna o tabla inexistente,Nombre y tarifa_noche se buscan en habitaciones; pertenecen a hoteles y tipos_habitacion.
+baseline,v15,42a9de010d1930b7369cd1f319a3107d0c5a091ff322318e93ceb8f4312dfeec,columna o tabla inexistente,columna o tabla inexistente,reservaciones no tiene id_servicio; se agrega una relación ajena al promedio por canal.
+baseline,v17,b9e222333768902fc4a7f8a778b0a5f6ea9f0dc4d21a49636d9963fb1bae8a8c,columna o tabla inexistente,columna o tabla inexistente,"Se busca nombre en habitaciones. Además se obtiene una sola reservación global, sin máximo por hotel."
+baseline,v18,fe82cf6b914d94662ec6ee39edddc5c313427cb0f38c8f581b87f088779c7d22,columna o tabla inexistente,columna o tabla inexistente,mes no es una columna física; se requiere derivarlo de fecha_entrada con formato AAAA-MM.
+baseline,v19,8ba7d3d23146f23191c70e68dfd773009a8a8756a5fa260e850f13aa9addb95d,agregación,agregación,"La subconsulta agrega sobre habitaciones con referencias externas, sin calcular el acumulado por fecha."
+baseline,v20,db85b2b53d4f7125f12761613000d53afcd8fe35748aad8d056f6a3e1e56d6a0,resultado distinto,agregación,"Se utiliza un estado literal ajeno al conjunto y se divide entre el conteo del grupo, en lugar del total global."
+baseline,v30,acb3d1c9477aa6227cda870ac75d08393ad4d3afdaf0cd01d0377637a07e408d,JOIN,JOIN,Se omite la relación con partidos como local y no se devuelve el conteo requerido.
+baseline,v31,f99e7780b08385a5760b7845d09f2b40bba28714ea6cb19f5ed26161dc97fae4,filtro,filtro,"Se agrega fund = 2000, condición que no se solicita."
+baseline,v32,e004ebd5b5532a4b85984a62f8ad48a81aa3460c1ca07701f386135d72cdecf5,JOIN,resultado distinto,"Se devuelve SELECT 1 como respaldo, sin los jugadores ni sus conteos de tarjetas."
+baseline,v34,38f14f08988f1e603760772e2030d17cd6c2bf46fb6f6f9a375fcd15b600ccbc,filtro,filtro,La subconsulta exige una clave primaria de gol nula y queda vacía; no excluye a quienes sí anotaron.
+baseline,v35,bdd86351c68aabbf97238f0698a767b3d80847b1f10ab92ff6f62a6cdc6b31d8,sintaxis,sintaxis,La consulta queda incompleta después de IN.
+baseline,v36,e3590c387c15bdbbea4ed68b63521415327956239f2d639d09d67b5948356797,sintaxis,columna o tabla inexistente,Se utiliza el alias T1 sin declarar una tabla o subconsulta con ese alias.
+baseline,v37,4a815091d97f3f29cf69a62c091b453e5b33faf8e935fbb84315e1583ea09420,JOIN,agregación,"El promedio se calcula sobre equ mediante una referencia externa, en lugar de promediar los salarios del mismo equipo."
+baseline,v38,6457ad69ee3fae02211c6fa5b6b78d56a0f6b4bd137edf1c7a7a27a9bd6914c5,resultado distinto,agregación,Se suman minutos de goles y se comparan con el total global; se requiere contar goles por partido y devolver ese conteo.
+baseline,v39,1d7745287e7f32f838ba6af5b7b2aa9eeed331a55ef3947e2a5e40071eb5c9cb,resultado distinto,agregación,Se suman minutos de goles en lugar de contar goles por jornada.
+baseline,v40,b87b0213a831d5311d6a05145420c3999a52422239bd3362a511751c3f3b67c4,columna o tabla inexistente,columna o tabla inexistente,par no contiene id_jug; tampoco se calcula la edad mínima por posición.
+lora_r8,v01,cb989bdada714c229be6c1c7f3736e2271360371c8d4e57121b23942b5ccea50,columna o tabla inexistente,columna o tabla inexistente,Se utiliza HOTELS en lugar de hoteles.
+lora_r8,v06,9e4ce4c60e176e06d2a09501bc936dc4ab87acbc90dd23a8794b1ae11df06729,agregación,agregación,"Se agrupa por un alias agregado y se filtra por tipo de habitación, en lugar de listar numero y piso con piso = 5."
+lora_r8,v07,462f3d35236166af4d7e71b277607f3de50dc273b2916071fd11f98a74c0aeb1,JOIN,JOIN,"Se asigna el alias h a hoteles y habitaciones, lo que vuelve ambiguas las referencias."
+lora_r8,v08,2acbaa6865a3b1e7567ec4fdef46fe9165916202ddf323d6756bb8dddfa8a51a,resultado distinto,agregación,"HAVING usa COUNT(*) > 15, en lugar de SUM(noches) > 15."
+lora_r8,v12,e3854885a2350532c9e86b0b7b6fb318bb5a00045d1bcf017292454321a2ada6,columna o tabla inexistente,columna o tabla inexistente,Se consultan ciudad y estado en huespedes y noches en habitaciones; faltan las relaciones correctas con reservaciones y hoteles.
+lora_r8,v13,e96b1fe3a59cfbacfdb1a219e14621bee00b2e610c432ac704af6f413ad86eed,JOIN,JOIN,Se repite el alias h para dos tablas y se omite la relación con tipos_habitacion para obtener la tarifa.
+lora_r8,v17,3131ad686d2011fc31308a0f9571a92bae5f47b019e0be5d297ce180a50db78e,columna o tabla inexistente,columna o tabla inexistente,reservaciones no contiene id_hotel; se requiere pasar por habitaciones y elegir una reservación por hotel.
+lora_r8,v18,4b2e7c068c8d771d49b5bcb03b7917620b35885f4a5ca36719c4aba2c8211cf8,columna o tabla inexistente,columna o tabla inexistente,mes no es una columna física; se requiere derivarlo de fecha_entrada con formato AAAA-MM.
+lora_r8,v19,334b8c83eb49e1daab441af012f25c40ff172b13e568ce81d5bccaec865abd0f,resultado distinto,agregación,La ventana se particiona por reservación y no produce un acumulado global; también falta el límite de diez filas.
+lora_r8,v20,7fb2a479df349229bc985ac20669db0af69c2862e24cb70fba65a35dc4a980e2,resultado distinto,agregación,"Cada conteo de grupo se divide entre sí mismo y produce 100, en lugar del porcentaje del total de reservaciones."
+lora_r8,v30,08a87476b0c5e6061625fec60fa71855bb0758964685ac77fc666b323014b07f,columna o tabla inexistente,columna o tabla inexistente,jug no contiene id_est y no se cuentan los partidos como local por equipo.
+lora_r8,v31,f99e7780b08385a5760b7845d09f2b40bba28714ea6cb19f5ed26161dc97fae4,filtro,filtro,"Se agrega fund = 2000, condición que no se solicita."
+lora_r8,v32,9724aa480582dec4c1a135e7ee68c1171be18b82fa90871d051df48c7ce84f76,JOIN,agregación,"Se calculan conteos globales de tarjetas; faltan el nombre del jugador, la agrupación por jugador y HAVING >= 2."
+lora_r8,v35,e7cc44fc113e3bc39cbbc04796dee38e1c2223ad8227724fcc33009f97d30c72,columna o tabla inexistente,columna o tabla inexistente,gol no contiene goles; se deben contar sus filas por jugador y seleccionar el máximo por equipo.
+lora_r8,v36,215c0c22493d23b4caac4fcfe93f1e8671a8b42fa51435e16115dcd4d47b0aac,sintaxis,sintaxis,La proyección termina incompleta después de AS y no calcula el ranking solicitado.
+lora_r8,v37,bf25f043550956aaa59c09a51afb701da5dbf062ad2478bf3c9f82d4ef6cc2dc,filtro,filtro,"El salario se compara con el promedio global, en lugar del promedio del equipo del jugador."
+lora_r8,v38,a48a676936e88a782c420ccbe0d0925710d9ad1a5bc27596c4cbd87d63e9cd94,columna o tabla inexistente,columna o tabla inexistente,Se utiliza min sobre par; los goles se encuentran en gol y se requiere contar por partido.
+lora_r8,v39,3c80cca8f4283e9ac03f5acb12b93c795cdf669907e1a93a29f60987ad2b11f6,columna o tabla inexistente,columna o tabla inexistente,jor pertenece a par; falta relacionar los goles con sus partidos.
+lora_r8,v40,1e22ed231a9154e744c0ece6f8ae285d9163ef9fda14eded6c4faf63126cce5e,JOIN,filtro,"Se consulta pos y edad como referencias externas en equ, sin comparar la edad con el mínimo de su posición."

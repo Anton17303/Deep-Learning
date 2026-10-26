@@ -97,6 +97,7 @@ def generar_sql(esquema: str, pregunta: str, ejecutar=None) -> str:
     msgs = construir_mensajes(esquema, pregunta, FORMATO_ESQUEMA, _ejemplos_fewshot())
     sql = extraer_sql(_generar(msgs, LIMITE_SEG))
     if REPARAR and ejecutar is not None:
+        sql = corregir_identificadores(sql, esquema)
         for _ in range(MAX_REINTENTOS):          # 2 ejecuciones + 2 regeneraciones como máximo
             if time.time() - t0 > LIMITE_SEG - 10:
                 break

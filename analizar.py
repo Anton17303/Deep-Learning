@@ -48,7 +48,7 @@ def main():
     parser.add_argument('--directorio', default='resultados')
     args = parser.parse_args()
     raiz = Path(args.directorio)
-    nombres = ['baseline', 'baseline_cpu', 'baseline_reparacion', 'lora_r8', 'lora_r16', 'reparacion', 'validacion_propia']
+    nombres = ['baseline', 'lora_r8', 'lora_r16', 'reparacion', 'validacion_propia']
     revisiones = cargar_csv(raiz / 'revision_errores.csv') if (raiz / 'revision_errores.csv').exists() else []
     resumen = {}
     lineas = ['# Resultados de Text-to-SQL', '',
@@ -108,12 +108,12 @@ def main():
                       f"El intervalo bootstrap jerárquico de EX propia es [{intervalo[0]:.3f}, {intervalo[1]:.3f}]. Se remuestrean esquemas y preguntas con semilla 2026. Con dos esquemas, este intervalo no representa toda la variación esperable entre bases desconocidas.", '',
                       'Los errores de tablas o columnas indican problemas de correspondencia con el esquema; los de JOIN y agregación requieren revisar relaciones y nivel de agrupación. Una consulta ejecutable puede seguir teniendo filtros o resultados incorrectos. La clasificación automática es heurística; los casos particulares se registran en revision_errores.csv.'])
         seleccion_ruta = raiz / 'seleccion.json'
-        usa_reparacion = seleccion_ruta.exists() and json.loads(seleccion_ruta.read_text(encoding='utf-8'))['reparar']
-        nombre_base = 'baseline_reparacion' if usa_reparacion and 'baseline_reparacion' in resumen else 'baseline'
-        if nombre_base in resumen:
-            mejora = s['ex'] - resumen[nombre_base]['ex']
-            puntos = 30 * min(1., s['ex'] / .70) + 10 * min(1., max(0., mejora) / .15)
-            lineas.extend(['', f'La mejora local frente al baseline es {mejora:+.3f}. Si estos valores se repitieran en la evaluación oculta, el componente de rendimiento sería {puntos:.1f}/40. No corresponde a una nota observada del docente.'])
+        seleccion = json.loads(seleccion_ruta.read_text(encoding='utf-8')) if seleccion_ruta.exists() else {}
+        if 'baseline' in resumen and seleccion.get('adapter') in resumen:
+            mejora = resumen[seleccion['adapter']]['ex'] - resumen['baseline']['ex']
+            puntos_ex = 30 * min(1., s['ex'] / .70)
+            lineas.extend(['', f'La mejora atribuible al adapter, medida sin reparación en ambas versiones, es {mejora:+.3f}. La reparación se evalúa como un experimento separado sobre ese adapter.', '',
+                           f'Si la EX final se repitiera en la evaluación oculta, correspondería a {puntos_ex:.1f}/30 en el componente de exactitud. El aporte del entrenamiento en la configuración final se determinará al evaluar las dos versiones con la misma estrategia de inferencia.'])
     (raiz / 'resumen_resultados.json').write_text(json.dumps(resumen, indent=2, ensure_ascii=False), encoding='utf-8')
     (raiz / 'analisis.md').write_text('\n'.join(lineas) + '\n', encoding='utf-8')
     print(json.dumps(resumen, indent=2, ensure_ascii=False))

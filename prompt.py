@@ -154,7 +154,9 @@ def corregir_identificadores(sql, esquema):
 
     try:
         tablas = {}
-        for ddl in parse(esquema, read='mysql'):
+        partes = [p for p in re.split(r'(?im)(?=^[ \t]*CREATE[ \t]+TABLE\b)', esquema) if p.strip()]
+        sentencias = [parse_one(p, read='mysql') for p in partes] if len(partes) > 1 else parse(esquema, read='mysql')
+        for ddl in sentencias:
             if isinstance(ddl, exp.Create) and isinstance(ddl.this, exp.Schema):
                 tablas[ddl.this.this.name] = {c.name for c in ddl.this.expressions if isinstance(c, exp.ColumnDef)}
         if not tablas:

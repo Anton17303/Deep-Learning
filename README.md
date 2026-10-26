@@ -66,7 +66,7 @@ Los resultados por pregunta, el análisis por categoría, la selección del adap
 
 ## Limitaciones
 
-Los pares provienen de plantillas y pueden favorecer redacciones repetidas. La ejecución sin errores no garantiza que una consulta responda correctamente la pregunta. La selección entre adapters utiliza solo dos dominios de validación, por lo que la EX propia puede sobreestimar la generalización. Los tiempos medidos en CPU no acreditan el límite de generación en T4.
+Los pares provienen de plantillas y pueden favorecer redacciones repetidas. Cada configuración procesa 304 ejemplos del corpus de 3,023 pares; esta cobertura limitada puede producir subajuste. La ejecución sin errores no garantiza que una consulta responda correctamente la pregunta. La selección entre adapters utiliza solo dos dominios de validación, por lo que la EX propia puede sobreestimar la generalización. Las mediciones corresponden a una GPU MX350 y no acreditan una ejecución en Colab T4.
 
 ## Licencias y uso de IA
 

@@ -34,6 +34,7 @@ class TestCategorias(unittest.TestCase):
     def test_errores_de_ejecucion(self):
         self.assertEqual(categoria_error("x", "y", "(1054, \"Unknown column 'a'\")"), "columna o tabla inexistente")
         self.assertEqual(categoria_error("x", "y", "(1146, \"Table 'b' doesn't exist\")"), "columna o tabla inexistente")
+        self.assertEqual(categoria_error("x", "y", "(1109, \"Unknown table 'T1' in field list\")"), "columna o tabla inexistente")
         self.assertEqual(categoria_error("x", "y", "(1064, 'You have an error in your SQL syntax')"), "sintaxis")
         self.assertEqual(categoria_error("x", "y", "(1055, 'ONLY_FULL_GROUP_BY')"), "agregación")
 

@@ -1,0 +1,35 @@
+{
+  "config": {
+    "nombre": "lora_r8",
+    "modelo_base": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+    "semilla": 2026,
+    "r": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.05,
+    "target_modules": [
+      "q_proj",
+      "v_proj"
+    ],
+    "learning_rate": 0.0002,
+    "num_train_epochs": 0.1,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 4,
+    "max_length": 4096,
+    "warmup_ratio": 0.03,
+    "weight_decay": 0.01,
+    "formato_esquema": "show_create",
+    "cuantizacion": "nf4",
+    "offload_activaciones": true
+  },
+  "parametros_entrenables": 540672,
+  "parametros_totales": 494573440,
+  "ejemplos_dataset": 3023,
+  "pasos_realizados": 76,
+  "pasos_previstos": 76,
+  "ejemplos_procesados": 304,
+  "entrenamiento_completo": true,
+  "segundos_entrenamiento": 2226.3297910999972,
+  "dispositivo": "cuda",
+  "sha256_dataset": "aa6f3302443cc2cfdfb92a5e363625c0c167fcc6c949cc55163a6ae4aa72f833",
+  "torch": "2.5.1+cu118"
+}
