@@ -1,18 +1,31 @@
-#!/bin/bash
-# Instala y arranca MySQL 8.4.10 (binario Linux del enunciado) en Colab/Kaggle.
-# NOTA: no pude probar este script (sin acceso a downloads.mysql.com desde mi entorno). Si falla,
-# usar la alternativa: apt-get install -y mysql-server  (será 8.0.x; ver README, sección Motor).
-set -e
-cd /content 2>/dev/null || cd ~
-apt-get install -y -qq libaio1 libnuma1 >/dev/null
-URL=https://downloads.mysql.com/archives/get/p/23/file/mysql-8.4.10-linux-glibc2.17-x86_64-minimal.tar.xz
-[ -d mysql-8.4.10 ] || { wget -q "$URL" -O mysql.tar.xz && mkdir mysql-8.4.10 && tar xf mysql.tar.xz -C mysql-8.4.10 --strip-components=1; }
-mkdir -p /tmp/my8data /tmp/my8run
-if [ ! -d /tmp/my8data/mysql ]; then
-  mysql-8.4.10/bin/mysqld --initialize-insecure --user=root --datadir=/tmp/my8data
+#!/usr/bin/env bash
+set -euo pipefail
+RUNTIME=/content/mysql-p3
+BASE="$RUNTIME/mysql-8.4.10"
+mkdir -p "$RUNTIME" /tmp/my8run
+if [ ! -x "$BASE/bin/mysqld" ]; then
+  apt-get update -qq
+  apt-get install -y -qq libnuma1 xz-utils wget
+  apt-get install -y -qq libaio1 || apt-get install -y -qq libaio1t64
+  wget -q https://downloads.mysql.com/archives/get/p/23/file/mysql-8.4.10-linux-glibc2.17-x86_64-minimal.tar.xz -O "$RUNTIME/mysql.tar.xz"
+  mkdir -p "$BASE"
+  tar xf "$RUNTIME/mysql.tar.xz" -C "$BASE" --strip-components=1
 fi
-setsid nohup mysql-8.4.10/bin/mysqld --user=root --datadir=/tmp/my8data \
-  --socket=/tmp/my8run/mysql.sock --port=3306 --bind-address=127.0.0.1 --mysqlx=OFF \
-  --secure-file-priv="" > /tmp/mysqld.log 2>&1 < /dev/null &
-for i in $(seq 1 60); do [ -S /tmp/my8run/mysql.sock ] && break; sleep 1; done
-echo "export MYSQL_SOCKET=/tmp/my8run/mysql.sock"
+AIO=$(find /usr/lib /lib -name 'libaio.so.1t64' -print -quit 2>/dev/null || true)
+if [ -n "$AIO" ]; then ln -sf "$AIO" "$BASE/lib/libaio.so.1"; fi
+export LD_LIBRARY_PATH="$BASE/lib:${LD_LIBRARY_PATH:-}"
+if [ ! -d "$RUNTIME/data/mysql" ]; then
+  "$BASE/bin/mysqld" --no-defaults --initialize-insecure --user=root --basedir="$BASE" --datadir="$RUNTIME/data"
+fi
+if ! MYSQL_SOCKET=/tmp/my8run/mysql.sock python -c 'from generador.bd import conectar; c=conectar(); c.close()' 2>/dev/null; then
+  nohup "$BASE/bin/mysqld" --no-defaults --user=root --basedir="$BASE" --datadir="$RUNTIME/data" --socket=/tmp/my8run/mysql.sock --bind-address=127.0.0.1 --port=3306 --mysqlx=OFF > "$RUNTIME/mysql.log" 2>&1 < /dev/null &
+fi
+for i in $(seq 1 60); do
+  if MYSQL_SOCKET=/tmp/my8run/mysql.sock python -c 'from generador.bd import conectar; c=conectar(); q=c.cursor(); q.execute("SELECT VERSION()"); assert q.fetchone()[0].startswith("8.4.10"); c.close()' 2>/dev/null; then
+    echo 'MySQL 8.4.10 disponible en /tmp/my8run/mysql.sock'
+    exit 0
+  fi
+  sleep 1
+done
+cat "$RUNTIME/mysql.log"
+exit 1

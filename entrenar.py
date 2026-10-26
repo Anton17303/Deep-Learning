@@ -49,9 +49,9 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
         task_type='CAUSAL_LM', r=config['r'], lora_alpha=config['lora_alpha'],
         lora_dropout=config['lora_dropout'], target_modules=config['target_modules'], bias='none'))
     modelo.to(dispositivo)
-    if dispositivo == 'cuda':
-        modelo.gradient_checkpointing_enable(gradient_checkpointing_kwargs={'use_reentrant': False})
+    modelo.gradient_checkpointing_enable(gradient_checkpointing_kwargs={'use_reentrant': False})
     datos = cargar_ejemplos()
+    sha_dataset = hashlib.sha256((RAIZ / 'datos/entrenamiento.jsonl').read_bytes()).hexdigest()
     ejemplos = [codificar(tokenizer, r, config['formato_esquema'], config['max_length']) for r in datos]
     orden = list(range(len(ejemplos)))
     random.Random(config['semilla']).shuffle(orden)
@@ -77,6 +77,8 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
         estado = torch.load(checkpoint, map_location=dispositivo, weights_only=False)
         if estado['config'] != config:
             raise ValueError('El checkpoint corresponde a otra configuración')
+        if estado.get('sha256_dataset') != sha_dataset:
+            raise ValueError('Los datos cambiaron respecto al checkpoint')
         from peft import set_peft_model_state_dict
         set_peft_model_state_dict(modelo, estado['adapter'])
         optim.load_state_dict(estado['optim'])
@@ -102,7 +104,9 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
             ids = torch.tensor([e['input_ids']], device=dispositivo)
             labels = torch.tensor([e['labels']], device=dispositivo)
             with torch.autocast(device_type=dispositivo, dtype=dtype, enabled=dispositivo == 'cuda'):
-                loss = modelo(input_ids=ids, attention_mask=torch.ones_like(ids), labels=labels).loss
+                respuesta = int((labels != -100).sum().item()) + 1
+                loss = modelo(input_ids=ids, attention_mask=torch.ones_like(ids),
+                              labels=labels[:, -respuesta:], logits_to_keep=respuesta).loss
             if not torch.isfinite(loss):
                 raise RuntimeError('Pérdida no finita')
             scaler.scale(loss / len(indices)).backward()
@@ -121,7 +125,7 @@ def entrenar(config, salida, max_steps=None, reanudar=False):
         if (paso + 1) % 10 == 0 or paso + 1 == limite:
             from peft import get_peft_model_state_dict
             modelo.save_pretrained(salida / 'adapter', safe_serialization=True)
-            torch.save(dict(config=config, paso=paso + 1, historial=historial,
+            torch.save(dict(config=config, sha256_dataset=sha_dataset, paso=paso + 1, historial=historial,
                             segundos=transcurrido + time.perf_counter() - inicio,
                             adapter=get_peft_model_state_dict(modelo), optim=optim.state_dict(),
                             scheduler=scheduler.state_dict(), scaler=scaler.state_dict(),

@@ -67,23 +67,44 @@ def extraer_sql(texto: str) -> str:
     m = re.search(r"\b(with|select)\b", t, re.I)
     if m:
         t = t[m.start():]
-    # una sola sentencia: cortar en el primer ';' fuera de literales
-    en_cadena, comilla = False, ""
-    for i, ch in enumerate(t):
-        if en_cadena:
+    comilla, i = "", 0
+    while i < len(t):
+        ch = t[i]
+        if comilla:
+            if ch == "\\" and comilla != "`":
+                i += 2
+                continue
             if ch == comilla:
-                en_cadena = False
+                if i + 1 < len(t) and t[i + 1] == comilla:
+                    i += 2
+                    continue
+                comilla = ""
         elif ch in "'\"`":
-            en_cadena, comilla = True, ch
+            comilla = ch
+        elif t[i:i + 2] == "/*":
+            fin = t.find("*/", i + 2)
+            if fin == -1:
+                return ""
+            i = fin + 2
+            continue
+        elif ch == "#" or (t[i:i + 2] == "--" and (i + 2 == len(t) or t[i + 2].isspace())):
+            fin = t.find("\n", i)
+            if fin == -1:
+                break
+            i = fin + 1
+            continue
         elif ch == ";":
             t = t[:i]
             break
+        i += 1
     return t.strip()
 
 
 def es_solo_lectura(sql: str) -> bool:
     from sqlglot import parse, exp
     try:
+        if '/*!' in sql:
+            return False
         sentencias = [s for s in parse(sql, read="mysql") if s is not None]
         if len(sentencias) != 1:
             return False

@@ -141,7 +141,7 @@ def e_count_cat(S, rng):
     val = rng.choice(c.arg[0].split("/"))
     preg = rng.choice([
         f"¿Cuántos registros de {t.etiqueta} tienen {c.etiqueta} igual a '{val}'? Devuelve una sola columna con el total.",
-        f"Cuenta los {t.etiqueta} cuyo {c.etiqueta} es '{val}'.",
+        f"Cuenta los registros de {t.etiqueta} cuyo {c.etiqueta} es '{val}'.",
     ])
     return dict(nivel=1, pregunta=preg, ordenado=False,
                 sql=f"SELECT COUNT(*) AS total FROM {t.db} WHERE {c.db} = '{val}'")
@@ -171,7 +171,7 @@ def e_top_n(S, rng):
     orden = "de mayor a menor" if desc == "DESC" else "de menor a mayor"
     preg = rng.choice([
         f"Obtén los {k} registros de {t.etiqueta} con {txt} {n.etiqueta}. Devuelve {lista(c.etiqueta for c in d + [n])}, ordenados {orden}.",
-        f"Muestra {lista(c.etiqueta for c in d + [n])} de los {k} {t.etiqueta} con {txt} {n.etiqueta}, {orden}.",
+        f"Muestra {lista(c.etiqueta for c in d + [n])} de los {k} registros de {t.etiqueta} con {txt} {n.etiqueta}, {orden}.",
     ])
     return dict(nivel=1, pregunta=preg, ordenado=True,
                 sql=f"SELECT {sel(d + [n])} FROM {t.db} ORDER BY {n.db} {desc} LIMIT {k}")
@@ -345,7 +345,7 @@ def m_having_avg(S, rng):
     A, B = alias_estilo(rng)[:2]
     n, dp = rng.choice(h.nums), nombre_pref(p, rng)
     v = valor_num(n, rng)
-    preg = f"Muestra los {p.etiqueta} cuyo promedio de {n.etiqueta} en {h.etiqueta} supere {v}. Devuelve {dp.etiqueta} y el promedio (columna promedio)."
+    preg = f"Muestra los registros de {p.etiqueta} cuyo promedio de {n.etiqueta} en {h.etiqueta} supere {v}. Devuelve {dp.etiqueta} y el promedio (columna promedio)."
     sql = (f"SELECT {B}.{dp.db}, AVG({A}.{n.db}) AS promedio FROM {p.db} {B} JOIN {h.db} {A} "
            f"ON {A}.{fk.db} = {B}.{p.pk.db} GROUP BY {B}.{p.pk.db}, {B}.{dp.db} HAVING AVG({A}.{n.db}) > {v}")
     return dict(nivel=2, pregunta=preg, sql=sql, ordenado=False)
@@ -406,7 +406,7 @@ def m_group_filtro_padre(S, rng):
     dp = nombre_pref(p, rng)
     if dp is c:
         return None
-    preg = (f"Para los {p.etiqueta} con {c.etiqueta} igual a '{val}', cuenta sus registros en {h.etiqueta}. "
+    preg = (f"Para los registros de {p.etiqueta} con {c.etiqueta} igual a '{val}', cuenta sus registros en {h.etiqueta}. "
             f"Devuelve {dp.etiqueta} y el total (columna total).")
     sql = (f"SELECT {B}.{dp.db}, COUNT({A}.{h.pk.db}) AS total FROM {p.db} {B} LEFT JOIN {h.db} {A} "
            f"ON {A}.{fk.db} = {B}.{p.pk.db} WHERE {B}.{c.db} = '{val}' GROUP BY {B}.{p.pk.db}, {B}.{dp.db}")
@@ -421,7 +421,7 @@ def h_sub_avg(S, rng):
     d = [nombre_pref(t, rng)]
     arriba = rng.random() < 0.7
     op, txt = (">", "supera el") if arriba else ("<", "está por debajo del")
-    preg = f"Devuelve {lista(c.etiqueta for c in d + [n])} de los {t.etiqueta} cuyo {n.etiqueta} {txt} promedio general de {t.etiqueta}."
+    preg = f"Devuelve {lista(c.etiqueta for c in d + [n])} de los registros de {t.etiqueta} cuyo {n.etiqueta} {txt} promedio general de {t.etiqueta}."
     sql = f"SELECT {sel(d + [n])} FROM {t.db} WHERE {n.db} {op} (SELECT AVG({n.db}) FROM {t.db})"
     return dict(nivel=3, pregunta=preg, sql=sql, ordenado=False)
 
@@ -457,7 +457,7 @@ def h_cte_sobre_promedio(S, rng):
     h, fk, p = rng.choice(cand)
     A, B = alias_estilo(rng)[:2]
     n, dp = rng.choice(h.nums), nombre_pref(p, rng)
-    preg = (f"Calcula la suma de {n.etiqueta} de {h.etiqueta} por cada {sing(p.etiqueta)} y muestra solo los {p.etiqueta} "
+    preg = (f"Calcula la suma de {n.etiqueta} de {h.etiqueta} por cada {sing(p.etiqueta)} y muestra solo los registros de {p.etiqueta} "
             f"cuya suma supere el promedio de esas sumas. Devuelve {dp.etiqueta} y la suma (columna total).")
     sql = (f"WITH tot AS ({_total_por_padre(h, fk, p, n, A)}) "
            f"SELECT {B}.{dp.db}, tot.total FROM {p.db} {B} JOIN tot ON tot.id_padre = {B}.{p.pk.db} "
@@ -573,7 +573,7 @@ def h_sobre_prom_grupo(S, rng):
     if d is c:
         return None
     A, B = alias_estilo(rng)[:2]
-    preg = (f"Devuelve {d.etiqueta}, {c.etiqueta} y {n.etiqueta} de los {t.etiqueta} cuyo {n.etiqueta} es mayor "
+    preg = (f"Devuelve {d.etiqueta}, {c.etiqueta} y {n.etiqueta} de los registros de {t.etiqueta} cuyo {n.etiqueta} es mayor "
             f"que el promedio de {n.etiqueta} de su mismo {c.etiqueta}.")
     sql = (f"SELECT {A}.{d.db}, {A}.{c.db}, {A}.{n.db} FROM {t.db} {A} WHERE {A}.{n.db} > "
            f"(SELECT AVG({B}.{n.db}) FROM {t.db} {B} WHERE {B}.{c.db} = {A}.{c.db})")
@@ -587,7 +587,7 @@ def h_en_subconsulta(S, rng):
     h, fk, p = rng.choice(cand)
     n, dp = rng.choice(h.nums), nombre_pref(p, rng)
     v = valor_num(n, rng)
-    preg = (f"Lista el {dp.etiqueta} de los {p.etiqueta} que tienen al menos un registro en {h.etiqueta} "
+    preg = (f"Lista el {dp.etiqueta} de los registros de {p.etiqueta} que tienen al menos un registro en {h.etiqueta} "
             f"con {n.etiqueta} mayor que {v}.")
     sql = (f"SELECT {dp.db} FROM {p.db} WHERE {p.pk.db} IN "
            f"(SELECT {fk.db} FROM {h.db} WHERE {n.db} > {v})")
@@ -596,7 +596,7 @@ def h_en_subconsulta(S, rng):
 
 def h_promedio_de_conteos(S, rng):
     h, fk, p = rng.choice(hijos(S))
-    preg = (f"¿Cuál es el promedio de registros de {h.etiqueta} por {sing(p.etiqueta)}, considerando solo los {p.etiqueta} "
+    preg = (f"¿Cuál es el promedio de registros de {h.etiqueta} por {sing(p.etiqueta)}, considerando solo los registros de {p.etiqueta} "
             f"que tienen al menos uno? Devuelve una sola columna (columna promedio).")
     sql = f"SELECT AVG(c) AS promedio FROM (SELECT COUNT(*) AS c FROM {h.db} GROUP BY {fk.db}) AS conteos"
     return dict(nivel=3, pregunta=preg, sql=sql, ordenado=False)
