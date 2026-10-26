@@ -23,7 +23,7 @@ def archivos_proyecto():
     rutas = [RAIZ / p for p in ARCHIVOS if (RAIZ / p).exists()]
     for nombre in DIRECTORIOS:
         for ruta in (RAIZ / nombre).rglob('*'):
-            if ruta.is_file() and '__pycache__' not in ruta.parts and ruta.suffix not in ['.pt', '.pyc', '.log'] and ruta.name != '.gitkeep':
+            if ruta.is_file() and '__pycache__' not in ruta.parts and ruta.suffix not in ['.pt', '.pyc', '.log'] and not ruta.name.startswith('estado.pt') and ruta.name != '.gitkeep':
                 rutas.append(ruta)
     return sorted(rutas)
 
