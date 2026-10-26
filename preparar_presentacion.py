@@ -111,7 +111,7 @@ def main():
     d.pagina('Text-to-SQL con QLoRA', tam_titulo=44)
     d.texto('Generación de consultas MySQL<br/>a partir de preguntas en español', 366, tam=32, negrita=True)
     d.texto('Qwen2.5-Coder-0.5B-Instruct', 240, tam=24, color=AZUL)
-    d.texto('Nina Nájera · Alejandro Antón<br/>Deep Learning · Universidad del Valle de Guatemala<br/>25 de octubre de 2026', 170, tam=21)
+    d.texto('Nina Nájera · Alejandro Antón<br/>Deep Learning · Universidad del Valle de Guatemala', 170, tam=21)
 
     d.pagina('Contrato de inferencia', 'Fuente: solucion.py, config.json')
     y = d.texto('Se recibe el esquema completo de la base y una pregunta en español. Se devuelve una sola consulta SELECT o WITH SELECT.', 416)

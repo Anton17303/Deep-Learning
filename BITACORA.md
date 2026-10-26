@@ -12,3 +12,6 @@
 | 2026-10-25 | Nina Nájera | Se reforzó la validación de consultas y se añadieron pruebas de integridad. | Se aprobaron 16 pruebas del evaluador, extracción de SQL y contrato. |
 | 2026-10-25 | Nina Nájera | Se integraron los notebooks y el flujo de comparación experimental. | Se automatizaron baseline, selección de adapter, reparación, análisis y empaquetado. |
 | 2026-10-25 | Nina Nájera | Se preparó un entorno CUDA aislado y se ajustó el entrenamiento a NF4 con activaciones en CPU. | Se inició el entrenamiento QLoRA en la GPU MX350 sin modificar el controlador del equipo. |
+| 2026-10-25 | Nina Nájera | Se completaron las dos configuraciones QLoRA con el mismo presupuesto. | Se procesaron 304 ejemplos en 76 pasos por configuración y se conservaron los adapters, pérdidas y tiempos. |
+| 2026-10-25 | Nina Nájera | Se compararon baseline, rangos y reparación mediante ejecución. | Se seleccionó lora_r8 con EX 0.439; los resultados por pregunta y el análisis se guardaron en resultados/. |
+| 2026-10-25 | Nina Nájera | Se comprobó el contrato de inferencia y se prepararon los documentos finales. | Se aprobaron 23 pruebas y los tres casos repetidos del contrato; se generó la presentación de 11 diapositivas. |

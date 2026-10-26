@@ -52,6 +52,20 @@ El diseño y las hipótesis se registran en [experimentos.md](experimentos.md). 
 
 Los resultados por pregunta, el análisis por categoría, la selección del adapter y la predicción de EX se guardan en `resultados/`. `oraculo.csv` comprueba las consultas de referencia y no representa el rendimiento del modelo. `verificacion.json` registra qué comprobaciones se cumplen. El ZIP contiene únicamente los archivos del proyecto y excluye entornos, descargas y checkpoints de reanudación.
 
+### Resultados medidos
+
+| Configuración | Aciertos | EX ponderada | Tiempo medio (s) |
+|---|---:|---:|---:|
+| Base NF4 | 15/40 | 0.280 | 15.67 |
+| QLoRA rango 8 | 21/40 | 0.439 | 11.49 |
+| QLoRA rango 16 | 20/40 | 0.402 | 11.83 |
+| Adapter con reparación | 21/40 | 0.427 | 13.20 |
+| Entrega seleccionada | 21/40 | 0.439 | 11.49 |
+
+Se seleccionó lora_r8, con reparación desactivada. La EX oculta estimada es 0.35; corresponde a una predicción, no a una medición oficial.
+
+La carga del modelo tardó 6.37 segundos. Los tres casos repetidos cumplieron determinismo, consulta de solo lectura, límite de llamadas y tiempo. Las 23 pruebas automatizadas se aprobaron.
+
 ## Estructura
 
 | Ruta | Contenido |

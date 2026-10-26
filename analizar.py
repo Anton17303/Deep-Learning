@@ -96,6 +96,17 @@ def main():
                        ('La hipótesis de mayor EX con rango 16 recibió apoyo en esta validación.' if diferencia > 0 else
                         'No se observó una mejora de EX al aumentar el rango bajo este presupuesto.') +
                        ' La comparación se limita a 40 preguntas y dos esquemas; no demuestra una ventaja general sobre bases desconocidas.'])
+    seleccion_ruta = raiz / 'seleccion.json'
+    if 'reparacion' in resumen and seleccion_ruta.exists():
+        seleccion = json.loads(seleccion_ruta.read_text(encoding='utf-8'))
+        originales = {f['id']: f for f in cargar_csv(raiz / f"{seleccion['adapter']}.csv")}
+        reparadas = cargar_csv(raiz / 'reparacion.csv')
+        mejoras = sum(f['acierto'] == '1' and originales[f['id']]['acierto'] == '0' for f in reparadas)
+        perdidas = sum(f['acierto'] == '0' and originales[f['id']]['acierto'] == '1' for f in reparadas)
+        original, reparada = resumen[seleccion['adapter']], resumen['reparacion']
+        lineas.extend(['', '## Efecto de la reparación', '',
+                       f"La reparación convirtió {mejoras} errores en aciertos y perdió {perdidas} aciertos. La diferencia de EX fue {reparada['ex'] - original['ex']:+.3f}; el tiempo medio pasó de {original['tiempo_medio_s']:.2f} a {reparada['tiempo_medio_s']:.2f} segundos.", '',
+                       'La corrección de nombres puede resolver identificadores cercanos. La regeneración tiene un presupuesto limitado y puede terminar con una consulta incompleta. Los filtros o las agregaciones incorrectos que sí se ejecutan no producen un error de MySQL para activar otra generación.'])
     for nombre, s in resumen.items():
         lineas.extend(['', f'## Errores: {nombre}', '', '| Categoría | Cantidad |', '|---|---:|'])
         lineas.extend(f'| {c} | {n} |' for c, n in sorted(s['errores'].items()))
