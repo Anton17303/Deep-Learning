@@ -1,6 +1,5 @@
 """Escribe datos/validacion/preguntas.jsonl (40 preguntas, 2 esquemas ajenos al
-entrenamiento) y comprueba que cada SQL de referencia se ejecuta y no es vacío.
-Borrador generado con ayuda de IA: revisar y ajustar antes de reportar (ver README)."""
+entrenamiento) y comprueba que cada SQL de referencia se ejecuta y no es vacío."""
 import json
 from pathlib import Path
 

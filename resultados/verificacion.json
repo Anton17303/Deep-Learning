@@ -22,7 +22,7 @@
     "proveniencia_validacion": true
   },
   "completo": true,
-  "pruebas": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 7.816s\n\nOK\n",
+  "pruebas": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 9.747s\n\nOK\n",
   "sha256_dataset": "aa6f3302443cc2cfdfb92a5e363625c0c167fcc6c949cc55163a6ae4aa72f833",
   "entorno_objetivo_verificado": false
 }

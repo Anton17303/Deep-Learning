@@ -146,7 +146,6 @@ def main():
                                     for n in ['lora_r8', 'lora_r16'])), indent=2), encoding='utf-8')
     ejecutar('analizar.py')
     ejecutar('comprobar_inferencia.py')
-    ejecutar('preparar_presentacion.py')
     ejecutar('-m', 'unittest', 'discover', '-s', 'tests', '-v')
 
 

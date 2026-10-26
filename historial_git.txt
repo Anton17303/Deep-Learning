@@ -1,0 +1,1255 @@
+commit 69f51a6f4b46c1a0e73fddef45d0bdfe25dbd3bb
+Author: Alejandro Anton <105880067+Anton17303@users.noreply.github.com>
+Date:   2026-10-26 00:05:41 -0600
+
+    add: presentacion
+
+ presentacion_proyecto.pptx | Bin 0 -> 281301 bytes
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+commit 641215d0fbb901c026563a35460c67e2877df96b
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-26 00:03:12 -0600
+
+    cleaning
+
+ CONTRIBUCIONES.md        |   12 -
+ LICENCIAS.md             |   17 -
+ LICENCIA_MODELO.txt      |  202 --------
+ historial_git.txt        | 1193 ----------------------------------------------
+ preparar_presentacion.py |  187 --------
+ presentacion.pdf         |  Bin 202235 -> 0 bytes
+ 6 files changed, 1611 deletions(-)
+
+commit 2051fd59aadae57638cd89522734c4d18bbdb945
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-26 00:02:10 -0600
+
+    update: organize project log dates
+
+ BITACORA.md | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
+
+commit bdda670becb3912124e7bd32401649c873fe8a9d
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-25 23:56:58 -0600
+
+    add: include trained adapter and verified submission artifacts
+
+ .gitattributes                      |    3 +
+ adapter/LICENSE                     |  202 ++++++
+ adapter/README.md                   |   13 +
+ adapter/adapter_config.json         |   37 ++
+ adapter/adapter_model.safetensors   |  Bin 0 -> 2175168 bytes
+ config_reparacion.json              |    8 +
+ historial_git.txt                   | 1193 +++++++++++++++++++++++++++++++++++
+ presentacion.pdf                    |  Bin 0 -> 202235 bytes
+ resultados/analisis.md              |  129 ++++
+ resultados/comparacion_loss.png     |  Bin 0 -> 179344 bytes
+ resultados/contrato_inferencia.json |   63 ++
+ resultados/lora_r16.csv             |   41 ++
+ resultados/lora_r16.json            |   21 +
+ resultados/manifest.json            |  109 ++++
+ resultados/reparacion.csv           |   41 ++
+ resultados/reparacion.json          |   22 +
+ resultados/resumen_resultados.json  |  161 +++++
+ resultados/seleccion.json           |    7 +
+ resultados/validacion_propia.csv    |   41 ++
+ resultados/validacion_propia.json   |   21 +
+ resultados/verificacion.json        |   28 +
+ verificar_entrega.py                |    2 +-
+ 22 files changed, 2141 insertions(+), 1 deletion(-)
+
+commit 920c4b3b151afd5c4f2c48562e76b6bdb3ba6189
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-25 23:55:40 -0600
+
+    chore: finalize verified project delivery and experimental report
+
+ BITACORA.md                      |  3 +++
+ CONTRIBUCIONES.md                |  2 +-
+ README.md                        | 14 ++++++++++
+ analizar.py                      | 11 ++++++++
+ config.json                      |  3 ++-
+ notebooks/01_datos.ipynb         | 13 ++++++++-
+ notebooks/02_entrenamiento.ipynb | 18 ++++++++++++-
+ notebooks/03_evaluacion.ipynb    | 23 ++++++++++++++++
+ preparar_presentacion.py         |  2 +-
+ requirements.txt                 |  1 +
+ resultados/revision_errores.csv  | 58 ++++++++++++++++++++++++++++++++++++++++
+ 11 files changed, 143 insertions(+), 5 deletions(-)
+
+commit dc1bfab0c4a75fc4b2fdef12a248e542df4fc270
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-25 23:36:55 -0600
+
+    add: record second QLoRA training and strengthen delivery validation
+
+ adapter/.gitkeep                                   |   0
+ analizar.py                                        |   7 +
+ resultados/.gitkeep                                |   0
+ resultados/estadisticas_datos.json                 |  81 +++++++++
+ resultados/lora_r16/adapter/LICENSE                | 202 +++++++++++++++++++++
+ resultados/lora_r16/adapter/README.md              |  13 ++
+ resultados/lora_r16/adapter/adapter_config.json    |  37 ++++
+ .../lora_r16/adapter/adapter_model.safetensors     | Bin 0 -> 4338000 bytes
+ resultados/lora_r16/loss.csv                       |  77 ++++++++
+ resultados/lora_r16/loss.png                       | Bin 0 -> 82026 bytes
+ resultados/lora_r16/resumen.json                   |  35 ++++
+ resultados/oraculo.csv                             |  26 +--
+ resultados/oraculo.json                            |  10 +
+ verificar_entrega.py                               |   8 +
+ 14 files changed, 483 insertions(+), 13 deletions(-)
+
+commit 35615445bd79ff63677d60fceaca55f5644baae2
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-25 23:22:32 -0600
+
+    update: finalize SQL repair and record baseline and rank eight results
+
+ .gitignore                                         |   1 +
+ README.md                                          |   2 +-
+ analizar.py                                        |  14 +-
+ comprobar_inferencia.py                            |  19 +-
+ ejecutar_proyecto.py                               |  72 +++++++-
+ evaluador.py                                       |   5 +-
+ preparar_presentacion.py                           |   7 +-
+ prompt.py                                          |   4 +-
+ resultados/baseline.csv                            | 123 +++++++++++++
+ resultados/baseline.json                           |  20 ++
+ resultados/lora_r8.csv                             |  41 +++++
+ resultados/lora_r8.json                            |  21 +++
+ resultados/lora_r8/adapter/LICENSE                 | 202 +++++++++++++++++++++
+ resultados/lora_r8/adapter/README.md               |  13 ++
+ resultados/lora_r8/adapter/adapter_config.json     |  37 ++++
+ .../lora_r8/adapter/adapter_model.safetensors      | Bin 0 -> 2175168 bytes
+ resultados/lora_r8/loss.csv                        |  77 ++++++++
+ resultados/lora_r8/loss.png                        | Bin 0 -> 80632 bytes
+ resultados/lora_r8/resumen.json                    |  35 ++++
+ resultados/revision_errores.csv                    |  45 +++++
+ solucion.py                                        |   1 +
+ tests/test_evaluador.py                            |   1 +
+ tests/test_reparacion.py                           |   5 +
+ verificar_entrega.py                               |   2 +-
+ 24 files changed, 720 insertions(+), 27 deletions(-)
+
+commit 8dcdf74fa0c1b6392d4a3bb77cead6290a592fae
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-25 22:51:43 -0600
+
+    update: improve bounded SQL repair and reduce redundant memory copies
+
+ entrenar.py                 | 14 ++++++++-
+ experimentos.md             |  2 ++
+ prompt.py                   | 71 +++++++++++++++++++++++++++++++++++++++++++++
+ solucion.py                 | 17 ++++++++---
+ tests/test_entrenamiento.py | 21 ++++++++++++++
+ tests/test_reparacion.py    | 68 +++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 188 insertions(+), 5 deletions(-)
+
+commit 4365b97f53bd16cd23fe67684fb13fb26981dfae
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-25 22:35:18 -0600
+
+    update: clarify validation questions and track evaluation provenance
+
+ analizar.py                      | 23 ++++++++++++++++++++++-
+ datos/validacion/preguntas.jsonl | 22 +++++++++++-----------
+ evaluador.py                     |  4 +++-
+ generador/crear_validacion.py    | 22 +++++++++++-----------
+ 4 files changed, 47 insertions(+), 24 deletions(-)
+
+commit 2f3583cbc6bdbc9405edb707f49c5012b3b516b8
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-25 22:28:06 -0600
+
+    chore: finalize portable adapters and delivery validation
+
+ LICENCIAS.md                 |   1 +
+ LICENCIA_MODELO.txt          | 202 +++++++++++++++++++++++++++++++++++++++++++
+ README.md                    |   4 +-
+ ejecutar_proyecto.py         |  19 ++++
+ entrenar.py                  |   4 +-
+ evaluador.py                 |   2 +-
+ generador/construir_bases.py |   6 ++
+ preparar_presentacion.py     |  10 +--
+ prompt.py                    |  11 +++
+ scripts/iniciar_mysql.ps1    |   9 +-
+ solucion.py                  |   4 +-
+ verificar_entrega.py         |  17 +++-
+ 12 files changed, 276 insertions(+), 13 deletions(-)
+
+commit 202f9680ae9d6e62ce8164aafd7bb52453aa3925
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-25 22:05:57 -0600
+
+    add: validate inference contract and generate results presentation
+
+ BITACORA.md              |   3 +-
+ CONTRIBUCIONES.md        |   4 +-
+ analizar.py              |   8 ++-
+ comprobar_inferencia.py  |  35 +++++++++
+ ejecutar_proyecto.py     |   6 ++
+ entrenar.py              |   2 +-
+ evaluador.py             |  11 ++-
+ preparar_presentacion.py | 184 +++++++++++++++++++++++++++++++++++++++++++++++
+ requirements.txt         |   1 +
+ tests/test_contrato.py   |   2 +
+ verificar_entrega.py     |   9 ++-
+ 11 files changed, 254 insertions(+), 11 deletions(-)
+
+commit ad1cdfd6a1e7120d2ce41317edbb34e4717409f0
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-25 21:57:57 -0600
+
+    update: offload saved activations for constrained QLoRA training
+
+ configuraciones/lora_r16.json |  3 ++-
+ configuraciones/lora_r8.json  |  3 ++-
+ entrenar.py                   | 14 ++++++++++----
+ experimentos.md               |  2 ++
+ solucion.py                   |  1 +
+ 5 files changed, 17 insertions(+), 6 deletions(-)
+
+commit 80387db644692264f9d0a65fc8fe8b51e610fb91
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-25 21:55:57 -0600
+
+    update: use matched NF4 QLoRA configurations for limited GPU memory
+
+ README.md                        |  2 +-
+ config.json                      |  3 ++-
+ config_base.json                 |  3 ++-
+ configuraciones/evaluar_r16.json |  3 ++-
+ configuraciones/evaluar_r8.json  |  3 ++-
+ configuraciones/lora_r16.json    |  3 ++-
+ configuraciones/lora_r8.json     |  3 ++-
+ entrenar.py                      | 46 +++++++++++++++++++++++++---------------
+ experimentos.md                  |  2 +-
+ requirements.txt                 |  1 +
+ solucion.py                      | 12 +++++++++--
+ 11 files changed, 54 insertions(+), 27 deletions(-)
+
+commit c125389ca07b0bbb6ea50ac4c9c97d2ebbc19d2c
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-25 21:48:54 -0600
+
+    update: bound training budget and refine error classification
+
+ analizar.py                   | 12 ++++++++++--
+ configuraciones/lora_r16.json |  7 +++++--
+ configuraciones/lora_r8.json  |  7 +++++--
+ entrenar.py                   |  5 +++--
+ evaluador.py                  |  4 ++--
+ experimentos.md               |  6 +++++-
+ 6 files changed, 30 insertions(+), 11 deletions(-)
+
+commit 48f10a7a5770bc5f84ef64ae9dceb423433e9dcb
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-25 20:23:49 -0600
+
+    add: automate experiments error analysis and reproducible delivery
+
+ .gitignore                       |    1 +
+ BITACORA.md                      |   15 +-
+ CONTRIBUCIONES.md                |   21 +-
+ LICENCIAS.md                     |   16 +
+ README.md                        |  122 ++--
+ analizar.py                      |   92 +++
+ datos/descartes.jsonl            |   32 +-
+ datos/entrenamiento.jsonl        | 1272 +++++++++++++++++++-------------------
+ ejecutar_proyecto.py             |   73 +++
+ entrenar.py                      |   12 +-
+ generador/pares.py               |   18 +-
+ notebooks/01_datos.ipynb         |   89 ++-
+ notebooks/02_entrenamiento.ipynb |  102 +++
+ notebooks/03_evaluacion.ipynb    |   84 +++
+ prompt.py                        |   33 +-
+ requirements.txt                 |    1 -
+ scripts/colab_mysql.sh           |   47 +-
+ scripts/iniciar_mysql.ps1        |   26 +
+ tests/test_contrato.py           |   38 ++
+ tests/test_entrenamiento.py      |   26 +
+ verificar_entrega.py             |   64 ++
+ 21 files changed, 1395 insertions(+), 789 deletions(-)
+
+commit f610401b8c655d36b7ecce175dbfcf1048e40369
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-25 20:11:15 -0600
+
+    update: validate datasets on MySQL 8.4.10 and implement LoRA training
+
+ config.json                      |   2 +-
+ config_base.json                 |   6 ++
+ configuraciones/evaluar_r16.json |   6 ++
+ configuraciones/evaluar_r8.json  |   6 ++
+ datos/reporte_datos.json         |   3 +-
+ entrenar.py                      | 170 +++++++++++++++++++++++++++++++++++++++
+ evaluador.py                     |  27 ++++++-
+ generador/bd.py                  |   1 +
+ generador/validar_pares.py       |  12 ++-
+ prompt.py                        |  15 +++-
+ requirements.txt                 |  20 ++---
+ resultados/oraculo.csv           |  41 ++++++++++
+ solucion.py                      |  26 ++++--
+ 13 files changed, 310 insertions(+), 25 deletions(-)
+
+commit cba09b87f37b0a9b1a7c3f3e1dc3819b80b6332f
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-25 20:05:55 -0600
+
+    add: record controlled LoRA hypotheses and clean project scope
+
+ .gitignore                    | 11 +++++++++++
+ REPARTO.md                    | 42 ------------------------------------------
+ configuraciones/lora_r16.json | 17 +++++++++++++++++
+ configuraciones/lora_r8.json  | 17 +++++++++++++++++
+ experimentos.md               | 19 +++++++++++++++++++
+ 5 files changed, 64 insertions(+), 42 deletions(-)
+
+commit 988ddfcec314c69b41a6d83e9c5655702f705555
+Author: Alejandro Anton <105880067+Anton17303@users.noreply.github.com>
+Date:   2026-10-25 08:16:30 -0600
+
+    primera parte del proyecto 3
+
+ .gitignore                                    |    10 -
+ BITACORA.md                                   |     8 +
+ CONTRIBUCIONES.md                             |    15 +
+ PLAN.md                                       |    25 -
+ Presentacion proyecto2 DL.pdf                 |   Bin 5202279 -> 0 bytes
+ README.md                                     |   163 +-
+ README_EXPLICACION_PROYECTO.md                |    29 -
+ REPARTO.md                                    |    42 +
+ gan/__init__.py => adapter/.gitkeep           |     0
+ analysis.py                                   |   100 -
+ build_dataset.py                              |   106 -
+ build_report.py                               |   347 -
+ colab_runner.ipynb                            |   418 -
+ collect_results.py                            |    61 -
+ comparacion.png                               |   Bin 114462 -> 0 bytes
+ condicional.md                                |    37 -
+ config.json                                   |     6 +
+ data/processed/data_report.json               |     8 -
+ data/raw/manifest.json                        | 33806 ------------------------
+ dataset.md                                    |    35 -
+ datos/descartes.jsonl                         |    79 +
+ datos/entrenamiento.jsonl                     |  3023 +++
+ datos/esquemas/aerolinea_abr.sql              |    50 +
+ datos/esquemas/aerolinea_full.sql             |    50 +
+ datos/esquemas/banco_abr.sql                  |    49 +
+ datos/esquemas/banco_full.sql                 |    49 +
+ datos/esquemas/biblioteca_abr.sql             |    39 +
+ datos/esquemas/biblioteca_full.sql            |    39 +
+ datos/esquemas/cine_abr.sql                   |    47 +
+ datos/esquemas/cine_full.sql                  |    47 +
+ datos/esquemas/clinica_abr.sql                |    56 +
+ datos/esquemas/clinica_full.sql               |    56 +
+ datos/esquemas/futbol_full.sql                |    66 +
+ datos/esquemas/hotel_full.sql                 |    71 +
+ datos/esquemas/logistica_abr.sql              |    46 +
+ datos/esquemas/logistica_full.sql             |    46 +
+ datos/esquemas/restaurante_abr.sql            |    46 +
+ datos/esquemas/restaurante_full.sql           |    46 +
+ datos/esquemas/rrhh_abr.sql                   |    47 +
+ datos/esquemas/rrhh_full.sql                  |    47 +
+ datos/esquemas/tienda_abr.sql                 |    49 +
+ datos/esquemas/tienda_full.sql                |    49 +
+ datos/esquemas/universidad_abr.sql            |    49 +
+ datos/esquemas/universidad_full.sql           |    49 +
+ datos/reporte_datos.json                      |    48 +
+ datos/validacion/preguntas.jsonl              |    40 +
+ estadisticas.md                               |    35 -
+ evaluador.py                                  |   198 +
+ evidencias/candidatos.json                    |   207 -
+ evidencias/candidatos.png                     |   Bin 4902020 -> 0 bytes
+ evidencias/candidatos_000_049.png             |   Bin 1526033 -> 0 bytes
+ evidencias/candidatos_050_099.png             |   Bin 1517235 -> 0 bytes
+ evidencias/candidatos_100_149.png             |   Bin 1521357 -> 0 bytes
+ evidencias/candidatos_150_199.png             |   Bin 1520751 -> 0 bytes
+ evidencias/candidatos_condicional.json        |   207 -
+ evidencias/candidatos_condicional.png         |   Bin 4837800 -> 0 bytes
+ evidencias/candidatos_condicional_000_049.png |   Bin 1486201 -> 0 bytes
+ evidencias/candidatos_condicional_050_099.png |   Bin 1517707 -> 0 bytes
+ evidencias/candidatos_condicional_100_149.png |   Bin 1538837 -> 0 bytes
+ evidencias/candidatos_condicional_150_199.png |   Bin 1467601 -> 0 bytes
+ evidencias/candidatos_final.json              |   207 -
+ evidencias/candidatos_final.png               |   Bin 4692571 -> 0 bytes
+ evidencias/candidatos_final_000_049.png       |   Bin 1430397 -> 0 bytes
+ evidencias/candidatos_final_050_099.png       |   Bin 1478395 -> 0 bytes
+ evidencias/candidatos_final_100_149.png       |   Bin 1488627 -> 0 bytes
+ evidencias/candidatos_final_150_199.png       |   Bin 1436160 -> 0 bytes
+ evidencias/dataset.png                        |   Bin 135883 -> 0 bytes
+ evidencias/resumen_experimentos.json          |    55 -
+ evidencias/revision_visual.json               |    14 -
+ experimentos.md                               |    38 -
+ galeria/galeria.png                           |   Bin 172512 -> 0 bytes
+ galeria/personaje_01_seed0.png                |   Bin 6662 -> 0 bytes
+ galeria/personaje_01_z.pt                     |   Bin 1946 -> 0 bytes
+ galeria/personaje_02_seed61.png               |   Bin 6878 -> 0 bytes
+ galeria/personaje_02_z.pt                     |   Bin 1946 -> 0 bytes
+ galeria/personaje_03_seed116.png              |   Bin 7034 -> 0 bytes
+ galeria/personaje_03_z.pt                     |   Bin 1946 -> 0 bytes
+ galeria/personaje_04_seed51.png               |   Bin 6828 -> 0 bytes
+ galeria/personaje_04_z.pt                     |   Bin 1946 -> 0 bytes
+ galeria/personaje_05_seed82.png               |   Bin 7116 -> 0 bytes
+ galeria/personaje_05_z.pt                     |   Bin 1946 -> 0 bytes
+ galeria/personaje_06_seed197.png              |   Bin 6764 -> 0 bytes
+ galeria/personaje_06_z.pt                     |   Bin 1946 -> 0 bytes
+ galeria/personaje_07_seed129.png              |   Bin 7058 -> 0 bytes
+ galeria/personaje_07_z.pt                     |   Bin 1946 -> 0 bytes
+ galeria/personaje_08_seed181.png              |   Bin 6793 -> 0 bytes
+ galeria/personaje_08_z.pt                     |   Bin 1946 -> 0 bytes
+ galeria/personaje_09_seed14.png               |   Bin 6970 -> 0 bytes
+ galeria/personaje_09_z.pt                     |   Bin 1946 -> 0 bytes
+ galeria/personaje_10_seed190.png              |   Bin 6815 -> 0 bytes
+ galeria/personaje_10_z.pt                     |   Bin 1946 -> 0 bytes
+ galeria/seleccion.json                        |   994 -
+ gan/conditioning.py                           |    52 -
+ gan/images.py                                 |    74 -
+ gan/losses.py                                 |    56 -
+ gan/models.py                                 |    93 -
+ gan/utils.py                                  |    34 -
+ generador/__init__.py                         |     0
+ generador/bd.py                               |    18 +
+ generador/construir_bases.py                  |    52 +
+ generador/crear_validacion.py                 |   122 +
+ generador/esquemas.py                         |   647 +
+ generador/pares.py                            |   651 +
+ generador/validar_pares.py                    |    74 +
+ generate_gallery.py                           |   138 -
+ nn_resultados/calibracion.png                 |   Bin 35607 -> 0 bytes
+ nn_resultados/resumen.json                    |    97 -
+ nn_resultados/vecinos.csv                     |    11 -
+ nn_resultados/vecinos.png                     |   Bin 255325 -> 0 bytes
+ nn_resultados/vecinos_presentacion.png        |   Bin 186987 -> 0 bytes
+ nn_test.py                                    |   114 -
+ notebooks/01_datos.ipynb                      |    61 +
+ package_project.py                            |    45 -
+ prepare_data.py                               |    48 -
+ prompt.py                                     |   103 +
+ rasgos.md                                     |    29 -
+ refinamiento.md                               |    23 -
+ refine_attributes.py                          |    29 -
+ requirements-lock.txt                         |     4 -
+ requirements.txt                              |    12 +-
+ resultados.md                                 |   137 -
+ resultados/.gitkeep                           |     0
+ run_experiments.py                            |    46 -
+ run_experiments.sh                            |     7 -
+ runs/base/ckpt/G_final.pt                     |   Bin 1227864 -> 0 bytes
+ runs/base/config.json                         |    33 -
+ runs/base/curvas.png                          |   Bin 51931 -> 0 bytes
+ runs/base/environment.json                    |     9 -
+ runs/base/evolucion.png                       |   Bin 1769022 -> 0 bytes
+ runs/base/fixed_noise.pt                      |   Bin 5701 -> 0 bytes
+ runs/base/grids/epoch_000.png                 |   Bin 46763 -> 0 bytes
+ runs/base/grids/epoch_005.png                 |   Bin 160119 -> 0 bytes
+ runs/base/grids/epoch_010.png                 |   Bin 153450 -> 0 bytes
+ runs/base/grids/epoch_015.png                 |   Bin 155561 -> 0 bytes
+ runs/base/grids/epoch_020.png                 |   Bin 153974 -> 0 bytes
+ runs/base/grids/epoch_025.png                 |   Bin 155062 -> 0 bytes
+ runs/base/grids/epoch_030.png                 |   Bin 155450 -> 0 bytes
+ runs/base/grids/epoch_035.png                 |   Bin 155345 -> 0 bytes
+ runs/base/grids/epoch_040.png                 |   Bin 158366 -> 0 bytes
+ runs/base/grids/epoch_045.png                 |   Bin 157685 -> 0 bytes
+ runs/base/grids/epoch_050.png                 |   Bin 159152 -> 0 bytes
+ runs/base/grids/epoch_055.png                 |   Bin 161262 -> 0 bytes
+ runs/base/grids/epoch_060.png                 |   Bin 162784 -> 0 bytes
+ runs/base/losses.csv                          |  1441 -
+ runs/base/metrics.csv                         |    62 -
+ runs/conditional/ckpt/GD_final.pt             |   Bin 1795801 -> 0 bytes
+ runs/conditional/ckpt/G_final.pt              |   Bin 1056920 -> 0 bytes
+ runs/conditional/config.json                  |    39 -
+ runs/conditional/curvas.png                   |   Bin 82975 -> 0 bytes
+ runs/conditional/environment.json             |     9 -
+ runs/conditional/evolucion.png                |   Bin 992176 -> 0 bytes
+ runs/conditional/fixed_noise.pt               |   Bin 6725 -> 0 bytes
+ runs/conditional/grids/epoch_000.png          |   Bin 3164 -> 0 bytes
+ runs/conditional/grids/epoch_005.png          |   Bin 71582 -> 0 bytes
+ runs/conditional/grids/epoch_010.png          |   Bin 77437 -> 0 bytes
+ runs/conditional/grids/epoch_015.png          |   Bin 89789 -> 0 bytes
+ runs/conditional/grids/epoch_020.png          |   Bin 93868 -> 0 bytes
+ runs/conditional/grids/epoch_025.png          |   Bin 93315 -> 0 bytes
+ runs/conditional/grids/epoch_030.png          |   Bin 91461 -> 0 bytes
+ runs/conditional/grids/epoch_035.png          |   Bin 96717 -> 0 bytes
+ runs/conditional/grids/epoch_040.png          |   Bin 98181 -> 0 bytes
+ runs/conditional/grids/epoch_045.png          |   Bin 104266 -> 0 bytes
+ runs/conditional/grids/epoch_050.png          |   Bin 104662 -> 0 bytes
+ runs/conditional/grids/epoch_055.png          |   Bin 105531 -> 0 bytes
+ runs/conditional/grids/epoch_060.png          |   Bin 107104 -> 0 bytes
+ runs/conditional/grids/epoch_065.png          |   Bin 109368 -> 0 bytes
+ runs/conditional/grids/epoch_070.png          |   Bin 108882 -> 0 bytes
+ runs/conditional/grids/epoch_075.png          |   Bin 111028 -> 0 bytes
+ runs/conditional/grids/epoch_080.png          |   Bin 111404 -> 0 bytes
+ runs/conditional/losses.csv                   |  1921 --
+ runs/conditional/metrics.csv                  |    82 -
+ runs/conditional/regularizacion.png           |   Bin 88023 -> 0 bytes
+ runs/conditional/regularization.csv           |  1921 --
+ runs/conditional_refined/ckpt/G_final.pt      |   Bin 1057112 -> 0 bytes
+ runs/conditional_refined/config.json          |    42 -
+ runs/conditional_refined/curvas.png           |   Bin 63364 -> 0 bytes
+ runs/conditional_refined/environment.json     |     9 -
+ runs/conditional_refined/evolucion.png        |   Bin 1109566 -> 0 bytes
+ runs/conditional_refined/fixed_noise.pt       |   Bin 6725 -> 0 bytes
+ runs/conditional_refined/grids/epoch_000.png  |   Bin 111404 -> 0 bytes
+ runs/conditional_refined/grids/epoch_005.png  |   Bin 109047 -> 0 bytes
+ runs/conditional_refined/grids/epoch_010.png  |   Bin 109706 -> 0 bytes
+ runs/conditional_refined/grids/epoch_015.png  |   Bin 108247 -> 0 bytes
+ runs/conditional_refined/grids/epoch_020.png  |   Bin 107252 -> 0 bytes
+ runs/conditional_refined/grids/epoch_025.png  |   Bin 110055 -> 0 bytes
+ runs/conditional_refined/grids/epoch_030.png  |   Bin 109283 -> 0 bytes
+ runs/conditional_refined/grids/epoch_035.png  |   Bin 112592 -> 0 bytes
+ runs/conditional_refined/grids/epoch_040.png  |   Bin 109771 -> 0 bytes
+ runs/conditional_refined/losses.csv           |   961 -
+ runs/conditional_refined/metrics.csv          |    42 -
+ runs/conditional_refined/regularizacion.png   |   Bin 72316 -> 0 bytes
+ runs/conditional_refined/regularization.csv   |   961 -
+ runs/exp_loss_hinge/ckpt/G_final.pt           |   Bin 1227864 -> 0 bytes
+ runs/exp_loss_hinge/config.json               |    33 -
+ runs/exp_loss_hinge/curvas.png                |   Bin 96461 -> 0 bytes
+ runs/exp_loss_hinge/environment.json          |     9 -
+ runs/exp_loss_hinge/evolucion.png             |   Bin 1838601 -> 0 bytes
+ runs/exp_loss_hinge/fixed_noise.pt            |   Bin 5701 -> 0 bytes
+ runs/exp_loss_hinge/grids/epoch_000.png       |   Bin 46763 -> 0 bytes
+ runs/exp_loss_hinge/grids/epoch_005.png       |   Bin 152976 -> 0 bytes
+ runs/exp_loss_hinge/grids/epoch_010.png       |   Bin 153521 -> 0 bytes
+ runs/exp_loss_hinge/grids/epoch_015.png       |   Bin 162299 -> 0 bytes
+ runs/exp_loss_hinge/grids/epoch_020.png       |   Bin 167456 -> 0 bytes
+ runs/exp_loss_hinge/grids/epoch_025.png       |   Bin 169178 -> 0 bytes
+ runs/exp_loss_hinge/grids/epoch_030.png       |   Bin 166065 -> 0 bytes
+ runs/exp_loss_hinge/grids/epoch_035.png       |   Bin 168010 -> 0 bytes
+ runs/exp_loss_hinge/grids/epoch_040.png       |   Bin 167426 -> 0 bytes
+ runs/exp_loss_hinge/grids/epoch_045.png       |   Bin 169848 -> 0 bytes
+ runs/exp_loss_hinge/grids/epoch_050.png       |   Bin 169693 -> 0 bytes
+ runs/exp_loss_hinge/grids/epoch_055.png       |   Bin 169425 -> 0 bytes
+ runs/exp_loss_hinge/grids/epoch_060.png       |   Bin 162465 -> 0 bytes
+ runs/exp_loss_hinge/losses.csv                |  1441 -
+ runs/exp_loss_hinge/metrics.csv               |    62 -
+ runs/exp_stab_sn/ckpt/G_final.pt              |   Bin 1227864 -> 0 bytes
+ runs/exp_stab_sn/config.json                  |    33 -
+ runs/exp_stab_sn/curvas.png                   |   Bin 87077 -> 0 bytes
+ runs/exp_stab_sn/environment.json             |     9 -
+ runs/exp_stab_sn/evolucion.png                |   Bin 1632936 -> 0 bytes
+ runs/exp_stab_sn/fixed_noise.pt               |   Bin 5701 -> 0 bytes
+ runs/exp_stab_sn/grids/epoch_000.png          |   Bin 46763 -> 0 bytes
+ runs/exp_stab_sn/grids/epoch_005.png          |   Bin 152598 -> 0 bytes
+ runs/exp_stab_sn/grids/epoch_010.png          |   Bin 148264 -> 0 bytes
+ runs/exp_stab_sn/grids/epoch_015.png          |   Bin 146101 -> 0 bytes
+ runs/exp_stab_sn/grids/epoch_020.png          |   Bin 140081 -> 0 bytes
+ runs/exp_stab_sn/grids/epoch_025.png          |   Bin 139416 -> 0 bytes
+ runs/exp_stab_sn/grids/epoch_030.png          |   Bin 141497 -> 0 bytes
+ runs/exp_stab_sn/grids/epoch_035.png          |   Bin 136764 -> 0 bytes
+ runs/exp_stab_sn/grids/epoch_040.png          |   Bin 137820 -> 0 bytes
+ runs/exp_stab_sn/grids/epoch_045.png          |   Bin 138610 -> 0 bytes
+ runs/exp_stab_sn/grids/epoch_050.png          |   Bin 140469 -> 0 bytes
+ runs/exp_stab_sn/grids/epoch_055.png          |   Bin 145663 -> 0 bytes
+ runs/exp_stab_sn/grids/epoch_060.png          |   Bin 142811 -> 0 bytes
+ runs/exp_stab_sn/losses.csv                   |  1441 -
+ runs/exp_stab_sn/metrics.csv                  |    62 -
+ runs/moment_refined/ckpt/G_final.pt           |   Bin 925656 -> 0 bytes
+ runs/moment_refined/config.json               |    35 -
+ runs/moment_refined/curvas.png                |   Bin 70012 -> 0 bytes
+ runs/moment_refined/environment.json          |     9 -
+ runs/moment_refined/evolucion.png             |   Bin 1092199 -> 0 bytes
+ runs/moment_refined/fixed_noise.pt            |   Bin 5701 -> 0 bytes
+ runs/moment_refined/grids/epoch_000.png       |   Bin 5230 -> 0 bytes
+ runs/moment_refined/grids/epoch_005.png       |   Bin 83008 -> 0 bytes
+ runs/moment_refined/grids/epoch_010.png       |   Bin 92909 -> 0 bytes
+ runs/moment_refined/grids/epoch_015.png       |   Bin 100192 -> 0 bytes
+ runs/moment_refined/grids/epoch_020.png       |   Bin 102725 -> 0 bytes
+ runs/moment_refined/grids/epoch_025.png       |   Bin 104692 -> 0 bytes
+ runs/moment_refined/grids/epoch_030.png       |   Bin 105231 -> 0 bytes
+ runs/moment_refined/grids/epoch_035.png       |   Bin 105997 -> 0 bytes
+ runs/moment_refined/grids/epoch_040.png       |   Bin 108432 -> 0 bytes
+ runs/moment_refined/grids/epoch_045.png       |   Bin 110807 -> 0 bytes
+ runs/moment_refined/grids/epoch_050.png       |   Bin 110737 -> 0 bytes
+ runs/moment_refined/grids/epoch_055.png       |   Bin 110119 -> 0 bytes
+ runs/moment_refined/grids/epoch_060.png       |   Bin 110916 -> 0 bytes
+ runs/moment_refined/grids/epoch_065.png       |   Bin 110242 -> 0 bytes
+ runs/moment_refined/grids/epoch_070.png       |   Bin 111991 -> 0 bytes
+ runs/moment_refined/grids/epoch_075.png       |   Bin 111837 -> 0 bytes
+ runs/moment_refined/grids/epoch_080.png       |   Bin 109544 -> 0 bytes
+ runs/moment_refined/grids/epoch_085.png       |   Bin 111477 -> 0 bytes
+ runs/moment_refined/grids/epoch_090.png       |   Bin 113534 -> 0 bytes
+ runs/moment_refined/grids/epoch_095.png       |   Bin 114581 -> 0 bytes
+ runs/moment_refined/grids/epoch_100.png       |   Bin 110913 -> 0 bytes
+ runs/moment_refined/grids/epoch_105.png       |   Bin 112376 -> 0 bytes
+ runs/moment_refined/grids/epoch_110.png       |   Bin 110237 -> 0 bytes
+ runs/moment_refined/grids/epoch_115.png       |   Bin 112650 -> 0 bytes
+ runs/moment_refined/grids/epoch_120.png       |   Bin 111598 -> 0 bytes
+ runs/moment_refined/losses.csv                |  2881 --
+ runs/moment_refined/metrics.csv               |   122 -
+ runs/moment_refined/regularizacion.png        |   Bin 70788 -> 0 bytes
+ runs/moment_refined/regularization.csv        |  2881 --
+ runs/refined/ckpt/G_final.pt                  |   Bin 925592 -> 0 bytes
+ runs/refined/config.json                      |    34 -
+ runs/refined/curvas.png                       |   Bin 101067 -> 0 bytes
+ runs/refined/environment.json                 |     9 -
+ runs/refined/evolucion.png                    |   Bin 542198 -> 0 bytes
+ runs/refined/fixed_noise.pt                   |   Bin 5701 -> 0 bytes
+ runs/refined/grids/epoch_000.png              |   Bin 5230 -> 0 bytes
+ runs/refined/grids/epoch_005.png              |   Bin 74678 -> 0 bytes
+ runs/refined/grids/epoch_010.png              |   Bin 76362 -> 0 bytes
+ runs/refined/grids/epoch_015.png              |   Bin 59765 -> 0 bytes
+ runs/refined/grids/epoch_020.png              |   Bin 55585 -> 0 bytes
+ runs/refined/grids/epoch_025.png              |   Bin 56366 -> 0 bytes
+ runs/refined/grids/epoch_030.png              |   Bin 52687 -> 0 bytes
+ runs/refined/grids/epoch_035.png              |   Bin 51334 -> 0 bytes
+ runs/refined/grids/epoch_040.png              |   Bin 50872 -> 0 bytes
+ runs/refined/grids/epoch_045.png              |   Bin 49406 -> 0 bytes
+ runs/refined/grids/epoch_050.png              |   Bin 48308 -> 0 bytes
+ runs/refined/grids/epoch_055.png              |   Bin 48439 -> 0 bytes
+ runs/refined/grids/epoch_060.png              |   Bin 46507 -> 0 bytes
+ runs/refined/grids/epoch_065.png              |   Bin 46377 -> 0 bytes
+ runs/refined/grids/epoch_070.png              |   Bin 47014 -> 0 bytes
+ runs/refined/grids/epoch_075.png              |   Bin 47445 -> 0 bytes
+ runs/refined/grids/epoch_080.png              |   Bin 46079 -> 0 bytes
+ runs/refined/grids/epoch_085.png              |   Bin 46733 -> 0 bytes
+ runs/refined/grids/epoch_090.png              |   Bin 46089 -> 0 bytes
+ runs/refined/grids/epoch_095.png              |   Bin 47089 -> 0 bytes
+ runs/refined/grids/epoch_100.png              |   Bin 45901 -> 0 bytes
+ runs/refined/grids/epoch_105.png              |   Bin 45575 -> 0 bytes
+ runs/refined/grids/epoch_110.png              |   Bin 45103 -> 0 bytes
+ runs/refined/grids/epoch_115.png              |   Bin 44719 -> 0 bytes
+ runs/refined/grids/epoch_120.png              |   Bin 44691 -> 0 bytes
+ runs/refined/losses.csv                       |  2881 --
+ runs/refined/metrics.csv                      |   122 -
+ scripts/colab_mysql.sh                        |    18 +
+ solucion.py                                   |    90 +
+ tests/test_evaluador.py                       |    70 +
+ tests/test_gan.py                             |    90 -
+ tests/test_training.py                        |    70 -
+ train.py                                      |   258 -
+ verify_project.py                             |   115 -
+ 309 files changed, 6522 insertions(+), 58016 deletions(-)
+
+commit 798469d196ef4434989d396d6723d42368ffeeb1
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-11 23:11:35 -0600
+
+    add: presentacion
+
+ Presentacion proyecto2 DL.pdf | Bin 0 -> 5202279 bytes
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+commit b95b695c2345ce606a1dfb997e0191460134bc49
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-11 23:03:26 -0600
+
+    update readme
+
+ README.md              |   9 ---
+ README_PRESENTACION.md |   5 --
+ presentacion.md        | 163 -------------------------------------------------
+ 3 files changed, 177 deletions(-)
+
+commit cb5f3cd27c35bf3be35ec748b06ff930fd5ce3fd
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-11 22:39:18 -0600
+
+    chore: finalize report timing and validate standalone delivery
+
+ build_report.py | 6 ++++++
+ presentacion.md | 2 +-
+ resultados.md   | 2 +-
+ 3 files changed, 8 insertions(+), 2 deletions(-)
+
+commit cd3ecc87278e463b2971df83ef81fe6b39dc0679
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-11 22:34:12 -0600
+
+    add: deliver final gallery nearest neighbors and presentation report
+
+ analysis.py                                   |    11 +-
+ data/processed/data_report.json               |     8 +
+ data/raw/manifest.json                        | 33806 ++++++++++++++++++++++++
+ evidencias/candidatos.json                    |   207 +
+ evidencias/candidatos.png                     |   Bin 0 -> 4902020 bytes
+ evidencias/candidatos_000_049.png             |   Bin 0 -> 1526033 bytes
+ evidencias/candidatos_050_099.png             |   Bin 0 -> 1517235 bytes
+ evidencias/candidatos_100_149.png             |   Bin 0 -> 1521357 bytes
+ evidencias/candidatos_150_199.png             |   Bin 0 -> 1520751 bytes
+ evidencias/candidatos_condicional.json        |   207 +
+ evidencias/candidatos_condicional.png         |   Bin 0 -> 4837800 bytes
+ evidencias/candidatos_condicional_000_049.png |   Bin 0 -> 1486201 bytes
+ evidencias/candidatos_condicional_050_099.png |   Bin 0 -> 1517707 bytes
+ evidencias/candidatos_condicional_100_149.png |   Bin 0 -> 1538837 bytes
+ evidencias/candidatos_condicional_150_199.png |   Bin 0 -> 1467601 bytes
+ evidencias/candidatos_final.json              |   207 +
+ evidencias/candidatos_final.png               |   Bin 0 -> 4692571 bytes
+ evidencias/candidatos_final_000_049.png       |   Bin 0 -> 1430397 bytes
+ evidencias/candidatos_final_050_099.png       |   Bin 0 -> 1478395 bytes
+ evidencias/candidatos_final_100_149.png       |   Bin 0 -> 1488627 bytes
+ evidencias/candidatos_final_150_199.png       |   Bin 0 -> 1436160 bytes
+ evidencias/revision_visual.json               |    14 +
+ galeria/galeria.png                           |   Bin 0 -> 172512 bytes
+ galeria/personaje_01_seed0.png                |   Bin 0 -> 6662 bytes
+ galeria/personaje_01_z.pt                     |   Bin 0 -> 1946 bytes
+ galeria/personaje_02_seed61.png               |   Bin 0 -> 6878 bytes
+ galeria/personaje_02_z.pt                     |   Bin 0 -> 1946 bytes
+ galeria/personaje_03_seed116.png              |   Bin 0 -> 7034 bytes
+ galeria/personaje_03_z.pt                     |   Bin 0 -> 1946 bytes
+ galeria/personaje_04_seed51.png               |   Bin 0 -> 6828 bytes
+ galeria/personaje_04_z.pt                     |   Bin 0 -> 1946 bytes
+ galeria/personaje_05_seed82.png               |   Bin 0 -> 7116 bytes
+ galeria/personaje_05_z.pt                     |   Bin 0 -> 1946 bytes
+ galeria/personaje_06_seed197.png              |   Bin 0 -> 6764 bytes
+ galeria/personaje_06_z.pt                     |   Bin 0 -> 1946 bytes
+ galeria/personaje_07_seed129.png              |   Bin 0 -> 7058 bytes
+ galeria/personaje_07_z.pt                     |   Bin 0 -> 1946 bytes
+ galeria/personaje_08_seed181.png              |   Bin 0 -> 6793 bytes
+ galeria/personaje_08_z.pt                     |   Bin 0 -> 1946 bytes
+ galeria/personaje_09_seed14.png               |   Bin 0 -> 6970 bytes
+ galeria/personaje_09_z.pt                     |   Bin 0 -> 1946 bytes
+ galeria/personaje_10_seed190.png              |   Bin 0 -> 6815 bytes
+ galeria/personaje_10_z.pt                     |   Bin 0 -> 1946 bytes
+ galeria/seleccion.json                        |   994 +
+ generate_gallery.py                           |    16 +-
+ nn_resultados/calibracion.png                 |   Bin 0 -> 35607 bytes
+ nn_resultados/resumen.json                    |    97 +
+ nn_resultados/vecinos.csv                     |    11 +
+ nn_resultados/vecinos.png                     |   Bin 0 -> 255325 bytes
+ nn_resultados/vecinos_presentacion.png        |   Bin 0 -> 186987 bytes
+ package_project.py                            |     3 +
+ presentacion.md                               |   163 +
+ resultados.md                                 |   137 +
+ runs/conditional/ckpt/GD_final.pt             |   Bin 0 -> 1795801 bytes
+ runs/conditional/ckpt/G_final.pt              |   Bin 0 -> 1056920 bytes
+ runs/conditional/config.json                  |    39 +
+ runs/conditional/curvas.png                   |   Bin 0 -> 82975 bytes
+ runs/conditional/environment.json             |     9 +
+ runs/conditional/evolucion.png                |   Bin 0 -> 992176 bytes
+ runs/conditional/fixed_noise.pt               |   Bin 0 -> 6725 bytes
+ runs/conditional/grids/epoch_000.png          |   Bin 0 -> 3164 bytes
+ runs/conditional/grids/epoch_005.png          |   Bin 0 -> 71582 bytes
+ runs/conditional/grids/epoch_010.png          |   Bin 0 -> 77437 bytes
+ runs/conditional/grids/epoch_015.png          |   Bin 0 -> 89789 bytes
+ runs/conditional/grids/epoch_020.png          |   Bin 0 -> 93868 bytes
+ runs/conditional/grids/epoch_025.png          |   Bin 0 -> 93315 bytes
+ runs/conditional/grids/epoch_030.png          |   Bin 0 -> 91461 bytes
+ runs/conditional/grids/epoch_035.png          |   Bin 0 -> 96717 bytes
+ runs/conditional/grids/epoch_040.png          |   Bin 0 -> 98181 bytes
+ runs/conditional/grids/epoch_045.png          |   Bin 0 -> 104266 bytes
+ runs/conditional/grids/epoch_050.png          |   Bin 0 -> 104662 bytes
+ runs/conditional/grids/epoch_055.png          |   Bin 0 -> 105531 bytes
+ runs/conditional/grids/epoch_060.png          |   Bin 0 -> 107104 bytes
+ runs/conditional/grids/epoch_065.png          |   Bin 0 -> 109368 bytes
+ runs/conditional/grids/epoch_070.png          |   Bin 0 -> 108882 bytes
+ runs/conditional/grids/epoch_075.png          |   Bin 0 -> 111028 bytes
+ runs/conditional/grids/epoch_080.png          |   Bin 0 -> 111404 bytes
+ runs/conditional/losses.csv                   |  1921 ++
+ runs/conditional/metrics.csv                  |    82 +
+ runs/conditional/regularizacion.png           |   Bin 0 -> 88023 bytes
+ runs/conditional/regularization.csv           |  1921 ++
+ runs/conditional_refined/ckpt/G_final.pt      |   Bin 0 -> 1057112 bytes
+ runs/conditional_refined/config.json          |    42 +
+ runs/conditional_refined/curvas.png           |   Bin 0 -> 63364 bytes
+ runs/conditional_refined/environment.json     |     9 +
+ runs/conditional_refined/evolucion.png        |   Bin 0 -> 1109566 bytes
+ runs/conditional_refined/fixed_noise.pt       |   Bin 0 -> 6725 bytes
+ runs/conditional_refined/grids/epoch_000.png  |   Bin 0 -> 111404 bytes
+ runs/conditional_refined/grids/epoch_005.png  |   Bin 0 -> 109047 bytes
+ runs/conditional_refined/grids/epoch_010.png  |   Bin 0 -> 109706 bytes
+ runs/conditional_refined/grids/epoch_015.png  |   Bin 0 -> 108247 bytes
+ runs/conditional_refined/grids/epoch_020.png  |   Bin 0 -> 107252 bytes
+ runs/conditional_refined/grids/epoch_025.png  |   Bin 0 -> 110055 bytes
+ runs/conditional_refined/grids/epoch_030.png  |   Bin 0 -> 109283 bytes
+ runs/conditional_refined/grids/epoch_035.png  |   Bin 0 -> 112592 bytes
+ runs/conditional_refined/grids/epoch_040.png  |   Bin 0 -> 109771 bytes
+ runs/conditional_refined/losses.csv           |   961 +
+ runs/conditional_refined/metrics.csv          |    42 +
+ runs/conditional_refined/regularizacion.png   |   Bin 0 -> 72316 bytes
+ runs/conditional_refined/regularization.csv   |   961 +
+ verify_project.py                             |    35 +-
+ 101 files changed, 41893 insertions(+), 10 deletions(-)
+
+commit 18eead9b75f9ca82817b9ea1105857300a51584e
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-11 22:16:41 -0600
+
+    feat: add focused facial refinement with recorded training provenance
+
+ README.md              |  8 +++++++-
+ analysis.py            |  2 ++
+ build_report.py        | 17 ++++++++++++-----
+ colab_runner.ipynb     | 46 ++++++++++++++++++++++++++++++++++++++++++++++
+ collect_results.py     |  5 +++--
+ generate_gallery.py    |  2 +-
+ package_project.py     |  2 +-
+ rasgos.md              | 29 +++++++++++++++++++++++++++++
+ refine_attributes.py   | 29 +++++++++++++++++++++++++++++
+ tests/test_training.py |  3 ++-
+ train.py               | 29 ++++++++++++++++++++++++-----
+ verify_project.py      |  4 ++++
+ 12 files changed, 160 insertions(+), 16 deletions(-)
+
+commit c0225921aa2feac35e3de864caccc659dc09d78d
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-11 22:07:33 -0600
+
+    add: include trained models and controlled experiment evidence
+
+ comparacion.png                         |  Bin 0 -> 114462 bytes
+ evidencias/dataset.png                  |  Bin 0 -> 135883 bytes
+ evidencias/resumen_experimentos.json    |   55 +
+ runs/base/ckpt/G_final.pt               |  Bin 0 -> 1227864 bytes
+ runs/base/config.json                   |   33 +
+ runs/base/curvas.png                    |  Bin 0 -> 51931 bytes
+ runs/base/environment.json              |    9 +
+ runs/base/evolucion.png                 |  Bin 0 -> 1769022 bytes
+ runs/base/fixed_noise.pt                |  Bin 0 -> 5701 bytes
+ runs/base/grids/epoch_000.png           |  Bin 0 -> 46763 bytes
+ runs/base/grids/epoch_005.png           |  Bin 0 -> 160119 bytes
+ runs/base/grids/epoch_010.png           |  Bin 0 -> 153450 bytes
+ runs/base/grids/epoch_015.png           |  Bin 0 -> 155561 bytes
+ runs/base/grids/epoch_020.png           |  Bin 0 -> 153974 bytes
+ runs/base/grids/epoch_025.png           |  Bin 0 -> 155062 bytes
+ runs/base/grids/epoch_030.png           |  Bin 0 -> 155450 bytes
+ runs/base/grids/epoch_035.png           |  Bin 0 -> 155345 bytes
+ runs/base/grids/epoch_040.png           |  Bin 0 -> 158366 bytes
+ runs/base/grids/epoch_045.png           |  Bin 0 -> 157685 bytes
+ runs/base/grids/epoch_050.png           |  Bin 0 -> 159152 bytes
+ runs/base/grids/epoch_055.png           |  Bin 0 -> 161262 bytes
+ runs/base/grids/epoch_060.png           |  Bin 0 -> 162784 bytes
+ runs/base/losses.csv                    | 1441 ++++++++++++++++
+ runs/base/metrics.csv                   |   62 +
+ runs/exp_loss_hinge/ckpt/G_final.pt     |  Bin 0 -> 1227864 bytes
+ runs/exp_loss_hinge/config.json         |   33 +
+ runs/exp_loss_hinge/curvas.png          |  Bin 0 -> 96461 bytes
+ runs/exp_loss_hinge/environment.json    |    9 +
+ runs/exp_loss_hinge/evolucion.png       |  Bin 0 -> 1838601 bytes
+ runs/exp_loss_hinge/fixed_noise.pt      |  Bin 0 -> 5701 bytes
+ runs/exp_loss_hinge/grids/epoch_000.png |  Bin 0 -> 46763 bytes
+ runs/exp_loss_hinge/grids/epoch_005.png |  Bin 0 -> 152976 bytes
+ runs/exp_loss_hinge/grids/epoch_010.png |  Bin 0 -> 153521 bytes
+ runs/exp_loss_hinge/grids/epoch_015.png |  Bin 0 -> 162299 bytes
+ runs/exp_loss_hinge/grids/epoch_020.png |  Bin 0 -> 167456 bytes
+ runs/exp_loss_hinge/grids/epoch_025.png |  Bin 0 -> 169178 bytes
+ runs/exp_loss_hinge/grids/epoch_030.png |  Bin 0 -> 166065 bytes
+ runs/exp_loss_hinge/grids/epoch_035.png |  Bin 0 -> 168010 bytes
+ runs/exp_loss_hinge/grids/epoch_040.png |  Bin 0 -> 167426 bytes
+ runs/exp_loss_hinge/grids/epoch_045.png |  Bin 0 -> 169848 bytes
+ runs/exp_loss_hinge/grids/epoch_050.png |  Bin 0 -> 169693 bytes
+ runs/exp_loss_hinge/grids/epoch_055.png |  Bin 0 -> 169425 bytes
+ runs/exp_loss_hinge/grids/epoch_060.png |  Bin 0 -> 162465 bytes
+ runs/exp_loss_hinge/losses.csv          | 1441 ++++++++++++++++
+ runs/exp_loss_hinge/metrics.csv         |   62 +
+ runs/exp_stab_sn/ckpt/G_final.pt        |  Bin 0 -> 1227864 bytes
+ runs/exp_stab_sn/config.json            |   33 +
+ runs/exp_stab_sn/curvas.png             |  Bin 0 -> 87077 bytes
+ runs/exp_stab_sn/environment.json       |    9 +
+ runs/exp_stab_sn/evolucion.png          |  Bin 0 -> 1632936 bytes
+ runs/exp_stab_sn/fixed_noise.pt         |  Bin 0 -> 5701 bytes
+ runs/exp_stab_sn/grids/epoch_000.png    |  Bin 0 -> 46763 bytes
+ runs/exp_stab_sn/grids/epoch_005.png    |  Bin 0 -> 152598 bytes
+ runs/exp_stab_sn/grids/epoch_010.png    |  Bin 0 -> 148264 bytes
+ runs/exp_stab_sn/grids/epoch_015.png    |  Bin 0 -> 146101 bytes
+ runs/exp_stab_sn/grids/epoch_020.png    |  Bin 0 -> 140081 bytes
+ runs/exp_stab_sn/grids/epoch_025.png    |  Bin 0 -> 139416 bytes
+ runs/exp_stab_sn/grids/epoch_030.png    |  Bin 0 -> 141497 bytes
+ runs/exp_stab_sn/grids/epoch_035.png    |  Bin 0 -> 136764 bytes
+ runs/exp_stab_sn/grids/epoch_040.png    |  Bin 0 -> 137820 bytes
+ runs/exp_stab_sn/grids/epoch_045.png    |  Bin 0 -> 138610 bytes
+ runs/exp_stab_sn/grids/epoch_050.png    |  Bin 0 -> 140469 bytes
+ runs/exp_stab_sn/grids/epoch_055.png    |  Bin 0 -> 145663 bytes
+ runs/exp_stab_sn/grids/epoch_060.png    |  Bin 0 -> 142811 bytes
+ runs/exp_stab_sn/losses.csv             | 1441 ++++++++++++++++
+ runs/exp_stab_sn/metrics.csv            |   62 +
+ runs/moment_refined/ckpt/G_final.pt     |  Bin 0 -> 925656 bytes
+ runs/moment_refined/config.json         |   35 +
+ runs/moment_refined/curvas.png          |  Bin 0 -> 70012 bytes
+ runs/moment_refined/environment.json    |    9 +
+ runs/moment_refined/evolucion.png       |  Bin 0 -> 1092199 bytes
+ runs/moment_refined/fixed_noise.pt      |  Bin 0 -> 5701 bytes
+ runs/moment_refined/grids/epoch_000.png |  Bin 0 -> 5230 bytes
+ runs/moment_refined/grids/epoch_005.png |  Bin 0 -> 83008 bytes
+ runs/moment_refined/grids/epoch_010.png |  Bin 0 -> 92909 bytes
+ runs/moment_refined/grids/epoch_015.png |  Bin 0 -> 100192 bytes
+ runs/moment_refined/grids/epoch_020.png |  Bin 0 -> 102725 bytes
+ runs/moment_refined/grids/epoch_025.png |  Bin 0 -> 104692 bytes
+ runs/moment_refined/grids/epoch_030.png |  Bin 0 -> 105231 bytes
+ runs/moment_refined/grids/epoch_035.png |  Bin 0 -> 105997 bytes
+ runs/moment_refined/grids/epoch_040.png |  Bin 0 -> 108432 bytes
+ runs/moment_refined/grids/epoch_045.png |  Bin 0 -> 110807 bytes
+ runs/moment_refined/grids/epoch_050.png |  Bin 0 -> 110737 bytes
+ runs/moment_refined/grids/epoch_055.png |  Bin 0 -> 110119 bytes
+ runs/moment_refined/grids/epoch_060.png |  Bin 0 -> 110916 bytes
+ runs/moment_refined/grids/epoch_065.png |  Bin 0 -> 110242 bytes
+ runs/moment_refined/grids/epoch_070.png |  Bin 0 -> 111991 bytes
+ runs/moment_refined/grids/epoch_075.png |  Bin 0 -> 111837 bytes
+ runs/moment_refined/grids/epoch_080.png |  Bin 0 -> 109544 bytes
+ runs/moment_refined/grids/epoch_085.png |  Bin 0 -> 111477 bytes
+ runs/moment_refined/grids/epoch_090.png |  Bin 0 -> 113534 bytes
+ runs/moment_refined/grids/epoch_095.png |  Bin 0 -> 114581 bytes
+ runs/moment_refined/grids/epoch_100.png |  Bin 0 -> 110913 bytes
+ runs/moment_refined/grids/epoch_105.png |  Bin 0 -> 112376 bytes
+ runs/moment_refined/grids/epoch_110.png |  Bin 0 -> 110237 bytes
+ runs/moment_refined/grids/epoch_115.png |  Bin 0 -> 112650 bytes
+ runs/moment_refined/grids/epoch_120.png |  Bin 0 -> 111598 bytes
+ runs/moment_refined/losses.csv          | 2881 +++++++++++++++++++++++++++++++
+ runs/moment_refined/metrics.csv         |  122 ++
+ runs/moment_refined/regularizacion.png  |  Bin 0 -> 70788 bytes
+ runs/moment_refined/regularization.csv  | 2881 +++++++++++++++++++++++++++++++
+ runs/refined/ckpt/G_final.pt            |  Bin 0 -> 925592 bytes
+ runs/refined/config.json                |   34 +
+ runs/refined/curvas.png                 |  Bin 0 -> 101067 bytes
+ runs/refined/environment.json           |    9 +
+ runs/refined/evolucion.png              |  Bin 0 -> 542198 bytes
+ runs/refined/fixed_noise.pt             |  Bin 0 -> 5701 bytes
+ runs/refined/grids/epoch_000.png        |  Bin 0 -> 5230 bytes
+ runs/refined/grids/epoch_005.png        |  Bin 0 -> 74678 bytes
+ runs/refined/grids/epoch_010.png        |  Bin 0 -> 76362 bytes
+ runs/refined/grids/epoch_015.png        |  Bin 0 -> 59765 bytes
+ runs/refined/grids/epoch_020.png        |  Bin 0 -> 55585 bytes
+ runs/refined/grids/epoch_025.png        |  Bin 0 -> 56366 bytes
+ runs/refined/grids/epoch_030.png        |  Bin 0 -> 52687 bytes
+ runs/refined/grids/epoch_035.png        |  Bin 0 -> 51334 bytes
+ runs/refined/grids/epoch_040.png        |  Bin 0 -> 50872 bytes
+ runs/refined/grids/epoch_045.png        |  Bin 0 -> 49406 bytes
+ runs/refined/grids/epoch_050.png        |  Bin 0 -> 48308 bytes
+ runs/refined/grids/epoch_055.png        |  Bin 0 -> 48439 bytes
+ runs/refined/grids/epoch_060.png        |  Bin 0 -> 46507 bytes
+ runs/refined/grids/epoch_065.png        |  Bin 0 -> 46377 bytes
+ runs/refined/grids/epoch_070.png        |  Bin 0 -> 47014 bytes
+ runs/refined/grids/epoch_075.png        |  Bin 0 -> 47445 bytes
+ runs/refined/grids/epoch_080.png        |  Bin 0 -> 46079 bytes
+ runs/refined/grids/epoch_085.png        |  Bin 0 -> 46733 bytes
+ runs/refined/grids/epoch_090.png        |  Bin 0 -> 46089 bytes
+ runs/refined/grids/epoch_095.png        |  Bin 0 -> 47089 bytes
+ runs/refined/grids/epoch_100.png        |  Bin 0 -> 45901 bytes
+ runs/refined/grids/epoch_105.png        |  Bin 0 -> 45575 bytes
+ runs/refined/grids/epoch_110.png        |  Bin 0 -> 45103 bytes
+ runs/refined/grids/epoch_115.png        |  Bin 0 -> 44719 bytes
+ runs/refined/grids/epoch_120.png        |  Bin 0 -> 44691 bytes
+ runs/refined/losses.csv                 | 2881 +++++++++++++++++++++++++++++++
+ runs/refined/metrics.csv                |  122 ++
+ 134 files changed, 13664 insertions(+)
+
+commit 4f69fc4da9d7fef1bfc9dbc3dbae7443fb12bde0
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-11 22:06:24 -0600
+
+    chore: validate conditional recovery and document all candidate pools
+
+ README.md                      | 16 +++++++++++-----
+ README_EXPLICACION_PROYECTO.md |  2 +-
+ build_report.py                |  4 +++-
+ generate_gallery.py            |  4 ++--
+ tests/test_training.py         | 19 ++++++++++++++-----
+ 5 files changed, 31 insertions(+), 14 deletions(-)
+
+commit 1a5f50a46d4781abd033a8a531a49f8523243d50
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-11 22:00:37 -0600
+
+    feat: add conditional character attributes and transparent selection accounting
+
+ README.md           |  2 ++
+ analysis.py         |  9 ++++++---
+ build_report.py     | 29 ++++++++++++++++++++-------
+ colab_runner.ipynb  | 57 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ collect_results.py  |  5 +++--
+ condicional.md      | 37 ++++++++++++++++++++++++++++++++++
+ experimentos.md     |  1 +
+ gan/conditioning.py | 52 ++++++++++++++++++++++++++++++++++++++++++++++++
+ gan/images.py       | 19 ++++++++++++++++--
+ generate_gallery.py | 28 ++++++++++++++++++++++----
+ package_project.py  |  2 +-
+ tests/test_gan.py   | 16 +++++++++++++++
+ train.py            | 49 +++++++++++++++++++++++++++++++++------------
+ verify_project.py   |  7 +++++--
+ 14 files changed, 279 insertions(+), 34 deletions(-)
+
+commit b5bb4e2be100d093870e675f39519d912d382ac8
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-11 21:48:06 -0600
+
+    chore: normalize Spanish documentation and retain impersonal wording
+
+ PLAN.md                        | 32 +++++++++++-----------
+ README.md                      | 60 +++++++++++++++++++++---------------------
+ README_EXPLICACION_PROYECTO.md | 22 ++++++++--------
+ README_PRESENTACION.md         |  6 ++---
+ build_report.py                | 15 +++++++++--
+ colab_runner.ipynb             | 22 ++++++++--------
+ estadisticas.md                |  2 +-
+ experimentos.md                |  4 +--
+ refinamiento.md                |  2 +-
+ 9 files changed, 88 insertions(+), 77 deletions(-)
+
+commit ad79fc31b5623219a652631a68e1875810cfd4d3
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-11 21:43:04 -0600
+
+    chore: verify completed runs and report separate generator loss terms
+
+ analysis.py            | 25 ++++++++++++++++++++++++-
+ build_report.py        |  4 ++++
+ collect_results.py     |  4 +++-
+ generate_gallery.py    |  5 ++++-
+ run_experiments.py     | 15 +++++++++++++++
+ tests/test_training.py |  6 +++++-
+ 6 files changed, 55 insertions(+), 4 deletions(-)
+
+commit d312680bc56970e7b4f659c2ab7208b2c782edec
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-11 21:36:10 -0600
+
+    feat: add batch statistics regularization and evidence-based reporting
+
+ README.md          |   8 +-
+ build_report.py    | 302 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ colab_runner.ipynb |  71 +++++++++++--
+ collect_results.py |   5 +
+ estadisticas.md    |  35 +++++++
+ experimentos.md    |   4 +-
+ gan/losses.py      |  10 ++
+ package_project.py |   5 +-
+ refinamiento.md    |   2 +-
+ tests/test_gan.py  |  12 ++-
+ train.py           |  32 +++++-
+ verify_project.py  |   1 +
+ 12 files changed, 472 insertions(+), 15 deletions(-)
+
+commit 38e280b9ccc52538c64dd9d05ebab9c2738cf7a8
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-11 21:23:56 -0600
+
+    feat: add resize convolution refinement and exact recovery tests
+
+ colab_runner.ipynb     | 42 +++++++++++++++++++++++++++++++++++++
+ gan/models.py          | 18 +++++++++++++++-
+ generate_gallery.py    |  2 +-
+ nn_test.py             | 13 ++++++++++++
+ refinamiento.md        | 23 +++++++++++++++++++++
+ tests/test_gan.py      |  7 +++++++
+ tests/test_training.py | 56 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ train.py               |  3 ++-
+ 8 files changed, 161 insertions(+), 3 deletions(-)
+
+commit 9daa70b9cd99dfbabfdded1ae8ffdfa0fc7bb9f0
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-11 21:21:20 -0600
+
+    chore: add delivery checks and replace outdated project documentation
+
+ PLAN.md                        |  54 +++++++------------
+ README.md                      | 114 +++++++++++++++++++++++++++++++++++------
+ README_EXPLICACION_PROYECTO.md |  29 +++++++++++
+ README_PRESENTACION.md         |   5 ++
+ collect_results.py             |  52 +++++++++++++++++++
+ gan/images.py                  |   3 +-
+ package_project.py             |  39 ++++++++++++++
+ requirements-lock.txt          |   4 ++
+ verify_project.py              |  80 +++++++++++++++++++++++++++++
+ 9 files changed, 327 insertions(+), 53 deletions(-)
+
+commit 64165ff4d81f22f591364d6ff25fd47202eedd43
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-11 21:15:30 -0600
+
+    feat: add controlled experiments and verifiable gallery evidence
+
+ analysis.py         |   4 +-
+ colab_runner.ipynb  | 307 ++++++++++++++++++++++++++++++++++++----------------
+ experimentos.md     |  46 +++++---
+ generate_gallery.py | 147 +++++++++++++++++--------
+ nn_test.py          | 152 ++++++++++++++++----------
+ run_experiments.py  |  31 ++++++
+ run_experiments.sh  |   7 +-
+ 7 files changed, 470 insertions(+), 224 deletions(-)
+
+commit f192180dc28ac5edef889dd318c05180a3365d76
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-11 21:15:18 -0600
+
+    feat: add original character dataset and reproducible GAN training
+
+ .gitignore        |   6 ++
+ build_dataset.py  | 106 ++++++++++++++++++++
+ dataset.md        |  35 +++++++
+ gan/images.py     |  58 +++++++++++
+ gan/models.py     |   9 +-
+ gan/utils.py      |   2 +-
+ prepare_data.py   |   7 +-
+ requirements.txt  |   1 -
+ tests/test_gan.py |  57 +++++++++++
+ train.py          | 285 +++++++++++++++++++++++++++++++++---------------------
+ 10 files changed, 454 insertions(+), 112 deletions(-)
+
+commit ac845bef8763c91f0f5a800cc622dfe5e002e0c7
+Author: Alejandro Anton <105880067+Anton17303@users.noreply.github.com>
+Date:   2026-10-11 20:05:50 -0600
+
+    Remove AI assistant usage section from README
+    
+    Removed section about AI assistant usage from README.
+
+ README.md | 3 ---
+ 1 file changed, 3 deletions(-)
+
+commit 176407a130e1681141a08f73de7e81db1ac363ce
+Author: Alejandro Anton <105880067+Anton17303@users.noreply.github.com>
+Date:   2026-10-11 09:33:05 -0600
+
+    inicio del proyecto
+
+ PLAN.md             |  41 ++++++++++++++++++
+ README.md           |  32 +++++++++-----
+ analysis.py         |  65 ++++++++++++++++++++++++++++
+ colab_runner.ipynb  |  97 ++++++++++++++++++++++++++++++++++++++++++
+ experimentos.md     |  21 +++++++++
+ gan/__init__.py     |   0
+ gan/losses.py       |  46 ++++++++++++++++++++
+ gan/models.py       |  70 ++++++++++++++++++++++++++++++
+ gan/utils.py        |  34 +++++++++++++++
+ generate_gallery.py |  54 +++++++++++++++++++++++
+ nn_test.py          |  69 ++++++++++++++++++++++++++++++
+ prepare_data.py     |  43 +++++++++++++++++++
+ requirements.txt    |   5 +++
+ run_experiments.sh  |  10 +++++
+ train.py            | 120 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 15 files changed, 697 insertions(+), 10 deletions(-)
+
+commit 50670c7b631ef13909182905a582988b0bd229a1
+Author: Alejandro Anton <105880067+Anton17303@users.noreply.github.com>
+Date:   2026-10-09 18:33:55 -0600
+
+    delete- base_proyecto
+
+ .gitattributes                                 |   11 -
+ README.md                                      |   68 +-
+ artefactos/README.md                           |   13 -
+ artefactos/modelo_A.joblib                     |  Bin 329886 -> 0 bytes
+ artefactos/modelo_B_state.pt                   |  Bin 26479 -> 0 bytes
+ artefactos/modelo_C_meta.joblib                |  Bin 879 -> 0 bytes
+ artefactos/norm_stats.pkl                      |  Bin 542 -> 0 bytes
+ artefactos/resultados.json                     |   81 -
+ artefactos/tabla_mecanismo.csv                 |    4 -
+ docs/Proyecto 1 Deep Learning presentacion.pdf |  Bin 6492659 -> 0 bytes
+ docs/informe.pdf                               |  Bin 386909 -> 0 bytes
+ figs/fig1_pr_curves_AB.png                     |  Bin 40156 -> 0 bytes
+ figs/fig2_permutacion.png                      |  Bin 26240 -> 0 bytes
+ figs/fig3_mecanismo.png                        |  Bin 31278 -> 0 bytes
+ figs/fig4_costo_escenarios.png                 |  Bin 33570 -> 0 bytes
+ proyecto1_najera_anton.ipynb                   | 1917 ------------------------
+ requirements.txt                               |    9 -
+ 17 files changed, 1 insertion(+), 2102 deletions(-)
+
+commit e439f859c479ba8a889bed63bf57e7fd3ed78866
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-09-04 17:24:43 -0600
+
+    docs: upload slides
+
+ docs/Proyecto 1 Deep Learning presentacion.pdf | Bin 0 -> 6492659 bytes
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+
+commit e365b5bdd58081eed270a09e07b564f4b5f1dfb5
+Author: Alejandro Anton <105880067+Anton17303@users.noreply.github.com>
+Date:   2026-09-04 15:56:33 -0600
+
+    Include repository URL in README
+    
+    Added repository link to README.
+
+ README.md | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit f2ea256d9d54f6d8a9e6179e7e8ebeab62ab04af
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-09-04 11:33:29 -0600
+
+    docs: add final project report
+
+ README.md        |   2 +-
+ docs/informe.pdf | Bin 0 -> 386909 bytes
+ informe.pdf      | Bin 176509 -> 0 bytes
+ make_informe.py  | 476 -------------------------------------------------------
+ requirements.txt |   1 -
+ 5 files changed, 1 insertion(+), 478 deletions(-)
+
+commit e4a19b4f63e18ab363e87969f80c4f3d4c940e22
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-09-04 10:49:25 -0600
+
+    chore: preserve binary artifact formats
+
+ .gitattributes | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+commit 33b3e389e64b9b3ce3fe9bddbb8822f633cc8f4f
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-09-04 10:49:25 -0600
+
+    docs: add reproducible report sources
+
+ figs/fig1_pr_curves_AB.png     | Bin 0 -> 40156 bytes
+ figs/fig2_permutacion.png      | Bin 0 -> 26240 bytes
+ figs/fig3_mecanismo.png        | Bin 0 -> 31278 bytes
+ figs/fig4_costo_escenarios.png | Bin 0 -> 33570 bytes
+ make_informe.py                | 476 +++++++++++++++++++++++++++++++++++++++++
+ requirements.txt               |   1 +
+ 6 files changed, 477 insertions(+)
+
+commit c6b091ae7704afcf90246c7bbf365efbf9aa89a5
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-09-04 10:40:59 -0600
+
+    docs: align setup and project handoff
+
+ README.md        | 137 ++++++++++++++++++++-----------------------------------
+ requirements.txt |   9 ++++
+ 2 files changed, 58 insertions(+), 88 deletions(-)
+
+commit 440cf0e8a1a70c79bc9fa047de37acb244075041
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-09-04 10:38:47 -0600
+
+    chore: package reproducible model artifacts
+
+ .gitignore                                         |   4 +
+ artefactos/README.md                               |  13 ++++
+ artefactos/modelo_A.joblib                         | Bin 0 -> 329886 bytes
+ artefactos/modelo_B_state.pt                       | Bin 0 -> 26479 bytes
+ .../modelo_C_meta.joblib                           | Bin 879 -> 879 bytes
+ artefactos/norm_stats.pkl                          | Bin 0 -> 542 bytes
+ artefactos/resultados.json                         |  81 +++++++++++++++++++++
+ artefactos/tabla_mecanismo.csv                     |   4 +
+ modelo_A.joblib                                    | Bin 326462 -> 0 bytes
+ modelo_B_state.pt                                  | Bin 26479 -> 0 bytes
+ 10 files changed, 102 insertions(+)
+
+commit a859ddfcb218c0dbbc6bc22fdb1f3e942d141dc2
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-09-04 10:38:24 -0600
+
+    feat: finalize the experimental protocol
+
+ Proyecto1_MonitoreoTransaccional.ipynb | 1581 --------------------------
+ proyecto1_najera_anton.ipynb           | 1917 ++++++++++++++++++++++++++++++++
+ 2 files changed, 1917 insertions(+), 1581 deletions(-)
+
+commit fa34328ad4cf473bc6cef636f2641628f94dd878
+Author: Alejandro Anton <105880067+Anton17303@users.noreply.github.com>
+Date:   2026-09-03 13:53:14 -0600
+
+    Add files via upload
+
+ Proyecto1_MonitoreoTransaccional.ipynb | 1581 ++++++++++++++++++++++++++++++++
+ README.md                              |  116 ++-
+ informe.pdf                            |  Bin 0 -> 176509 bytes
+ modelo_A.joblib                        |  Bin 0 -> 326462 bytes
+ modelo_B_state.pt                      |  Bin 0 -> 26479 bytes
+ modelo_C_meta.joblib                   |  Bin 0 -> 879 bytes
+ 6 files changed, 1696 insertions(+), 1 deletion(-)
+
+commit 0deee334a6e2d4dda32d090abb76b32f7a38c5cd
+Author: Alejandro Anton <105880067+Anton17303@users.noreply.github.com>
+Date:   2026-09-03 13:51:20 -0600
+
+    Initial commit
+
+ README.md | 1 +
+ 1 file changed, 1 insertion(+)

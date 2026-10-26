@@ -83,7 +83,7 @@ def _where(sql):
 
 
 def categoria_error(sql_pred, sql_ref, error):
-    """Clasificación heurística; revisar a mano los casos dudosos (README)."""
+    """Clasificación heurística de errores de ejecución y diferencias de resultados."""
     if error:
         e = error.lower()
         if "1054" in e or "1109" in e or "1146" in e or "unknown column" in e or "unknown table" in e or "doesn't exist" in e:

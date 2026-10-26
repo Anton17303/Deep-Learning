@@ -26,7 +26,7 @@ pip install -r requirements.txt
 bash scripts/colab_mysql.sh
 export MYSQL_SOCKET=/tmp/my8run/mysql.sock
 python ejecutar_proyecto.py --reanudar
-python verificar_entrega.py --zip
+python verificar_entrega.py
 ```
 
 En el entorno local se utiliza `.venv-gpu/Scripts/python.exe`. El modelo descargado se reutiliza desde `.runtime/model` cuando está disponible.
@@ -50,7 +50,7 @@ python -m unittest discover -s tests -v
 
 El diseño y las hipótesis se registran en [experimentos.md](experimentos.md). Cada entrenamiento guarda `resumen.json`, `loss.csv`, `loss.png`, checkpoint y adapter. La pérdida se calcula únicamente sobre la respuesta SQL; los ejemplos conservan el esquema completo, sin truncamiento silencioso.
 
-Los resultados por pregunta, el análisis por categoría, la selección del adapter y la predicción de EX se guardan en `resultados/`. `oraculo.csv` comprueba las consultas de referencia y no representa el rendimiento del modelo. `verificacion.json` registra qué comprobaciones se cumplen. El ZIP contiene únicamente los archivos del proyecto y excluye entornos, descargas y checkpoints de reanudación.
+Los resultados por pregunta, el análisis por categoría, la selección del adapter y la predicción de EX se guardan en `resultados/`. `oraculo.csv` comprueba las consultas de referencia y no representa el rendimiento del modelo. `verificacion.json` registra qué comprobaciones se cumplen.
 
 ### Resultados medidos
 
@@ -77,6 +77,8 @@ La carga del modelo tardó 6.37 segundos. Los tres casos repetidos cumplieron de
 | `generador/`, `datos/` | Bases sintéticas, pares y descartes |
 | `notebooks/` | Datos, entrenamiento y evaluación |
 | `adapter/`, `resultados/` | Pesos LoRA y evidencia experimental |
+| `presentacion.pdf`, `presentacion_proyecto.pptx` | Presentación final de 11 diapositivas |
+| `BITACORA.md`, `CONTRIBUCIONES.md`, `historial_git.txt` | Registro de actividades y contribuciones |
 
 ## Limitaciones
 
@@ -86,4 +88,4 @@ Los pares provienen de plantillas y pueden favorecer redacciones repetidas. Cada
 
 El modelo base se distribuye bajo Apache-2.0. La procedencia de los datos y las licencias se describen en [LICENCIAS.md](LICENCIAS.md).
 
-Se utilizó asistencia de IA para borradores de esquemas, preguntas, código y documentación. Se verificaron las consultas mediante ejecución en MySQL y se registraron las pruebas realizadas. No se utilizan APIs externas para generar SQL durante la inferencia.
+Se utilizó IA como apoyo para consultas, código y documentación. Las consultas SQL se comprobaron mediante ejecución en MySQL. No se utilizan APIs externas para generar SQL durante la inferencia.
