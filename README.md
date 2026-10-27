@@ -64,15 +64,20 @@ Los resultados por pregunta, el análisis por categoría, la selección del adap
 
 | Configuración | Aciertos | EX ponderada | Tiempo medio (s) |
 |---|---:|---:|---:|
-| Base NF4 | 15/40 | 0.280 | 15.67 |
-| QLoRA rango 8 | 21/40 | 0.439 | 11.49 |
-| QLoRA rango 16 | 20/40 | 0.402 | 11.83 |
-| Adapter con reparación | 21/40 | 0.427 | 13.20 |
-| Entrega seleccionada | 21/40 | 0.439 | 11.49 |
+| Base NF4 | 15/40 | 0.280 | 3.37 |
+| QLoRA rango 8 inicial | 21/40 | 0.439 | 3.18 |
+| QLoRA rango 16 inicial | 20/40 | 0.402 | 2.66 |
+| Rango 8 con época adicional | 20/40 | 0.415 | 3.15 |
+| Rango 16 con época adicional | 20/40 | 0.402 | 3.17 |
+| Entrega: rango 8 inicial con reparación | 22/40 | 0.451 | 4.93 |
 
-Se seleccionó lora_r8, con reparación desactivada. La EX oculta estimada es 0.35; corresponde a una predicción, no a una medición oficial.
+Se seleccionó `lora_r8`, con reparación activada. La mejora del adapter sin reparación fue de 15.9 puntos porcentuales frente al baseline. La reparación añadió un acierto y elevó EX de 0.439 a 0.451. La EX oculta estimada es 0.36; corresponde a una predicción, no a una medición oficial.
 
-La carga del modelo tardó 6.37 segundos. Los tres casos repetidos cumplieron determinismo, consulta de solo lectura, límite de llamadas y tiempo. Las 25 pruebas automatizadas se aprobaron.
+Las evaluaciones se ejecutaron en Tesla T4, con PyTorch 2.11.0 y CUDA 13.0. Cada continuación recorrió los 3,023 ejemplos en 756 pasos, durante 27.06 y 26.99 minutos. Aunque la pérdida disminuyó, ninguna continuación superó la EX del adapter inicial de rango 8.
+
+La carga de la configuración final tardó 4.89 segundos y el tiempo máximo de validación fue de 25.15 segundos. Los tres casos repetidos cumplieron determinismo, consulta de solo lectura, límite de llamadas y tiempo. Las 25 pruebas automatizadas se aprobaron. La comprobación de MySQL en T4, el contrato y las métricas se conservan en `resultados/validacion_mysql_t4.json`, `resultados/contrato_inferencia.json` y `resultados/resumen_resultados.json`.
+
+La verificación obtenida en Colab se conserva en `resultados/verificacion_t4.json`. `resultados/verificacion.json` registra la última revisión de integridad del proyecto.
 
 ## Estructura
 
@@ -90,7 +95,7 @@ La carga del modelo tardó 6.37 segundos. Los tres casos repetidos cumplieron de
 
 ## Limitaciones
 
-Los pares provienen de plantillas y pueden favorecer redacciones repetidas. Cada configuración procesa 304 ejemplos del corpus de 3,023 pares; esta cobertura limitada puede producir subajuste. La ejecución sin errores no garantiza que una consulta responda correctamente la pregunta. La selección entre adapters utiliza solo dos dominios de validación, por lo que la EX propia puede sobreestimar la generalización. Las mediciones corresponden a una GPU MX350 y no acreditan una ejecución en Colab T4.
+Los pares provienen de plantillas y pueden favorecer redacciones repetidas. El adapter seleccionado procesó 304 ejemplos; las continuaciones que recorrieron el corpus completo no mejoraron la EX. Esto sugiere que ampliar el entrenamiento por sí solo no resuelve la generalización a esquemas nuevos. La ejecución sin errores no garantiza que una consulta responda correctamente la pregunta. La selección entre adapters utiliza solo dos dominios de validación, por lo que la EX propia puede sobreestimar la generalización.
 
 ## Licencias y uso de IA
 

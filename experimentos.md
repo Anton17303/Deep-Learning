@@ -35,3 +35,9 @@ Se comparan continuaciones de los rangos 8 y 16 durante una época adicional com
 La validación de hotel y fútbol continúa excluida del cálculo de gradientes. La ejecución en T4 se acredita únicamente mediante registros obtenidos en ese dispositivo.
 
 En la ampliación se usa offload automático: las activaciones se transfieren a CPU cuando la GPU tiene menos de 6 GiB; en una T4 permanecen en GPU. Esta decisión se aplica igual a ambos rangos y se registra junto con el dispositivo utilizado.
+
+## Resultados de la ampliación
+
+Se completaron ambas continuaciones en Tesla T4, con 756 pasos y 3,023 ejemplos por rango. Los tiempos fueron 27.06 minutos para rango 8 y 26.99 para rango 16. La EX fue 0.415 y 0.402, respectivamente. La pérdida disminuyó, pero no se observó una mejora de generalización frente al rango 8 inicial, cuya EX fue 0.439.
+
+Se reevaluaron el baseline y los cuatro adapters en la misma T4. Se conservó el rango 8 inicial y se activó la reparación, que elevó los aciertos de 21 a 22 y la EX de 0.439 a 0.451. El tiempo medio aumentó de 3.18 a 4.93 segundos; el máximo final fue de 25.15 segundos. Los casos y las métricas se conservan en los CSV de `resultados/`.

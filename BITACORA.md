@@ -15,3 +15,4 @@
 | 2026-10-25 | Nina Nájera | Se completaron las dos configuraciones QLoRA con el mismo presupuesto. | Se procesaron 304 ejemplos en 76 pasos por configuración y se conservaron los adapters, pérdidas y tiempos. |
 | 2026-10-25 | Nina Nájera | Se compararon baseline, rangos y reparación mediante ejecución. | Se seleccionó lora_r8 con EX 0.439; los resultados por pregunta y el análisis se guardaron en resultados/. |
 | 2026-10-25 | Nina Nájera | Se comprobó el contrato de inferencia y se prepararon los documentos finales. | Se aprobaron 23 pruebas y los tres casos repetidos del contrato; se generó la presentación de 11 diapositivas. |
+| 2026-10-26 | Nina Nájera | Se ejecutaron las continuaciones y la evaluación completa en Colab T4. | Se completaron 756 pasos por rango; se seleccionó rango 8 inicial con reparación, EX 0.451 y 22/40 aciertos. Se aprobaron 25 pruebas y el contrato de inferencia. |

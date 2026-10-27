@@ -34,6 +34,7 @@ def main():
     args = parser.parse_args()
     leer = lambda p: [json.loads(l) for l in (RAIZ / p).read_text(encoding='utf-8').splitlines() if l.strip()]
     train, val = leer('datos/entrenamiento.jsonl'), leer('datos/validacion/preguntas.jsonl')
+    sha_dataset = hashlib.sha256((RAIZ / 'datos/entrenamiento.jsonl').read_bytes()).hexdigest()
     reporte = json.loads((RAIZ / 'datos/reporte_datos.json').read_text(encoding='utf-8'))
     checks = dict(dataset_minimo=len(train) >= 2000,
                   esquemas_entrenamiento=len({r['esquema_id'].rsplit('_', 1)[0] for r in train}) >= 10,
@@ -48,6 +49,16 @@ def main():
     for nombre in ['lora_r8', 'lora_r16']:
         p = RAIZ / f'resultados/{nombre}/resumen.json'
         checks[f'{nombre}_completo'] = p.exists() and json.loads(p.read_text())['entrenamiento_completo']
+    for rango in [8, 16]:
+        nombre = f'lora_r{rango}_completo'
+        carpeta = RAIZ / 'resultados' / nombre
+        if carpeta.exists():
+            p = carpeta / 'resumen.json'
+            resumen = json.loads(p.read_text(encoding='utf-8')) if p.exists() else {}
+            checks[f'ampliacion_r{rango}_completa'] = (resumen.get('entrenamiento_completo', False)
+                and resumen.get('sha256_dataset') == sha_dataset
+                and resumen.get('ejemplos_procesados') == len(train)
+                and all((carpeta / f).exists() for f in ['loss.csv', 'loss.png', 'adapter/adapter_model.safetensors']))
     contrato = RAIZ / 'resultados/contrato_inferencia.json'
     checks['contrato_inferencia'] = contrato.exists() and json.loads(contrato.read_text(encoding='utf-8'))['cumple']
     if checks['adapter_presente']:
@@ -64,7 +75,7 @@ def main():
                              capture_output=True, text=True)
     checks['pruebas'] = pruebas.returncode == 0
     estado = dict(comprobaciones=checks, completo=all(checks.values()),
-                  pruebas=pruebas.stderr, sha256_dataset=hashlib.sha256((RAIZ / 'datos/entrenamiento.jsonl').read_bytes()).hexdigest())
+                  pruebas=pruebas.stderr, sha256_dataset=sha_dataset)
     metadata = RAIZ / 'resultados/validacion_propia.json'
     if checks['resultados_presentes']:
         with (RAIZ / 'resultados/validacion_propia.csv').open(encoding='utf-8', newline='') as archivo:
@@ -72,6 +83,7 @@ def main():
         checks['evaluacion_completa'] = len(filas) == len(val) and {r['id'] for r in filas} == {r['id'] for r in val}
         checks['limite_tiempo_evaluacion'] = bool(filas) and all(float(r['tiempo_s']) <= 30 for r in filas)
         checks['proveniencia_validacion'] = metadata.exists() and json.loads(metadata.read_text(encoding='utf-8')).get('sha256_preguntas') == hashlib.sha256((RAIZ / 'datos/validacion/preguntas.jsonl').read_bytes()).hexdigest()
+        checks['configuracion_validada'] = metadata.exists() and json.loads(metadata.read_text(encoding='utf-8')).get('configuracion') == json.loads((RAIZ / 'config.json').read_text(encoding='utf-8'))
     estado['completo'] = all(checks.values())
     estado['entorno_objetivo_verificado'] = metadata.exists() and 'T4' in json.loads(metadata.read_text(encoding='utf-8')).get('dispositivo', '')
     (RAIZ / 'resultados/verificacion.json').write_text(json.dumps(estado, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
