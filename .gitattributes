@@ -3,3 +3,4 @@
 *.png binary
 *.safetensors binary
 *.sh text eol=lf
+*.jsonl -text
