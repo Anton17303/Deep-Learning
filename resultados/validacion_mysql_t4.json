@@ -1,0 +1,8 @@
+{
+  "motor": "8.4.10",
+  "sql_mode": "ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION",
+  "dispositivo": "Tesla T4",
+  "aceptados": 3023,
+  "errores": [],
+  "sha256_dataset": "aa6f3302443cc2cfdfb92a5e363625c0c167fcc6c949cc55163a6ae4aa72f833"
+}

@@ -1,21 +1,21 @@
 id,esquema_id,nivel,peso,acierto,categoria_error,tiempo_s,pregunta,sql_pred,sql_ref,error
-v01,hotel_full,1,1,0,columna o tabla inexistente,6.49,Devuelve nombre y ciudad de los hoteles con 4 o más estrellas.,"SELECT nombre, ciudad FROM HOTELS WHERE estrellas >= 4","SELECT nombre, ciudad FROM hoteles WHERE estrellas >= 4","(1146, ""Table 'p3_hotel_full.hotels' doesn't exist"")"
-v02,hotel_full,1,1,1,,5.93,¿Cuántas reservaciones tienen estado 'cancelada'? Devuelve una sola columna con el total.,SELECT COUNT(*) FROM reservaciones WHERE estado = 'cancelada',SELECT COUNT(*) AS total FROM reservaciones WHERE estado = 'cancelada',
-v03,hotel_full,1,1,1,,7.43,"Devuelve nombre y tarifa por noche de los tipos de habitación, ordenados de mayor a menor tarifa.","SELECT nombre, tarifa_noche FROM tipos_habitacion ORDER BY tarifa_noche DESC","SELECT nombre, tarifa_noche FROM tipos_habitacion ORDER BY tarifa_noche DESC",
-v04,hotel_full,1,1,1,,3.81,¿Cuál es el precio promedio de los servicios? Devuelve una sola columna.,SELECT AVG(precio) FROM servicios,SELECT AVG(precio) AS promedio FROM servicios,
-v05,hotel_full,1,1,0,columna o tabla inexistente,12.7,Devuelve nombre y correo de los huéspedes cuyo país es 'Guatemala'.,"SELECT T1.nombre, T1.correo FROM huespedes AS T1 JOIN habitaciones AS T2 ON T1.id_huesped = T2.id_huesped WHERE T2.pais = 'Guatemala'","SELECT nombre, correo FROM huespedes WHERE pais = 'Guatemala'","(1054, ""Unknown column 'T2.pais' in 'where clause'"")"
-v06,hotel_full,1,1,0,columna o tabla inexistente,14.4,Devuelve el número de habitación y el piso de las habitaciones ubicadas en el piso 5.,"SELECT id_habitacion, piso FROM habitaciones WHERE id_hotel = (SELECT id_hotel FROM habitaciones WHERE id_tipo = (SELECT id_tipo FROM tipos_habitacion WHERE nombre = 'Habitación') AND id_piso = 5)","SELECT numero, piso FROM habitaciones WHERE piso = 5","(1054, ""Unknown column 'id_piso' in 'where clause'"")"
-v07,hotel_full,2,2,0,columna o tabla inexistente,12.73,Devuelve el nombre de los hoteles con habitaciones registradas y cuántas habitaciones tiene cada uno (columna total).,"SELECT h.nombre, COUNT(h.id_habitacion) AS habitaciones_total
+v01,hotel_full,1,1,0,columna o tabla inexistente,2.92,Devuelve nombre y ciudad de los hoteles con 4 o más estrellas.,"SELECT nombre, ciudad FROM HOTELS WHERE estrellas >= 4","SELECT nombre, ciudad FROM hoteles WHERE estrellas >= 4","(1146, ""Table 'p3_hotel_full.HOTELS' doesn't exist"")"
+v02,hotel_full,1,1,1,,1.3,¿Cuántas reservaciones tienen estado 'cancelada'? Devuelve una sola columna con el total.,SELECT COUNT(*) FROM reservaciones WHERE estado = 'cancelada',SELECT COUNT(*) AS total FROM reservaciones WHERE estado = 'cancelada',
+v03,hotel_full,1,1,1,,1.68,"Devuelve nombre y tarifa por noche de los tipos de habitación, ordenados de mayor a menor tarifa.","SELECT nombre, tarifa_noche FROM tipos_habitacion ORDER BY tarifa_noche DESC","SELECT nombre, tarifa_noche FROM tipos_habitacion ORDER BY tarifa_noche DESC",
+v04,hotel_full,1,1,1,,0.68,¿Cuál es el precio promedio de los servicios? Devuelve una sola columna.,SELECT AVG(precio) FROM servicios,SELECT AVG(precio) AS promedio FROM servicios,
+v05,hotel_full,1,1,0,columna o tabla inexistente,3.44,Devuelve nombre y correo de los huéspedes cuyo país es 'Guatemala'.,"SELECT T1.nombre, T1.correo FROM huespedes AS T1 JOIN habitaciones AS T2 ON T1.id_huesped = T2.id_huesped WHERE T2.pais = 'Guatemala'","SELECT nombre, correo FROM huespedes WHERE pais = 'Guatemala'","(1054, ""Unknown column 'T2.pais' in 'where clause'"")"
+v06,hotel_full,1,1,0,columna o tabla inexistente,3.82,Devuelve el número de habitación y el piso de las habitaciones ubicadas en el piso 5.,"SELECT id_habitacion, piso FROM habitaciones WHERE id_hotel = (SELECT id_hotel FROM habitaciones WHERE id_tipo = (SELECT id_tipo FROM tipos_habitacion WHERE nombre = 'Habitación') AND id_piso = 5)","SELECT numero, piso FROM habitaciones WHERE piso = 5","(1054, ""Unknown column 'id_piso' in 'where clause'"")"
+v07,hotel_full,2,2,0,columna o tabla inexistente,3.24,Devuelve el nombre de los hoteles con habitaciones registradas y cuántas habitaciones tiene cada uno (columna total).,"SELECT h.nombre, COUNT(h.id_habitacion) AS habitaciones_total
 FROM habitaciones h
 JOIN reservaciones r ON h.id_habitacion = r.id_habitacion
 GROUP BY h.id_hotel","SELECT h.nombre, COUNT(*) AS total FROM hoteles h JOIN habitaciones x ON x.id_hotel = h.id_hotel GROUP BY h.id_hotel, h.nombre","(1054, ""Unknown column 'h.nombre' in 'field list'"")"
-v08,hotel_full,2,2,0,agregación,16.34,"Devuelve el nombre de los huéspedes que suman más de 15 noches reservadas, junto con ese total (columna total_noches).","SELECT h.nombre, SUM(r.noches) AS total_noches
+v08,hotel_full,2,2,0,agregación,4.56,"Devuelve el nombre de los huéspedes que suman más de 15 noches reservadas, junto con ese total (columna total_noches).","SELECT h.nombre, SUM(r.noches) AS total_noches
 FROM huespedes h
 JOIN reservaciones r ON h.id_huesped = r.id_huesped
 WHERE r.noches > 15
 GROUP BY h.id_huesped
 ORDER BY total_noches DESC","SELECT g.nombre, SUM(r.noches) AS total_noches FROM huespedes g JOIN reservaciones r ON r.id_huesped = g.id_huesped GROUP BY g.id_huesped, g.nombre HAVING SUM(r.noches) > 15",
-v09,hotel_full,2,2,0,sintaxis,25.32,"Para cada canal de reservación devuelve el canal y el número de reservaciones (columna total), ordenado de mayor a menor total y, en caso de empate, por canal alfabéticamente.","SELECT 
+v09,hotel_full,2,2,0,columna o tabla inexistente,20.2,"Para cada canal de reservación devuelve el canal y el número de reservaciones (columna total), ordenado de mayor a menor total y, en caso de empate, por canal alfabéticamente.","SELECT 
     c.canal, 
     COUNT(*) AS total_reservas 
 FROM 
@@ -29,44 +29,64 @@ JOIN
 JOIN 
     habitaciones h2 ON r.id_habitacion = h2.id_habitacion 
 JOIN 
-    tipos_habitacion t2 ON","SELECT canal, COUNT(*) AS total FROM reservaciones GROUP BY canal ORDER BY total DESC, canal","(1064, ""You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 15"")"
-v10,hotel_full,2,2,0,columna o tabla inexistente,12.7,"Para cada tipo de habitación que tenga habitaciones físicas registradas, devuelve su nombre y la cantidad de habitaciones de ese tipo (columna total).","SELECT t1.nombre, COUNT(*) AS habitaciones FROM habitaciones h 
+    tipos_habitacion t2 ON h2.id_tipo = t2.id_tipo 
+JOIN 
+    habitaciones h3 ON r.id_habitacion = h3.id_habitacion 
+JOIN 
+    tipos_habitacion t3 ON h3.id_tipo = t3.id_tipo 
+JOIN 
+    habitaciones h4 ON r.id_habitacion = h4.id_habitacion 
+JOIN 
+    tipos_habitacion t4 ON h4.id_tipo = t4.id_tipo 
+JOIN 
+    habitaciones h5 ON r.id_habitacion = h5.id_habitacion 
+JOIN 
+    tipos_habitacion t5 ON h5.id_tipo = t5.id_tipo 
+JOIN 
+    habitaciones h6 ON r.id_habitacion = h6.id_habitacion 
+JOIN 
+    tipos_habitacion t6 ON h6.id_tipo = t6.id_tipo 
+JOIN 
+    habitaciones h7 ON r.id_habitacion = h7.id_habitacion 
+JOIN 
+    tipos_habitacion t7 ON h7.id_tipo = t","SELECT canal, COUNT(*) AS total FROM reservaciones GROUP BY canal ORDER BY total DESC, canal","(1054, ""Unknown column 'c.canal' in 'field list'"")"
+v10,hotel_full,2,2,0,columna o tabla inexistente,2.82,"Para cada tipo de habitación que tenga habitaciones físicas registradas, devuelve su nombre y la cantidad de habitaciones de ese tipo (columna total).","SELECT t1.nombre, COUNT(*) AS habitaciones FROM habitaciones h 
 JOIN tipos_habitacion t ON h.id_tipo = t.id_tipo 
 GROUP BY t1.id_tipo","SELECT t.nombre, COUNT(*) AS total FROM tipos_habitacion t JOIN habitaciones h ON h.id_tipo = t.id_tipo GROUP BY t.id_tipo, t.nombre","(1054, ""Unknown column 't1.nombre' in 'field list'"")"
-v11,hotel_full,2,2,0,columna o tabla inexistente,11.98,Devuelve el nombre de los servicios con consumos registrados y el total de unidades consumidas de cada servicio (columna unidades).,"SELECT s.nombre, SUM(c.unidades) as total_consumidos
+v11,hotel_full,2,2,0,columna o tabla inexistente,2.89,Devuelve el nombre de los servicios con consumos registrados y el total de unidades consumidas de cada servicio (columna unidades).,"SELECT s.nombre, SUM(c.unidades) as total_consumidos
 FROM servicios s
 JOIN consumos c ON s.id_servicio = c.id_servicio
 GROUP BY s.id_servicio","SELECT s.nombre, SUM(c.cantidad) AS unidades FROM servicios s JOIN consumos c ON c.id_servicio = s.id_servicio GROUP BY s.id_servicio, s.nombre","(1054, ""Unknown column 'c.unidades' in 'field list'"")"
-v12,hotel_full,2,2,0,columna o tabla inexistente,18.98,Devuelve el nombre del huésped y el nombre del hotel de las reservaciones con estado 'completada' y más de 7 noches.,"SELECT h.nombre AS huésped, h2.nombre AS hotel FROM habitaciones h
+v12,hotel_full,2,2,0,columna o tabla inexistente,5.03,Devuelve el nombre del huésped y el nombre del hotel de las reservaciones con estado 'completada' y más de 7 noches.,"SELECT h.nombre AS huésped, h2.nombre AS hotel FROM habitaciones h
 JOIN reservaciones r ON h.id_habitacion = r.id_habitacion
 JOIN huespedes h2 ON r.id_huesped = h2.id_huesped
 WHERE r.estado = 'completada' AND r.noches > 7","SELECT g.nombre, h.nombre FROM reservaciones r JOIN huespedes g ON g.id_huesped = r.id_huesped JOIN habitaciones a ON a.id_habitacion = r.id_habitacion JOIN hoteles h ON h.id_hotel = a.id_hotel WHERE r.estado = 'completada' AND r.noches > 7","(1054, ""Unknown column 'h.nombre' in 'field list'"")"
-v13,hotel_full,2,2,0,columna o tabla inexistente,21.9,"Devuelve el nombre de los hoteles cuya tarifa por noche promedio de sus habitaciones supera 1300, junto con ese promedio (columna promedio).","SELECT h.nombre, AVG(h.tarifa_noche) AS promedio_tarifa_noches
+v13,hotel_full,2,2,0,columna o tabla inexistente,5.82,"Devuelve el nombre de los hoteles cuya tarifa por noche promedio de sus habitaciones supera 1300, junto con ese promedio (columna promedio).","SELECT h.nombre, AVG(h.tarifa_noche) AS promedio_tarifa_noches
 FROM habitaciones h
 JOIN reservaciones r ON h.id_habitacion = r.id_habitacion
 JOIN tipos_habitacion t ON h.id_tipo = t.id_tipo
 WHERE t.nombre = 'Hotel'
 GROUP BY h.id_hotel
 HAVING AVG(t.tarifa_noche) > 1300","SELECT h.nombre, AVG(t.tarifa_noche) AS promedio FROM hoteles h JOIN habitaciones a ON a.id_hotel = h.id_hotel JOIN tipos_habitacion t ON t.id_tipo = a.id_tipo GROUP BY h.id_hotel, h.nombre HAVING AVG(t.tarifa_noche) > 1300","(1054, ""Unknown column 'h.nombre' in 'field list'"")"
-v14,hotel_full,3,3,1,,8.19,Devuelve el nombre de los huéspedes que nunca han hecho una reservación.,SELECT nombre FROM huespedes WHERE id_huesped NOT IN (SELECT id_huesped FROM reservaciones),SELECT g.nombre FROM huespedes g WHERE NOT EXISTS (SELECT 1 FROM reservaciones r WHERE r.id_huesped = g.id_huesped),
-v15,hotel_full,3,3,0,columna o tabla inexistente,18.85,"Devuelve id de la reservación, canal y noches de las reservaciones cuyas noches superan el promedio de noches de su mismo canal.","SELECT r.id_reservacion, r.canal, AVG(r.noches) AS promedio_noches
+v14,hotel_full,3,3,1,,1.92,Devuelve el nombre de los huéspedes que nunca han hecho una reservación.,SELECT nombre FROM huespedes WHERE id_huesped NOT IN (SELECT id_huesped FROM reservaciones),SELECT g.nombre FROM huespedes g WHERE NOT EXISTS (SELECT 1 FROM reservaciones r WHERE r.id_huesped = g.id_huesped),
+v15,hotel_full,3,3,0,columna o tabla inexistente,4.94,"Devuelve id de la reservación, canal y noches de las reservaciones cuyas noches superan el promedio de noches de su mismo canal.","SELECT r.id_reservacion, r.canal, AVG(r.noches) AS promedio_noches
 FROM reservaciones r
 JOIN servicios s ON r.id_servicio = s.id_servicio
 WHERE r.noches > (SELECT AVG(noches) FROM reservaciones WHERE canal = s.nombre)
 GROUP BY r.id_reservacion, r.canal","SELECT a.id_reservacion, a.canal, a.noches FROM reservaciones a WHERE a.noches > (SELECT AVG(b.noches) FROM reservaciones b WHERE b.canal = a.canal)","(1054, ""Unknown column 'r.id_servicio' in 'on clause'"")"
-v16,hotel_full,3,3,1,,19.42,¿Qué servicio genera el mayor ingreso por consumos (precio del servicio por cantidad consumida)? Devuelve el nombre del servicio y el ingreso (columna ingreso).,"SELECT s.nombre, SUM(c.cantidad * s.precio) AS ingreso
+v16,hotel_full,3,3,1,,3.7,¿Qué servicio genera el mayor ingreso por consumos (precio del servicio por cantidad consumida)? Devuelve el nombre del servicio y el ingreso (columna ingreso).,"SELECT s.nombre, SUM(c.cantidad * s.precio) AS ingreso
 FROM servicios s
 JOIN consumos c ON s.id_servicio = c.id_servicio
 GROUP BY s.id_servicio
 ORDER BY ingreso DESC
 LIMIT 1","SELECT s.nombre, SUM(s.precio * c.cantidad) AS ingreso FROM servicios s JOIN consumos c ON c.id_servicio = s.id_servicio GROUP BY s.id_servicio, s.nombre ORDER BY ingreso DESC LIMIT 1",
-v17,hotel_full,3,3,0,columna o tabla inexistente,18.77,"Para cada hotel con reservaciones registradas, devuelve la reservación con más noches (en caso de empate, la de menor id de reservación): nombre del hotel, id de la reservación y noches.","SELECT h.nombre, r.id_reservacion, r.noches 
+v17,hotel_full,3,3,0,columna o tabla inexistente,4.24,"Para cada hotel con reservaciones registradas, devuelve la reservación con más noches (en caso de empate, la de menor id de reservación): nombre del hotel, id de la reservación y noches.","SELECT h.nombre, r.id_reservacion, r.noches 
 FROM habitaciones h 
 JOIN reservaciones r ON h.id_habitacion = r.id_habitacion 
 GROUP BY h.id_hotel 
 ORDER BY r.noches DESC 
 LIMIT 1","WITH r AS (SELECT h.nombre AS hotel, v.id_reservacion, v.noches, ROW_NUMBER() OVER (PARTITION BY h.id_hotel ORDER BY v.noches DESC, v.id_reservacion) AS rn FROM reservaciones v JOIN habitaciones a ON a.id_habitacion = v.id_habitacion JOIN hoteles h ON h.id_hotel = a.id_hotel) SELECT hotel, id_reservacion, noches FROM r WHERE rn = 1","(1054, ""Unknown column 'h.nombre' in 'field list'"")"
-v18,hotel_full,3,3,0,columna o tabla inexistente,18.73,"¿En qué mes (formato AAAA-MM) según la fecha de entrada hay más reservaciones? Devuelve el mes (columna mes) y el total de reservaciones (columna total). En caso de empate, devuelve el mes cronológicamente menor.","SELECT 
+v18,hotel_full,3,3,0,columna o tabla inexistente,4.4,"¿En qué mes (formato AAAA-MM) según la fecha de entrada hay más reservaciones? Devuelve el mes (columna mes) y el total de reservaciones (columna total). En caso de empate, devuelve el mes cronológicamente menor.","SELECT 
   mes AS mes,
   SUM(CASE WHEN fecha_entrada >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH) THEN 1 ELSE 0 END) AS total
 FROM 
@@ -76,48 +96,54 @@ GROUP BY
 ORDER BY 
   total DESC
 LIMIT 1","SELECT DATE_FORMAT(fecha_entrada, '%Y-%m') AS mes, COUNT(*) AS total FROM reservaciones GROUP BY DATE_FORMAT(fecha_entrada, '%Y-%m') ORDER BY total DESC, mes LIMIT 1","(1054, ""Unknown column 'mes' in 'field list'"")"
-v19,hotel_full,3,3,0,agregación,18.56,"Toma las primeras 10 reservaciones ordenadas por fecha de entrada (y por id de reservación en empate) y devuelve id, fecha de entrada, noches y las noches acumuladas (columna acumulado).","SELECT id_reservacion, fecha_entrada, noches, (SELECT SUM(noches) FROM habitaciones WHERE id_habitacion = id_reservacion) AS noches_acumuladas
+v19,hotel_full,3,3,0,agregación,4.39,"Toma las primeras 10 reservaciones ordenadas por fecha de entrada (y por id de reservación en empate) y devuelve id, fecha de entrada, noches y las noches acumuladas (columna acumulado).","SELECT id_reservacion, fecha_entrada, noches, (SELECT SUM(noches) FROM habitaciones WHERE id_habitacion = id_reservacion) AS noches_acumuladas
 FROM reservaciones
 ORDER BY fecha_entrada ASC, id_reservacion ASC
 LIMIT 10","SELECT id_reservacion, fecha_entrada, noches, SUM(noches) OVER (ORDER BY fecha_entrada, id_reservacion) AS acumulado FROM reservaciones ORDER BY fecha_entrada, id_reservacion LIMIT 10","(1140, ""In aggregated query without GROUP BY, expression #1 of SELECT list contains nonaggregated column 'p3_hotel_full.reservaciones.id_reservacion'; this is incompatible with sql_mode=only_full_group_by"")"
-v20,hotel_full,3,3,0,resultado distinto,16.97,¿Qué porcentaje del total de reservaciones representa cada estado? Devuelve el estado y el porcentaje con 2 decimales (columna porcentaje).,"SELECT 
+v20,hotel_full,3,3,0,resultado distinto,3.83,¿Qué porcentaje del total de reservaciones representa cada estado? Devuelve el estado y el porcentaje con 2 decimales (columna porcentaje).,"SELECT 
   estado, 
   CAST(SUM(CASE WHEN estado = 'Reservada' THEN 1 ELSE 0 END) AS REAL) * 100 / COUNT(*) AS porcentaje
 FROM 
   reservaciones
 GROUP BY 
   estado","SELECT estado, ROUND(100 * COUNT(*) / (SELECT COUNT(*) FROM reservaciones), 2) AS porcentaje FROM reservaciones GROUP BY estado",
-v21,futbol_full,1,1,1,,7.26,Devuelve nombre y capacidad de los estadios con capacidad mayor a 20000.,"SELECT nom, cap FROM est WHERE cap > 20000","SELECT nom, cap FROM est WHERE cap > 20000",
-v22,futbol_full,1,1,1,,5.68,¿Cuántos jugadores juegan en la posición 'DEL'? Devuelve una sola columna con el total.,SELECT COUNT(id_jug) FROM jug WHERE pos = 'DEL',SELECT COUNT(*) AS total FROM jug WHERE pos = 'DEL',
-v23,futbol_full,1,1,1,,3.91,¿Cuál es el salario promedio de todos los jugadores? Devuelve una sola columna.,SELECT AVG(sal) FROM jug,SELECT AVG(sal) AS promedio FROM jug,
-v24,futbol_full,1,1,1,,23.4,"Devuelve nombre y salario de los 5 jugadores con mayor salario, de mayor a menor.","SELECT nom, sal FROM jug ORDER BY sal DESC LIMIT 5","SELECT nom, sal FROM jug ORDER BY sal DESC LIMIT 5",
-v25,futbol_full,1,1,1,,14.39,Devuelve nombre y año de fundación de los equipos fundados antes de 1960.,"SELECT nom, fund FROM equ WHERE fund < 1960","SELECT nom, fund FROM equ WHERE fund < 1960",
-v26,futbol_full,1,1,1,,9.14,¿Cuántas tarjetas rojas se han mostrado? Devuelve una sola columna con el total.,SELECT COUNT(*) FROM tar WHERE tipo = 'roja',SELECT COUNT(*) AS total FROM tar WHERE tipo = 'roja',
-v27,futbol_full,2,2,1,,15.59,"Para cada equipo con jugadores registrados, devuelve el nombre del equipo y su cantidad de jugadores (columna total).","SELECT T2.nom, COUNT(*) AS jugadores FROM jug AS T1 JOIN equ AS T2 ON T1.id_equ = T2.id_equ GROUP BY T2.nom","SELECT e.nom, COUNT(*) AS total FROM equ e JOIN jug j ON j.id_equ = e.id_equ GROUP BY e.id_equ, e.nom",
-v28,futbol_full,2,2,1,,15.09,"Para cada equipo con jugadores registrados, devuelve el nombre del equipo y el salario promedio de sus jugadores (columna promedio).","SELECT e.nom, AVG(j.sal) AS promedio_salario
+v21,futbol_full,1,1,1,,1.45,Devuelve nombre y capacidad de los estadios con capacidad mayor a 20000.,"SELECT nom, cap FROM est WHERE cap > 20000","SELECT nom, cap FROM est WHERE cap > 20000",
+v22,futbol_full,1,1,1,,1.04,¿Cuántos jugadores juegan en la posición 'DEL'? Devuelve una sola columna con el total.,SELECT COUNT(id_jug) FROM jug WHERE pos = 'DEL',SELECT COUNT(*) AS total FROM jug WHERE pos = 'DEL',
+v23,futbol_full,1,1,1,,0.62,¿Cuál es el salario promedio de todos los jugadores? Devuelve una sola columna.,SELECT AVG(sal) FROM jug,SELECT AVG(sal) AS promedio FROM jug,
+v24,futbol_full,1,1,1,,1.34,"Devuelve nombre y salario de los 5 jugadores con mayor salario, de mayor a menor.","SELECT nom, sal FROM jug ORDER BY sal DESC LIMIT 5","SELECT nom, sal FROM jug ORDER BY sal DESC LIMIT 5",
+v25,futbol_full,1,1,1,,1.41,Devuelve nombre y año de fundación de los equipos fundados antes de 1960.,"SELECT nom, fund FROM equ WHERE fund < 1960","SELECT nom, fund FROM equ WHERE fund < 1960",
+v26,futbol_full,1,1,1,,0.95,¿Cuántas tarjetas rojas se han mostrado? Devuelve una sola columna con el total.,SELECT COUNT(*) FROM tar WHERE tipo = 'roja',SELECT COUNT(*) AS total FROM tar WHERE tipo = 'roja',
+v27,futbol_full,2,2,1,,2.65,"Para cada equipo con jugadores registrados, devuelve el nombre del equipo y su cantidad de jugadores (columna total).","SELECT T2.nom, COUNT(*) AS jugadores FROM jug AS T1 JOIN equ AS T2 ON T1.id_equ = T2.id_equ GROUP BY T2.nom","SELECT e.nom, COUNT(*) AS total FROM equ e JOIN jug j ON j.id_equ = e.id_equ GROUP BY e.id_equ, e.nom",
+v28,futbol_full,2,2,1,,2.57,"Para cada equipo con jugadores registrados, devuelve el nombre del equipo y el salario promedio de sus jugadores (columna promedio).","SELECT e.nom, AVG(j.sal) AS promedio_salario
 FROM equ e
 JOIN jug j ON e.id_equ = j.id_equ
 GROUP BY e.id_equ","SELECT e.nom, AVG(j.sal) AS promedio FROM equ e JOIN jug j ON j.id_equ = e.id_equ GROUP BY e.id_equ, e.nom",
-v29,futbol_full,2,2,1,,15.57,Devuelve el nombre de los jugadores con al menos 2 goles y su número de goles (columna goles).,"SELECT j.nom, COUNT(*) AS goles FROM jug j JOIN gol g ON j.id_jug = g.id_jug GROUP BY j.id_jug HAVING goles >= 2","SELECT j.nom, COUNT(*) AS goles FROM jug j JOIN gol g ON g.id_jug = j.id_jug GROUP BY j.id_jug, j.nom HAVING COUNT(*) >= 2",
-v30,futbol_full,2,2,0,JOIN,12.14,Devuelve el nombre de los equipos que han jugado al menos un partido como local y cuántos partidos han jugado en esa condición (columna total).,SELECT nom FROM equ WHERE id_est IN (SELECT id_est FROM jug GROUP BY id_est HAVING COUNT(*) >= 2),"SELECT e.nom, COUNT(*) AS total FROM equ e JOIN par p ON p.id_loc = e.id_equ GROUP BY e.id_equ, e.nom",
-v31,futbol_full,2,2,0,filtro,15.53,"Para los estadios con un equipo registrado como local, devuelve el nombre del estadio y el nombre del equipo que juega allí.","SELECT T1.nom, T2.nom FROM est AS T1 JOIN equ AS T2 ON T1.id_est = T2.id_est WHERE T2.fund = 2000","SELECT s.nom, e.nom FROM est s JOIN equ e ON e.id_est = s.id_est",
-v32,futbol_full,2,2,0,JOIN,25.18,Devuelve el nombre de los jugadores con 2 o más tarjetas amarillas y cuántas tienen (columna total).,SELECT 1,"SELECT j.nom, COUNT(*) AS total FROM jug j JOIN tar t ON t.id_jug = j.id_jug WHERE t.tipo = 'amarilla' GROUP BY j.id_jug, j.nom HAVING COUNT(*) >= 2",
-v33,futbol_full,2,2,1,,11.36,Devuelve cada posición y la edad promedio de los jugadores de esa posición (columna edad_promedio).,"SELECT pos, AVG(edad) FROM jug GROUP BY pos","SELECT pos, AVG(edad) AS edad_promedio FROM jug GROUP BY pos",
-v34,futbol_full,3,3,0,filtro,19.91,Devuelve el nombre y la posición de los jugadores que nunca han anotado un gol y juegan como DEF.,"SELECT j.nom, j.pos FROM jug j
+v29,futbol_full,2,2,1,,2.75,Devuelve el nombre de los jugadores con al menos 2 goles y su número de goles (columna goles).,"SELECT j.nom, COUNT(*) AS goles FROM jug j JOIN gol g ON j.id_jug = g.id_jug GROUP BY j.id_jug HAVING goles >= 2","SELECT j.nom, COUNT(*) AS goles FROM jug j JOIN gol g ON g.id_jug = j.id_jug GROUP BY j.id_jug, j.nom HAVING COUNT(*) >= 2",
+v30,futbol_full,2,2,0,JOIN,2.14,Devuelve el nombre de los equipos que han jugado al menos un partido como local y cuántos partidos han jugado en esa condición (columna total).,SELECT nom FROM equ WHERE id_est IN (SELECT id_est FROM jug GROUP BY id_est HAVING COUNT(*) >= 2),"SELECT e.nom, COUNT(*) AS total FROM equ e JOIN par p ON p.id_loc = e.id_equ GROUP BY e.id_equ, e.nom",
+v31,futbol_full,2,2,0,filtro,2.84,"Para los estadios con un equipo registrado como local, devuelve el nombre del estadio y el nombre del equipo que juega allí.","SELECT T1.nom, T2.nom FROM est AS T1 JOIN equ AS T2 ON T1.id_est = T2.id_est WHERE T2.fund = 2000","SELECT s.nom, e.nom FROM est s JOIN equ e ON e.id_est = s.id_est",
+v32,futbol_full,2,2,0,JOIN,4.09,Devuelve el nombre de los jugadores con 2 o más tarjetas amarillas y cuántas tienen (columna total).,SELECT 1,"SELECT j.nom, COUNT(*) AS total FROM jug j JOIN tar t ON t.id_jug = j.id_jug WHERE t.tipo = 'amarilla' GROUP BY j.id_jug, j.nom HAVING COUNT(*) >= 2",
+v33,futbol_full,2,2,1,,1.25,Devuelve cada posición y la edad promedio de los jugadores de esa posición (columna edad_promedio).,"SELECT pos, AVG(edad) FROM jug GROUP BY pos","SELECT pos, AVG(edad) AS edad_promedio FROM jug GROUP BY pos",
+v34,futbol_full,3,3,0,filtro,2.91,Devuelve el nombre y la posición de los jugadores que nunca han anotado un gol y juegan como DEF.,"SELECT j.nom, j.pos FROM jug j
 WHERE j.id_jug NOT IN (SELECT g.id_jug FROM gol g WHERE g.id_gol IS NULL)
 AND j.pos = 'DEF'","SELECT j.nom, j.pos FROM jug j WHERE j.pos = 'DEF' AND j.id_jug NOT IN (SELECT id_jug FROM gol)",
-v35,futbol_full,3,3,0,sintaxis,25.44,"Para cada equipo con goles registrados, devuelve el nombre del equipo, el nombre de su máximo goleador (en empate, el de menor id de jugador) y sus goles (columna goles).","SELECT e.nom, e.id_equ, j.goles 
+v35,futbol_full,3,3,0,sintaxis,4.09,"Para cada equipo con goles registrados, devuelve el nombre del equipo, el nombre de su máximo goleador (en empate, el de menor id de jugador) y sus goles (columna goles).","SELECT e.nom, e.id_equ, j.goles 
 FROM equ e 
 JOIN jug j ON e.id_equ = j.id_equ 
-WHERE j.id_jug IN","WITH c AS (SELECT j.id_equ, j.id_jug, j.nom, COUNT(*) AS goles FROM jug j JOIN gol g ON g.id_jug = j.id_jug GROUP BY j.id_equ, j.id_jug, j.nom), r AS (SELECT c.*, ROW_NUMBER() OVER (PARTITION BY id_equ ORDER BY goles DESC, id_jug) AS rn FROM c) SELECT e.nom, r.nom, r.goles FROM r JOIN equ e ON e.id_equ = r.id_equ WHERE r.rn = 1","(1064, ""You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 4"")"
-v36,futbol_full,3,3,0,sintaxis,25.38,"Entre los equipos con goles registrados, calcula los goles anotados por sus jugadores. Devuelve el nombre del equipo, los goles (columna goles) y su posición con RANK de mayor a menor (columna posicion), ordenado por posición y nombre del equipo.","SELECT T1.nom, T1.goles, T1.pos, RANK() OVER (PARTITION BY T1.id_equ ORDER BY T1.pos DESC, T1.nom ASC) AS rnk","WITH t AS (SELECT e.nom, COUNT(*) AS goles FROM equ e JOIN jug j ON j.id_equ = e.id_equ JOIN gol g ON g.id_jug = j.id_jug GROUP BY e.id_equ, e.nom) SELECT nom, goles, RANK() OVER (ORDER BY goles DESC) AS posicion FROM t ORDER BY posicion, nom","(1109, ""Unknown table 'T1' in field list"")"
-v37,futbol_full,3,3,0,JOIN,23.39,Devuelve el nombre y el salario de los jugadores cuyo salario es mayor al promedio de su propio equipo.,"SELECT j.nom, j.sal
+WHERE j.id_jug IN (SELECT id_jug FROM gol GROUP BY id_jug ORDER BY COUNT(*) DESC LIMIT 1)
+ORDER BY e.id_equ","WITH c AS (SELECT j.id_equ, j.id_jug, j.nom, COUNT(*) AS goles FROM jug j JOIN gol g ON g.id_jug = j.id_jug GROUP BY j.id_equ, j.id_jug, j.nom), r AS (SELECT c.*, ROW_NUMBER() OVER (PARTITION BY id_equ ORDER BY goles DESC, id_jug) AS rn FROM c) SELECT e.nom, r.nom, r.goles FROM r JOIN equ e ON e.id_equ = r.id_equ WHERE r.rn = 1","(1235, ""This version of MySQL doesn't yet support 'LIMIT & IN/ALL/ANY/SOME subquery'"")"
+v36,futbol_full,3,3,0,columna o tabla inexistente,4.84,"Entre los equipos con goles registrados, calcula los goles anotados por sus jugadores. Devuelve el nombre del equipo, los goles (columna goles) y su posición con RANK de mayor a menor (columna posicion), ordenado por posición y nombre del equipo.","SELECT T1.nom, T1.goles, T1.pos, RANK() OVER (PARTITION BY T1.id_equ ORDER BY T1.pos DESC, T1.nom ASC) AS rnk
+FROM jug AS T1
+JOIN par AS T2 ON T1.id_par = T2.id_par
+GROUP BY T1.id_equ","WITH t AS (SELECT e.nom, COUNT(*) AS goles FROM equ e JOIN jug j ON j.id_equ = e.id_equ JOIN gol g ON g.id_jug = j.id_jug GROUP BY e.id_equ, e.nom) SELECT nom, goles, RANK() OVER (ORDER BY goles DESC) AS posicion FROM t ORDER BY posicion, nom","(1054, ""Unknown column 'T1.goles' in 'field list'"")"
+v37,futbol_full,3,3,0,JOIN,2.99,Devuelve el nombre y el salario de los jugadores cuyo salario es mayor al promedio de su propio equipo.,"SELECT j.nom, j.sal
 FROM jug j
 JOIN equ e ON j.id_equ = e.id_equ
 WHERE j.sal > (SELECT AVG(sal) FROM equ)
 ORDER BY j.sal DESC","SELECT a.nom, a.sal FROM jug a WHERE a.sal > (SELECT AVG(b.sal) FROM jug b WHERE b.id_equ = a.id_equ)",
-v38,futbol_full,3,3,0,resultado distinto,20.97,Devuelve el id de los partidos en los que se anotaron más de 2 goles en total y ese total (columna total).,SELECT id_par FROM gol GROUP BY id_par HAVING SUM(min) > 2 * (SELECT SUM(min) FROM gol),"SELECT id_par, COUNT(*) AS total FROM gol GROUP BY id_par HAVING COUNT(*) > 2",
-v39,futbol_full,3,3,0,resultado distinto,21.88,"¿En qué jornada se anotaron más goles? Devuelve la jornada y el total de goles (columna total); en empate, la jornada menor.","SELECT jor, SUM(T1.min) AS total FROM gol AS T1 JOIN par AS T2 ON T1.id_par = T2.id_par GROUP BY jor ORDER BY total DESC LIMIT 1","SELECT p.jor, COUNT(*) AS total FROM par p JOIN gol g ON g.id_par = p.id_par GROUP BY p.jor ORDER BY total DESC, p.jor LIMIT 1",
-v40,futbol_full,3,3,0,columna o tabla inexistente,25.37,"Devuelve nombre, posición y edad de los jugadores que son los más jóvenes de su posición (incluye empates).","SELECT j.nom, j.pos, j.edad FROM jug j
+v38,futbol_full,3,3,0,resultado distinto,2.02,Devuelve el id de los partidos en los que se anotaron más de 2 goles en total y ese total (columna total).,SELECT id_par FROM gol GROUP BY id_par HAVING SUM(min) > 2 * (SELECT SUM(min) FROM gol),"SELECT id_par, COUNT(*) AS total FROM gol GROUP BY id_par HAVING COUNT(*) > 2",
+v39,futbol_full,3,3,0,resultado distinto,3.08,"¿En qué jornada se anotaron más goles? Devuelve la jornada y el total de goles (columna total); en empate, la jornada menor.","SELECT jor, SUM(T1.min) AS total FROM gol AS T1 JOIN par AS T2 ON T1.id_par = T2.id_par GROUP BY jor ORDER BY total DESC LIMIT 1","SELECT p.jor, COUNT(*) AS total FROM par p JOIN gol g ON g.id_par = p.id_par GROUP BY p.jor ORDER BY total DESC, p.jor LIMIT 1",
+v40,futbol_full,3,3,0,columna o tabla inexistente,4.09,"Devuelve nombre, posición y edad de los jugadores que son los más jóvenes de su posición (incluye empates).","SELECT j.nom, j.pos, j.edad FROM jug j
 JOIN par p ON j.id_jug = p.id_jug
-WHERE j.pos IN ('Defensa', 'Medio-Centro', 'Arbitra')","SELECT a.nom, a.pos, a.edad FROM jug a WHERE a.edad = (SELECT MIN(b.edad) FROM jug b WHERE b.pos = a.pos)","(1054, ""Unknown column 'p.id_jug' in 'on clause'"")"
+WHERE j.pos IN ('Defensa', 'Medio-Centro', 'Arbitra')
+ORDER BY j.edad ASC
+LIMIT 1","SELECT a.nom, a.pos, a.edad FROM jug a WHERE a.edad = (SELECT MIN(b.edad) FROM jug b WHERE b.pos = a.pos)","(1054, ""Unknown column 'p.id_jug' in 'on clause'"")"

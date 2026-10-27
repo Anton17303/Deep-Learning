@@ -1,7 +1,7 @@
 {
   "adapter": "lora_r8",
-  "reparar": false,
+  "reparar": true,
   "ex_original": 0.43902439024390244,
-  "ex_reparacion": 0.4268292682926829,
+  "ex_reparacion": 0.45121951219512196,
   "entrenamiento_completo": true
 }

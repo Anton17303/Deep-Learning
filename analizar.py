@@ -77,18 +77,19 @@ def main():
             entrenamientos.append(json.loads(ruta.read_text(encoding='utf-8')))
     if entrenamientos:
         lineas.extend(['', '## Entrenamiento', '',
-                       '| Rango | Parámetros entrenables | Pasos | Ejemplos procesados | Tiempo (min) |',
-                       '|---|---:|---:|---:|---:|'])
+                       '| Configuración | GPU | Parámetros entrenables | Pasos | Ejemplos procesados | Tiempo (min) |',
+                       '|---|---|---:|---:|---:|---:|'])
         for e in entrenamientos:
-            lineas.append(f"| {e['config']['r']} | {e['parametros_entrenables']:,} | {e['pasos_realizados']}/{e['pasos_previstos']} | {e['ejemplos_procesados']}/{e['ejemplos_dataset']} | {e['segundos_entrenamiento']/60:.2f} |")
+            gpu = e.get('acelerador', 'CUDA (registro inicial)')
+            lineas.append(f"| {e['config']['nombre']} | {gpu} | {e['parametros_entrenables']:,} | {e['pasos_realizados']}/{e['pasos_previstos']} | {e['ejemplos_procesados']}/{e['ejemplos_dataset']} | {e['segundos_entrenamiento']/60:.2f} |")
         lineas.extend(['', 'Cada comparación entre rangos comparte base NF4, semilla, orden de ejemplos, tasa de aprendizaje y presupuesto. Los entrenamientos iniciales procesaron 304 ejemplos. Las continuaciones parten del adapter del rango correspondiente y recorren una época adicional del corpus completo.', '',
-                       'Las curvas se conservan en lora_r8/loss.png y lora_r16/loss.png, junto con sus CSV por paso.'])
+                       'Las curvas se conservan en loss.png dentro del directorio de cada configuración, junto con sus CSV por paso. La validación final, la comparación de reparación y el contrato de inferencia se ejecutaron en Tesla T4.'])
         for e in entrenamientos:
             perdidas = cargar_csv(raiz / e['config']['nombre'] / 'loss.csv')
             if len(perdidas) >= 20:
                 inicial = np.mean([float(p['loss']) for p in perdidas[:10]])
                 final = np.mean([float(p['loss']) for p in perdidas[-10:]])
-                lineas.extend(['', f"En rango {e['config']['r']}, la pérdida media de los primeros diez pasos fue {inicial:.3f} y la de los últimos diez fue {final:.3f}."])
+                lineas.extend(['', f"En {e['config']['nombre']}, la pérdida media de los primeros diez pasos fue {inicial:.3f} y la de los últimos diez fue {final:.3f}."])
         lineas.extend(['', 'Estos promedios describen el ajuste sobre ejemplos de entrenamiento distintos. Una pérdida menor no garantiza una EX mayor en esquemas nuevos; la selección se apoya en la evaluación por ejecución.'])
     for sufijo, etapa in [('', 'el presupuesto inicial'), ('_completo', 'la época adicional')]:
         if f'lora_r8{sufijo}' not in resumen or f'lora_r16{sufijo}' not in resumen:
@@ -107,7 +108,7 @@ def main():
         perdidas = sum(f['acierto'] == '0' and originales[f['id']]['acierto'] == '1' for f in reparadas)
         original, reparada = resumen[seleccion['adapter']], resumen['reparacion']
         lineas.extend(['', '## Efecto de la reparación', '',
-                       f"La reparación convirtió {mejoras} errores en aciertos y perdió {perdidas} aciertos. La diferencia de EX fue {reparada['ex'] - original['ex']:+.3f}; el tiempo medio pasó de {original['tiempo_medio_s']:.2f} a {reparada['tiempo_medio_s']:.2f} segundos.", '',
+                       f"La reparación corrigió {mejoras} {'error' if mejoras == 1 else 'errores'} y perdió {perdidas} {'acierto' if perdidas == 1 else 'aciertos'}. La diferencia de EX fue {reparada['ex'] - original['ex']:+.3f}; el tiempo medio pasó de {original['tiempo_medio_s']:.2f} a {reparada['tiempo_medio_s']:.2f} segundos.", '',
                        'La corrección de nombres puede resolver identificadores cercanos. La regeneración tiene un presupuesto limitado y puede terminar con una consulta incompleta. Los filtros o las agregaciones incorrectos que sí se ejecutan no producen un error de MySQL para activar otra generación.'])
     for nombre, s in resumen.items():
         lineas.extend(['', f'## Errores: {nombre}', '', '| Categoría | Cantidad |', '|---|---:|'])

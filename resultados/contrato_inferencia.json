@@ -5,9 +5,12 @@
     "usar_adapter": true,
     "semilla": 2026,
     "cuantizacion": "nf4",
-    "reparar": false
+    "reparar": true
   },
-  "carga_segundos": 6.372541189193726,
+  "carga_segundos": 4.8853607177734375,
+  "dispositivo": "Tesla T4",
+  "torch": "2.11.0+cu130",
+  "cuda": "13.0",
   "carga_valida": true,
   "casos": [
     {
@@ -16,15 +19,15 @@
       "solo_lectura": true,
       "cumple_tiempo": true,
       "tiempos_segundos": [
-        5.494113199994899,
-        5.159408699953929
+        1.8295873209999627,
+        1.2723657700007607
       ],
       "llamadas_diagnostico": [
-        0,
-        0
+        1,
+        1
       ],
       "cumple_llamadas": true,
-      "sql": "SELECT nombre, ciudad FROM HOTELS WHERE estrellas >= 4"
+      "sql": "SELECT nombre, ciudad FROM `hoteles` WHERE estrellas >= 4"
     },
     {
       "id": "v27",
@@ -32,12 +35,12 @@
       "solo_lectura": true,
       "cumple_tiempo": true,
       "tiempos_segundos": [
-        8.390348299988545,
-        8.4523883999791
+        2.5661750799999936,
+        2.546882237999853
       ],
       "llamadas_diagnostico": [
-        0,
-        0
+        1,
+        1
       ],
       "cumple_llamadas": true,
       "sql": "SELECT e.nom, COUNT(*) AS total FROM equ e JOIN jug j ON e.id_equ = j.id_equ GROUP BY e.id_equ, e.nom"
@@ -48,12 +51,12 @@
       "solo_lectura": true,
       "cumple_tiempo": true,
       "tiempos_segundos": [
-        7.385066700051539,
-        7.43972110003233
+        2.0392587070000445,
+        2.0676496900005077
       ],
       "llamadas_diagnostico": [
-        0,
-        0
+        1,
+        1
       ],
       "cumple_llamadas": true,
       "sql": "SELECT nombre FROM huespedes WHERE id_huesped NOT IN (SELECT id_huesped FROM reservaciones)"

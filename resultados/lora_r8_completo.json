@@ -1,0 +1,21 @@
+{
+  "ex_ponderada": 0.4146341463414634,
+  "preguntas": 40,
+  "peso_total": 82,
+  "aciertos": 20,
+  "tiempo_medio_s": 3.1462499999999998,
+  "tiempo_maximo_s": 7.36,
+  "modo": "modelo",
+  "configuracion": {
+    "modelo_base": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+    "adapter": "resultados/lora_r8_completo/adapter",
+    "usar_adapter": true,
+    "semilla": 2026,
+    "cuantizacion": "nf4"
+  },
+  "carga_segundos": 4.748813152313232,
+  "dispositivo": "Tesla T4",
+  "torch": "2.11.0+cu130",
+  "sha256_adapter": "fa7b7a1ef2bf8bbe5b4d888bd551d4f18e333ffa051fb32af096656a6e03f77d",
+  "sha256_preguntas": "374513d186690a7752cd9589a7cb9555e8d72d0f4de06fa957eb1d3ad324f096"
+}

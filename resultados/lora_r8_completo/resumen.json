@@ -1,0 +1,43 @@
+{
+  "config": {
+    "nombre": "lora_r8_completo",
+    "modelo_base": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+    "semilla": 2026,
+    "r": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.05,
+    "target_modules": [
+      "q_proj",
+      "v_proj"
+    ],
+    "learning_rate": 0.0001,
+    "num_train_epochs": 1.0,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 4,
+    "max_length": 4096,
+    "warmup_ratio": 0.03,
+    "weight_decay": 0.01,
+    "formato_esquema": "show_create",
+    "cuantizacion": "nf4",
+    "offload_activaciones": "auto",
+    "adapter_inicial": "resultados/lora_r8/adapter",
+    "guardar_cada": 10
+  },
+  "parametros_entrenables": 540672,
+  "parametros_totales": 494573440,
+  "ejemplos_dataset": 3023,
+  "pasos_realizados": 756,
+  "pasos_previstos": 756,
+  "ejemplos_procesados": 3023,
+  "entrenamiento_completo": true,
+  "segundos_entrenamiento": 1623.358119764,
+  "dispositivo": "cuda",
+  "acelerador": "Tesla T4",
+  "aceleradores": [
+    "Tesla T4"
+  ],
+  "sha256_adapter_inicial": "b84a4caa898ba2c1b339c2894809dddb6ce0629486719f64e7ce8025e099acf9",
+  "offload_activaciones_efectivo": false,
+  "sha256_dataset": "aa6f3302443cc2cfdfb92a5e363625c0c167fcc6c949cc55163a6ae4aa72f833",
+  "torch": "2.11.0+cu130"
+}
