@@ -1,3 +1,148 @@
+commit 7c87cbef146b72e7687d8336ced9280eee6ed95d
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-26 19:04:02 -0600
+
+    fix: preserve dataset hashes across Windows and Colab
+
+ .gitattributes                   |    1 +
+ datos/descartes.jsonl            |  158 +-
+ datos/entrenamiento.jsonl        | 6046 +++++++++++++++++++-------------------
+ datos/validacion/preguntas.jsonl |   80 +-
+ 4 files changed, 3143 insertions(+), 3142 deletions(-)
+
+commit 43967fc10c03fd65c2ef8a665eb40f2b5a2465ed
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-26 19:03:06 -0600
+
+    update: document T4 results and refresh final presentation
+
+ BITACORA.md                |   1 +
+ README.md                  |  21 +++++++++++++--------
+ experimentos.md            |   6 ++++++
+ presentacion.pdf           | Bin 530123 -> 432636 bytes
+ presentacion_proyecto.pptx | Bin 315321 -> 208177 bytes
+ verificar_entrega.py       |  14 +++++++++++++-
+ 6 files changed, 33 insertions(+), 9 deletions(-)
+
+commit b90d4d7db0c80be58cc6c05c51117ef103e6f68a
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-26 19:02:50 -0600
+
+    add: import complete T4 training and validation results
+
+ analizar.py                                        |  13 +-
+ config.json                                        |   2 +-
+ resultados/analisis.md                             | 103 ++-
+ resultados/baseline.csv                            | 112 +--
+ resultados/baseline.json                           |  10 +-
+ resultados/contrato_inferencia.json                |  33 +-
+ resultados/lora_r16.csv                            |  80 +--
+ resultados/lora_r16.json                           |  10 +-
+ resultados/lora_r16_completo.csv                   |  41 ++
+ resultados/lora_r16_completo.json                  |  21 +
+ resultados/lora_r16_completo/adapter/LICENSE       | 202 ++++++
+ resultados/lora_r16_completo/adapter/README.md     |  15 +
+ .../lora_r16_completo/adapter/adapter_config.json  |  37 +
+ .../adapter/adapter_model.safetensors              | Bin 0 -> 4338000 bytes
+ resultados/lora_r16_completo/loss.csv              | 757 +++++++++++++++++++++
+ resultados/lora_r16_completo/loss.png              | Bin 0 -> 104984 bytes
+ resultados/lora_r16_completo/resumen.json          |  43 ++
+ resultados/lora_r8.csv                             |  80 +--
+ resultados/lora_r8.json                            |  16 +-
+ resultados/lora_r8_completo.csv                    |  41 ++
+ resultados/lora_r8_completo.json                   |  21 +
+ resultados/lora_r8_completo/adapter/LICENSE        | 202 ++++++
+ resultados/lora_r8_completo/adapter/README.md      |  15 +
+ .../lora_r8_completo/adapter/adapter_config.json   |  37 +
+ .../adapter/adapter_model.safetensors              | Bin 0 -> 2175168 bytes
+ resultados/lora_r8_completo/loss.csv               | 757 +++++++++++++++++++++
+ resultados/lora_r8_completo/loss.png               | Bin 0 -> 87257 bytes
+ resultados/lora_r8_completo/resumen.json           |  43 ++
+ resultados/manifest.json                           | 111 +--
+ resultados/reparacion.csv                          |  80 +--
+ resultados/reparacion.json                         |  14 +-
+ resultados/resumen_resultados.json                 | 137 ++--
+ resultados/revision_errores.csv                    |  88 ++-
+ resultados/seleccion.json                          |   4 +-
+ resultados/validacion_mysql_t4.json                |   8 +
+ resultados/validacion_propia.csv                   |  80 +--
+ resultados/validacion_propia.json                  |  25 +-
+ resultados/verificacion.json                       |   9 +-
+ resultados/verificacion_t4.json                    |  28 +
+ 39 files changed, 2870 insertions(+), 405 deletions(-)
+
+commit f555df787bdfc79e6cbaa4c65fbb80d87e417ea5
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-26 02:44:44 -0600
+
+    fix: stream Colab progress and bound setup waits
+
+ ejecutar_proyecto.py                         |  3 ++-
+ generador/construir_bases.py                 |  2 +-
+ notebooks/01_datos.ipynb                     | 26 +++++++++++++++++++-----
+ notebooks/03_evaluacion.ipynb                | 26 +++++++++++++++++++-----
+ notebooks/04_entrenamiento_completo_t4.ipynb | 30 +++++++++++++++++++++++-----
+ scripts/colab_mysql.sh                       | 23 ++++++++++++++++-----
+ 6 files changed, 88 insertions(+), 22 deletions(-)
+
+commit 24aac1cea531c80e08c9a61f63d5af203100e710
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-26 01:15:29 -0600
+
+    fix: handle Windows line endings in Colab MySQL setup
+
+ .gitattributes                               | 1 +
+ notebooks/01_datos.ipynb                     | 5 ++++-
+ notebooks/03_evaluacion.ipynb                | 5 ++++-
+ notebooks/04_entrenamiento_completo_t4.ipynb | 3 ++-
+ verificar_entrega.py                         | 2 +-
+ 5 files changed, 12 insertions(+), 4 deletions(-)
+
+commit eda36d1f9c3b402ec97b1c4e3b519cf2dbe54afb
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-26 00:57:49 -0600
+
+    add: extend LoRA training coverage and prepare verified T4 workflow
+
+ .gitignore                                   |   2 +-
+ README.md                                    |  10 +-
+ analizar.py                                  |  14 ++-
+ comprobar_inferencia.py                      |   3 +
+ configuraciones/evaluar_r16_completo.json    |   7 ++
+ configuraciones/evaluar_r8_completo.json     |   7 ++
+ configuraciones/lora_r16_completo.json       |  24 ++++
+ configuraciones/lora_r8_completo.json        |  24 ++++
+ ejecutar_proyecto.py                         |  16 ++-
+ entrenar.py                                  |  63 ++++++++---
+ experimentos.md                              |  10 ++
+ notebooks/04_entrenamiento_completo_t4.ipynb | 159 +++++++++++++++++++++++++++
+ tests/test_contrato.py                       |  11 ++
+ tests/test_entrenamiento.py                  |  15 +++
+ 14 files changed, 339 insertions(+), 26 deletions(-)
+
+commit 291e135882cd987888d04c6dbaf9d46815154c8d
+Author: Ninaswiftie09 <naj231088@uvg.edu.gt>
+Date:   2026-10-26 00:23:02 -0600
+
+    chore: clean project workflow and restore required deliverables
+
+ .gitattributes                |    1 +
+ CONTRIBUCIONES.md             |   13 +
+ LICENCIAS.md                  |   17 +
+ LICENCIA_MODELO.txt           |  202 +++++++
+ README.md                     |    8 +-
+ ejecutar_proyecto.py          |    1 -
+ evaluador.py                  |    2 +-
+ generador/crear_validacion.py |    3 +-
+ historial_git.txt             | 1255 +++++++++++++++++++++++++++++++++++++++++
+ presentacion.pdf              |  Bin 0 -> 530123 bytes
+ presentacion_proyecto.pptx    |  Bin 281301 -> 315321 bytes
+ requirements.txt              |    1 -
+ resultados/manifest.json      |   28 +-
+ resultados/verificacion.json  |    2 +-
+ verificar_entrega.py          |    2 +-
+ 15 files changed, 1511 insertions(+), 24 deletions(-)
+
 commit 69f51a6f4b46c1a0e73fddef45d0bdfe25dbd3bb
 Author: Alejandro Anton <105880067+Anton17303@users.noreply.github.com>
 Date:   2026-10-26 00:05:41 -0600
